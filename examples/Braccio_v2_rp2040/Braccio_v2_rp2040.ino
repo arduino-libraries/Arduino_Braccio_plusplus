@@ -101,6 +101,12 @@ void loop() {
     Serial.println("button_enter_status: " + String(button_enter_status));
   }
 
+  for (int i = 0; i < 127; i++) {
+    if (servos.ping(i) != -1) {
+      Serial.println("Motor " + String(i) + " connected");
+    }
+  }
+
   PD_UFP.run();
   if (PD_UFP.is_PPS_ready()) {          // PPS trigger success
     //Serial.println("PPS set");
