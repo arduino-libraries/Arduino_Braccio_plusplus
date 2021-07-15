@@ -75,8 +75,6 @@ void setup() {
 
   expander.setPinDirection(10, 0);
   expander.writePin(10, 0);
-
-  servos.setID(5);
 }
 
 void drawArduino(uint16_t color) {
@@ -127,6 +125,5 @@ void loop() {
     if (servos.ping(i) != -1) {
       Serial.println("Motor " + String(i) + " connected");
     }
-    delay(100);
   }
 }

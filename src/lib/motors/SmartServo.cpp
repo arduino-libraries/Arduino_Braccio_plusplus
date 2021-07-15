@@ -74,12 +74,7 @@ void SmartServoClass::_rx(){
 			continue;
 		}
 		_r[i] = c;
-		Serial.print(_r[i], HEX);
-		Serial.print(" ");
 		i++;
-	}
-	if (i != 0) {
-		Serial.println();
 	}
 }
 
