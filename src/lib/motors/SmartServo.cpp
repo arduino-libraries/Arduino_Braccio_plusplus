@@ -58,23 +58,20 @@ void SmartServoClass::_tx(byte id, byte len, byte cmd, byte *prms) {
 
 void SmartServoClass::_rx(){
 
-	for (uint8_t i=0; i<38; i++) {
-		_r[i] = 0;
-	}
-
 	uint8_t i = 0;
-
-	if (_serial->available() == 1) {
-		return;
-	}
 
 	while (_serial->available()) {
 		uint8_t c = _serial->read();
 		if (i == 0 && c == 0) {
 			continue;
 		}
+		//Serial.print(c, HEX);
+		//Serial.print(" ");
 		_r[i] = c;
 		i++;
+	}
+	if (i!=0) {
+		//Serial.println();
 	}
 }
 
@@ -85,9 +82,6 @@ int8_t SmartServoClass::ping(uint8_t id)
 	csum = 0xFF - id - 0x02 - 0x01;
 
 	_serial->noReceive();
-	for (uint8_t i=0; i<38; i++) {
-		_r[i] = 0;
-	}
 	_serial->beginTransmission();
 	_serial->	write(0xFF);
 	_serial->	write(0xFF);
@@ -99,14 +93,21 @@ int8_t SmartServoClass::ping(uint8_t id)
 	_serial->receive();
 
 	delayMicroseconds(400);
-		
+
 	_rx();
 
-	if ((_r[1] == 0xF5) && (_r[2] == id)) {
+	if (((_r[1] == 0xF5) && (_r[2] == id)) /*|| ((_r[0] == 0xF5) && (_r[1] == id))*/) {
 		return _r[4];
 		//implementare diversi stati di risposta? (caldo, troppa coppia...)
 	}
 	else {
+		if (id == 5) {
+			for (int i = 0; i < 5; i++) {
+				Serial.print(_r[i], HEX);
+				Serial.print(" ");
+			}
+			Serial.println();
+		}
 		return -1;
 	}
 }
