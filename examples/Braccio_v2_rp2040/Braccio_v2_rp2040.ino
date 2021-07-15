@@ -12,7 +12,9 @@
 #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 #include "Images.h"
 
+#if defined(ARDUINO_NANO_RP2040_CONNECT)
 #include <WiFiNINA.h>
+#endif
 
 class PD_UFP_c PD_UFP;
 TCA6424A expander(TCA6424A_ADDRESS_ADDR_HIGH);
@@ -42,8 +44,10 @@ void setup() {
   Wire.begin();
   PD_UFP.init_PPS(PPS_V(6.5), PPS_A(2.0));
 
+#ifdef __MBED__
   static rtos::Thread th;
   th.start(pd_thread);
+#endif
 
   while (!PD_UFP.is_PPS_ready()) {
     delay(10);
@@ -93,7 +97,18 @@ void pd_thread() {
   }
 }
 
+int count_total = 0;
+int lost = 0;
+
 void loop() {
+
+#ifndef __MBED__
+  PD_UFP.run();
+  if (PD_UFP.is_power_ready() && PD_UFP.is_PPS_ready()) {
+    Serial.println("error");
+    while (1) {}
+  }
+#endif
 
   if (joystick_left_status != digitalRead(JOYSTICK_LEFT)) {
     joystick_left_status = digitalRead(JOYSTICK_LEFT);
@@ -120,10 +135,24 @@ void loop() {
     Serial.println("button_enter_status: " + String(button_enter_status));
   }
 
-  Serial.println("Test motors");
-  for (int i = 0; i < 253; i++) {
+  for (int i = 0; i < 10; i++) {
     if (servos.ping(i) != -1) {
-      Serial.println("Motor " + String(i) + " connected");
+      //Serial.println("Motor " + String(i) + " connected");
+      //servos.goTo(i, random(4096), 100);
+    } else {
+      if (i == 5) {
+        lost++;
+      }
     }
+
+    if (i == 5) {
+      count_total++;
+    }
+
+    if (count_total % 100 == 0) {
+      Serial.println("Lost " + String(lost) + " out of " + String(count_total));
+    }
+
+    //delay(10);
   }
 }

@@ -11,6 +11,7 @@
  
   */
 
+#include <Arduino.h>
 #include <Wire.h>
 #include "Backlight.h"
 
