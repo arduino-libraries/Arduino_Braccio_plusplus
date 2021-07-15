@@ -20,10 +20,9 @@ SmartServoClass::SmartServoClass(RS485Class& serial) :
 }
 
 void SmartServoClass::begin() {
-	_serial->begin(115200);
-	_serial->receive();
+	_serial->begin(115200, 0, 200);
+	_serial->noReceive();
 }
-
 
 void SmartServoClass::setID(byte id)
 {
@@ -39,6 +38,10 @@ void SmartServoClass::_tx(byte id, byte len, byte cmd, byte *prms) {
 		csum -= prms[i];
 	}
 
+	_serial->noReceive();
+	for (uint8_t i=0; i<38; i++) {
+		_r[i] = 0;
+	}
 	_serial->beginTransmission();
 	_serial->write(0xFF);
 	_serial->write(0xFF);
@@ -50,7 +53,7 @@ void SmartServoClass::_tx(byte id, byte len, byte cmd, byte *prms) {
 	}
 	_serial->write(csum);
 	_serial->endTransmission();
-
+	_serial->receive();
 }
 
 void SmartServoClass::_rx(){
@@ -61,9 +64,22 @@ void SmartServoClass::_rx(){
 
 	uint8_t i = 0;
 
+	if (_serial->available() == 1) {
+		return;
+	}
+
 	while (_serial->available()) {
-		_r[i] = _serial->read();
+		uint8_t c = _serial->read();
+		if (i == 0 && c == 0) {
+			continue;
+		}
+		_r[i] = c;
+		Serial.print(_r[i], HEX);
+		Serial.print(" ");
 		i++;
+	}
+	if (i != 0) {
+		Serial.println();
 	}
 }
 
@@ -73,6 +89,10 @@ int8_t SmartServoClass::ping(uint8_t id)
 	uint8_t csum; //calc chk sum
 	csum = 0xFF - id - 0x02 - 0x01;
 
+	_serial->noReceive();
+	for (uint8_t i=0; i<38; i++) {
+		_r[i] = 0;
+	}
 	_serial->beginTransmission();
 	_serial->	write(0xFF);
 	_serial->	write(0xFF);
@@ -81,6 +101,7 @@ int8_t SmartServoClass::ping(uint8_t id)
 	_serial->	write(0x01);
 	_serial->	write(csum);
 	_serial->endTransmission();
+	_serial->receive();
 
 	delayMicroseconds(400);
 		

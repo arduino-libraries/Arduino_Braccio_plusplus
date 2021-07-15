@@ -1,5 +1,4 @@
 #include <BraccioV2.h>
-#include <PDM.h>
 
 #include "lib/powerdelivery/PD_UFP.h"
 #include "lib/ioexpander/TCA6424A.h"
@@ -41,7 +40,16 @@ void setup() {
   Serial.begin(115200);
   //while (!Serial);
   Wire.begin();
-  PD_UFP.init_PPS(PPS_V(8.0), PPS_A(2.0));
+  PD_UFP.init_PPS(PPS_V(6.5), PPS_A(2.0));
+
+  static rtos::Thread th;
+  th.start(pd_thread);
+
+  while (!PD_UFP.is_PPS_ready()) {
+    delay(10);
+  }
+
+  pinMode(1, INPUT_PULLUP);
 
   bl.begin();
   Serial.println(bl.getChipID(), HEX);
@@ -67,11 +75,24 @@ void setup() {
 
   expander.setPinDirection(10, 0);
   expander.writePin(10, 0);
+
+  servos.setID(5);
 }
 
 void drawArduino(uint16_t color) {
   display.drawBitmap(44, 60, ArduinoLogo, 152, 72, color);
   display.drawBitmap(48, 145, ArduinoText, 144, 23, color);
+}
+
+void pd_thread() {
+  while (1) {
+    PD_UFP.run();
+    delay(10);
+    if (PD_UFP.is_power_ready() && PD_UFP.is_PPS_ready()) {
+      Serial.println("error");
+      while (1) {}
+    }
+  }
 }
 
 void loop() {
@@ -101,16 +122,11 @@ void loop() {
     Serial.println("button_enter_status: " + String(button_enter_status));
   }
 
-  for (int i = 0; i < 127; i++) {
+  Serial.println("Test motors");
+  for (int i = 0; i < 253; i++) {
     if (servos.ping(i) != -1) {
       Serial.println("Motor " + String(i) + " connected");
     }
-  }
-
-  PD_UFP.run();
-  if (PD_UFP.is_PPS_ready()) {          // PPS trigger success
-    //Serial.println("PPS set");
-  } else if (PD_UFP.is_power_ready()) { // Fail to trigger PPS, fall back
-    Serial.println("Fallback");
+    delay(100);
   }
 }
