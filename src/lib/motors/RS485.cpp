@@ -131,6 +131,7 @@ void RS485Class::endTransmission()
 
   if (_dePin > -1) {
     if (_postdelay) delayMicroseconds(_postdelay);
+    digitalWrite(_rePin, LOW);
     digitalWrite(_dePin, LOW);
   }
 

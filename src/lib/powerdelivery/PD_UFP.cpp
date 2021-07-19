@@ -633,12 +633,9 @@ int PD_UFP_log_c::status_log_readline(char * buffer, int maxlen)
 
 void PD_UFP_log_c::print_status(HardwareSerial & serial)
 {
-    // Wait for enough tx buffer in serial port to avoid blocking
-    if (serial && serial.availableForWrite() >= SERIAL_BUFFER_SIZE - 1) {
-        char buf[SERIAL_BUFFER_SIZE];
-        if (status_log_readline(buf, sizeof(buf) - 1)) {
-            serial.print(buf);
-        }
+    char buf[SERIAL_BUFFER_SIZE];
+    if (status_log_readline(buf, sizeof(buf) - 1)) {
+        serial.print(buf);
     }
 }
 

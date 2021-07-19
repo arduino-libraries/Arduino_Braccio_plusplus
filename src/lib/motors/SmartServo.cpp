@@ -20,7 +20,7 @@ SmartServoClass::SmartServoClass(RS485Class& serial) :
 }
 
 void SmartServoClass::begin() {
-	_serial->begin(115200, 0, 200);
+	_serial->begin(115200, 0, 175);
 	_serial->noReceive();
 }
 
@@ -92,16 +92,16 @@ int8_t SmartServoClass::ping(uint8_t id)
 	_serial->endTransmission();
 	_serial->receive();
 
-	delayMicroseconds(400);
+	delayMicroseconds(800);
 
 	_rx();
 
-	if (((_r[1] == 0xF5) && (_r[2] == id)) /*|| ((_r[0] == 0xF5) && (_r[1] == id))*/) {
+	if (((_r[1] == 0xF5) && (_r[2] == id)) || ((_r[0] == 0xF5) && (_r[1] == id))) {
 		return _r[4];
 		//implementare diversi stati di risposta? (caldo, troppa coppia...)
 	}
 	else {
-		if (id == 5) {
+		if (id == 1) {
 			for (int i = 0; i < 5; i++) {
 				Serial.print(_r[i], HEX);
 				Serial.print(" ");
@@ -181,7 +181,7 @@ int SmartServoClass::regRead(byte id, char name)
 	}
 
 	_tx(id,0x04,0x02,com);
-	delayMicroseconds(500);
+	delayMicroseconds(800);
 	_rx();
 
 	if ((_r[1] == 0xF5) && (_r[2] == id)) {
@@ -191,7 +191,14 @@ int SmartServoClass::regRead(byte id, char name)
 		else {
 			return _r[5];
 		}
-		
+	}
+	else if ((_r[0] == 0xF5) && (_r[1] == id)) {
+		if (com[1] == 2) {
+			return word(_r[4],_r[5]);
+		}
+		else {
+			return _r[4];
+		}
 	}
 	else {
 		return -1;

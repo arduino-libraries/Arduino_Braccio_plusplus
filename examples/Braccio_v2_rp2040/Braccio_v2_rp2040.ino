@@ -16,7 +16,7 @@
 #include <WiFiNINA.h>
 #endif
 
-class PD_UFP_c PD_UFP;
+class PD_UFP_log_c PD_UFP;
 TCA6424A expander(TCA6424A_ADDRESS_ADDR_HIGH);
 Backlight bl;
 Adafruit_ST7789 display = Adafruit_ST7789(&SPI, 10, 9, -1);
@@ -38,10 +38,15 @@ int button_enter_status = -1;
 RS485Class serial485(Serial1, 0, 7, 8); // TX, DE, RE
 SmartServoClass servos(serial485);
 
+rtos::Mutex mutex;
+
 void setup() {
   Serial.begin(115200);
   //while (!Serial);
   Wire.begin();
+
+  pinMode(6, OUTPUT);
+
   PD_UFP.init_PPS(PPS_V(6.5), PPS_A(2.0));
 
 #ifdef __MBED__
@@ -50,7 +55,10 @@ void setup() {
 #endif
 
   while (!PD_UFP.is_PPS_ready()) {
-    delay(10);
+    mutex.lock();
+    PD_UFP.print_status(Serial);
+    PD_UFP.set_PPS(PPS_V(6.5), PPS_A(2.0));
+    mutex.unlock();
   }
 
   pinMode(1, INPUT_PULLUP);
@@ -79,6 +87,9 @@ void setup() {
 
   expander.setPinDirection(10, 0);
   expander.writePin(10, 0);
+
+  expander.setPinDirection(23, 0);
+  expander.writePin(23, 0);
 }
 
 void drawArduino(uint16_t color) {
@@ -88,7 +99,9 @@ void drawArduino(uint16_t color) {
 
 void pd_thread() {
   while (1) {
+    mutex.lock();
     PD_UFP.run();
+    mutex.unlock();
     delay(10);
     if (PD_UFP.is_power_ready() && PD_UFP.is_PPS_ready()) {
       Serial.println("error");
@@ -99,6 +112,8 @@ void pd_thread() {
 
 int count_total = 0;
 int lost = 0;
+
+uint32_t uart_error = 0;
 
 void loop() {
 
@@ -135,24 +150,37 @@ void loop() {
     Serial.println("button_enter_status: " + String(button_enter_status));
   }
 
+  if (uart_error) {
+    Serial.println(uart_error, HEX);
+    uart_error = 0;
+  }
+
+  //Serial.println("Motor test");
   for (int i = 0; i < 10; i++) {
     if (servos.ping(i) != -1) {
       //Serial.println("Motor " + String(i) + " connected");
       //servos.goTo(i, random(4096), 100);
     } else {
-      if (i == 5) {
+      if (i == 1) {
         lost++;
       }
     }
 
-    if (i == 5) {
+    if (i == 1) {
       count_total++;
+      if (count_total % 100 == 0) {
+        Serial.println("Lost " + String(lost) + " out of " + String(count_total));
+      }
     }
-
-    if (count_total % 100 == 0) {
-      Serial.println("Lost " + String(lost) + " out of " + String(count_total));
-    }
-
     //delay(10);
   }
+}
+
+extern "C" void error_cb_uart(uint32_t ret) {
+  uart_error = ret;
+}
+
+extern "C" void do_something_irq() {
+  digitalWrite(6, HIGH);
+  digitalWrite(6, LOW);
 }
