@@ -38,6 +38,8 @@ void SmartServoClass::_tx(byte id, byte len, byte cmd, byte *prms) {
 		csum -= prms[i];
 	}
 
+	mutex.lock();
+
 	_serial->noReceive();
 	for (uint8_t i=0; i<38; i++) {
 		_r[i] = 0;
@@ -54,11 +56,15 @@ void SmartServoClass::_tx(byte id, byte len, byte cmd, byte *prms) {
 	_serial->write(csum);
 	_serial->endTransmission();
 	_serial->receive();
+
+	mutex.unlock();
 }
 
 void SmartServoClass::_rx(){
 
 	uint8_t i = 0;
+
+	mutex.lock();
 
 	while (_serial->available()) {
 		uint8_t c = _serial->read();
@@ -73,13 +79,17 @@ void SmartServoClass::_rx(){
 	if (i!=0) {
 		//Serial.println();
 	}
+
+	mutex.unlock();
 }
 
 
-int8_t SmartServoClass::ping(uint8_t id)
+bool SmartServoClass::ping(uint8_t id)
 {
 	uint8_t csum; //calc chk sum
 	csum = 0xFF - id - 0x02 - 0x01;
+
+	mutex.lock();
 
 	_serial->noReceive();
 	_serial->beginTransmission();
@@ -96,20 +106,16 @@ int8_t SmartServoClass::ping(uint8_t id)
 
 	_rx();
 
+	bool res = false;
+
 	if (((_r[1] == 0xF5) && (_r[2] == id)) || ((_r[0] == 0xF5) && (_r[1] == id))) {
-		return _r[4];
-		//implementare diversi stati di risposta? (caldo, troppa coppia...)
+		res = true;
 	}
-	else {
-		if (id == 1) {
-			for (int i = 0; i < 5; i++) {
-				Serial.print(_r[i], HEX);
-				Serial.print(" ");
-			}
-			Serial.println();
-		}
-		return -1;
-	}
+
+	memset(_r, 0, sizeof(_r));
+	mutex.unlock();
+
+	return res;
 }
 
 void SmartServoClass::setLimitAngle(byte id, uint16_t min, uint16_t max)

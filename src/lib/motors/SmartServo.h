@@ -9,6 +9,7 @@
 
 #include "Arduino.h"
 #include "ArduinoRS485.h"
+#include "rtos.h"
 
 class SmartServoClass
 {
@@ -18,7 +19,7 @@ class SmartServoClass
 
     void begin();
     void setID(byte id);
-    int8_t ping(byte id);
+    bool ping(byte id);
     void setLimitAngle(byte id, uint16_t min, uint16_t max);
     void setTorque(byte id, uint16_t torque);
     void hold(byte id, bool state);
@@ -35,7 +36,7 @@ class SmartServoClass
     byte _r[38];
 
     RS485Class* _serial;
-
+    rtos::Mutex mutex;
 };
 
 #endif
