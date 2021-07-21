@@ -38,7 +38,9 @@ int button_enter_status = -1;
 RS485Class serial485(Serial1, 0, 7, 8); // TX, DE, RE
 SmartServoClass servos(serial485);
 
-rtos::Mutex mutex;
+bool connected[8];
+
+rtos::Mutex pd_mutex;
 
 void setup() {
   Serial.begin(115200);
@@ -55,10 +57,10 @@ void setup() {
 #endif
 
   while (!PD_UFP.is_PPS_ready()) {
-    mutex.lock();
+    pd_mutex.lock();
     PD_UFP.print_status(Serial);
     PD_UFP.set_PPS(PPS_V(6.5), PPS_A(2.0));
-    mutex.unlock();
+    pd_mutex.unlock();
   }
 
   pinMode(1, INPUT_PULLUP);
@@ -82,14 +84,18 @@ void setup() {
   pinMode(JOYSTICK_OK, INPUT_PULLUP);
   pinMode(BUTTON_ENTER, INPUT_PULLUP);
 
-  expander.setPinDirection(5, 0);
-  expander.writePin(5, 0);
+  for (int i = 0; i < 14; i++) {
+    expander.setPinDirection(i, 0);
+  }
 
-  expander.setPinDirection(10, 0);
-  expander.writePin(10, 0);
+  // Disable termination
+  // expander.setPinDirection(19, 0); // P23 = 8 * 2 + 3
+  // expander.writePin(19, 0);
 
-  expander.setPinDirection(23, 0);
-  expander.writePin(23, 0);
+#ifdef __MBED__
+  static rtos::Thread connected_th;
+  connected_th.start(motors_connected_thread);
+#endif
 }
 
 void drawArduino(uint16_t color) {
@@ -97,16 +103,43 @@ void drawArduino(uint16_t color) {
   display.drawBitmap(48, 145, ArduinoText, 144, 23, color);
 }
 
+void setGreen(int i) {
+  expander.writePin(i * 2 - 1, 0);
+  expander.writePin(i * 2 - 2, 1);
+}
+
+void setRed(int i) {
+  expander.writePin(i * 2 - 1, 1);
+  expander.writePin(i * 2 - 2, 0);
+}
+
 void pd_thread() {
   while (1) {
-    mutex.lock();
+    pd_mutex.lock();
     PD_UFP.run();
-    mutex.unlock();
+    pd_mutex.unlock();
     delay(10);
     if (PD_UFP.is_power_ready() && PD_UFP.is_PPS_ready()) {
       Serial.println("error");
       while (1) {}
     }
+  }
+}
+
+void motors_connected_thread() {
+  while (1) {
+    for (int i = 1; i < 8; i++) {
+      Serial.println("Ping motor " + String(i));
+      connected[i] = servos.ping(i);
+      pd_mutex.lock();
+      if (connected[i] == true) {
+        setGreen(i);
+      } else {
+        setRed(i);
+      }
+      pd_mutex.unlock();
+    }
+    delay(1000);
   }
 }
 
@@ -155,25 +188,17 @@ void loop() {
     uart_error = 0;
   }
 
-  //Serial.println("Motor test");
-  for (int i = 0; i < 10; i++) {
-    if (servos.ping(i) != -1) {
-      //Serial.println("Motor " + String(i) + " connected");
-      //servos.goTo(i, random(4096), 100);
-    } else {
-      if (i == 1) {
-        lost++;
-      }
+  for (int i = 0; i < 7; i++) {
+    if (connected[i] == false) {
+      continue;
     }
-
-    if (i == 1) {
-      count_total++;
-      if (count_total % 100 == 0) {
-        Serial.println("Lost " + String(lost) + " out of " + String(count_total));
-      }
-    }
-    //delay(10);
+    int position = servos.regRead(i, 'p');
+    Serial.print("Servo ");
+    Serial.print(i);
+    Serial.print(" at ");
+    Serial.println(position);
   }
+
 }
 
 extern "C" void error_cb_uart(uint32_t ret) {
