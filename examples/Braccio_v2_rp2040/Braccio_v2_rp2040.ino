@@ -49,7 +49,7 @@ void setup() {
 
   pinMode(6, OUTPUT);
 
-  PD_UFP.init_PPS(PPS_V(6.5), PPS_A(2.0));
+  PD_UFP.init_PPS(PPS_V(6.0), PPS_A(2.0));
 
 #ifdef __MBED__
   static rtos::Thread th;
@@ -59,7 +59,7 @@ void setup() {
   while (!PD_UFP.is_PPS_ready()) {
     pd_mutex.lock();
     PD_UFP.print_status(Serial);
-    PD_UFP.set_PPS(PPS_V(6.5), PPS_A(2.0));
+    PD_UFP.set_PPS(PPS_V(6.0), PPS_A(2.0));
     pd_mutex.unlock();
   }
 
@@ -88,9 +88,18 @@ void setup() {
     expander.setPinDirection(i, 0);
   }
 
-  // Disable termination
-  // expander.setPinDirection(19, 0); // P23 = 8 * 2 + 3
-  // expander.writePin(19, 0);
+  for (int i = 1; i < 7; i++) {
+    servos.hold(i, false);
+    delay(100);
+  }
+
+  // Set SLEW to low
+  expander.setPinDirection(21, 0); // P25 = 8 * 2 + 5
+  expander.writePin(21, 0);
+
+  // Set TERM to HIGH (default)
+  expander.setPinDirection(19, 0); // P23 = 8 * 2 + 3
+  expander.writePin(19, 1);
 
 #ifdef __MBED__
   static rtos::Thread connected_th;
@@ -129,8 +138,8 @@ void pd_thread() {
 void motors_connected_thread() {
   while (1) {
     for (int i = 1; i < 8; i++) {
-      Serial.println("Ping motor " + String(i));
       connected[i] = servos.ping(i);
+      delay(100);
       pd_mutex.lock();
       if (connected[i] == true) {
         setGreen(i);
@@ -174,6 +183,7 @@ void loop() {
     joystick_down_status = digitalRead(JOYSTICK_DOWN);
     Serial.println("joystick_down_status: " + String(joystick_down_status));
   }
+
   if (abs(joystick_ok_status - analogRead(JOYSTICK_OK)) > 200) {
     joystick_ok_status = analogRead(JOYSTICK_OK);
     Serial.println("joystick_ok_status: " + String(joystick_ok_status));
@@ -188,17 +198,18 @@ void loop() {
     uart_error = 0;
   }
 
-  for (int i = 0; i < 7; i++) {
+  for (int i = 1; i < 7; i++) {
     if (connected[i] == false) {
       continue;
     }
     int position = servos.regRead(i, 'p');
+    delay(10);
     Serial.print("Servo ");
     Serial.print(i);
     Serial.print(" at ");
     Serial.println(position);
   }
-
+  delay(100);
 }
 
 extern "C" void error_cb_uart(uint32_t ret) {

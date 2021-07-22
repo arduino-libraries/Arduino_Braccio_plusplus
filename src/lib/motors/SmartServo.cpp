@@ -20,8 +20,8 @@ SmartServoClass::SmartServoClass(RS485Class& serial) :
 }
 
 void SmartServoClass::begin() {
-	_serial->begin(115200, 0, 175);
-	_serial->noReceive();
+	_serial->begin(115200, 100, 100);
+	_serial->receive();
 }
 
 void SmartServoClass::setID(byte id)
@@ -30,7 +30,7 @@ void SmartServoClass::setID(byte id)
 	_tx(0xFE,0x04,0x03,pp);
 }
 
-void SmartServoClass::_tx(byte id, byte len, byte cmd, byte *prms) {
+int SmartServoClass::_tx(byte id, byte len, byte cmd, byte *prms) {
 	
 	uint8_t csum; //calc chk sum
 	csum = 0xFF - id - len - cmd;
@@ -38,9 +38,6 @@ void SmartServoClass::_tx(byte id, byte len, byte cmd, byte *prms) {
 		csum -= prms[i];
 	}
 
-	mutex.lock();
-
-	_serial->noReceive();
 	for (uint8_t i=0; i<38; i++) {
 		_r[i] = 0;
 	}
@@ -55,32 +52,31 @@ void SmartServoClass::_tx(byte id, byte len, byte cmd, byte *prms) {
 	}
 	_serial->write(csum);
 	_serial->endTransmission();
-	_serial->receive();
 
-	mutex.unlock();
+	return len + 4;
 }
 
-void SmartServoClass::_rx(){
+void SmartServoClass::_rx(int len){
 
 	uint8_t i = 0;
 
-	mutex.lock();
+	while (_serial->available() < 5) {
+		yield();
+	}
 
 	while (_serial->available()) {
 		uint8_t c = _serial->read();
-		if (i == 0 && c == 0) {
-			continue;
+		Serial.print(c, HEX);
+		Serial.print(" ");
+		delay(1);
+		if (i >= len) {
+			_r[i - len] = c;
 		}
-		//Serial.print(c, HEX);
-		//Serial.print(" ");
-		_r[i] = c;
 		i++;
 	}
-	if (i!=0) {
-		//Serial.println();
+	if (i != 0) {
+		Serial.println();
 	}
-
-	mutex.unlock();
 }
 
 
@@ -91,7 +87,6 @@ bool SmartServoClass::ping(uint8_t id)
 
 	mutex.lock();
 
-	_serial->noReceive();
 	_serial->beginTransmission();
 	_serial->	write(0xFF);
 	_serial->	write(0xFF);
@@ -100,11 +95,8 @@ bool SmartServoClass::ping(uint8_t id)
 	_serial->	write(0x01);
 	_serial->	write(csum);
 	_serial->endTransmission();
-	_serial->receive();
 
-	delayMicroseconds(800);
-
-	_rx();
+	_rx(6);
 
 	bool res = false;
 
@@ -113,6 +105,7 @@ bool SmartServoClass::ping(uint8_t id)
 	}
 
 	memset(_r, 0, sizeof(_r));
+
 	mutex.unlock();
 
 	return res;
@@ -122,6 +115,8 @@ void SmartServoClass::setLimitAngle(byte id, uint16_t min, uint16_t max)
 {
 
 	byte com[2];
+
+	mutex.lock();
 
 	com[0] = 0x09;
 	com[1] = highByte(min);
@@ -140,11 +135,14 @@ void SmartServoClass::setLimitAngle(byte id, uint16_t min, uint16_t max)
 	com[1] = lowByte(max);
 	_tx(id,0x04,0x03,com);
 
+	mutex.unlock();
 }
 
 void SmartServoClass::setTorque(byte id, uint16_t torque)
 {
 	byte com[2];
+
+	mutex.lock();
 
 	com[0] = 0x10;
 	com[1] = highByte(torque);
@@ -153,17 +151,24 @@ void SmartServoClass::setTorque(byte id, uint16_t torque)
 	com[0] = 0x11;
 	com[1] = lowByte(torque);
 	_tx(id,0x04,0x03,com);
+
+	mutex.unlock();
 }
 
 void SmartServoClass::hold(byte id, bool state) {
 	byte pp[2] = {0x28,state};
 	
+	mutex.lock();
+
 	_tx(id,0x04,0x03,pp);
+	mutex.unlock();
 }
 
 void SmartServoClass::goTo(byte id, uint16_t angle, uint16_t tempo)
 {
 	byte cmd[5];
+
+	mutex.lock();
 
 	cmd[0] = 0x2a;
 	cmd[1] = highByte(angle);
@@ -172,12 +177,16 @@ void SmartServoClass::goTo(byte id, uint16_t angle, uint16_t tempo)
 	cmd[4] = lowByte(tempo);
 
 	_tx(id,0x07,0x03,cmd);
+
+	mutex.unlock();
 }
 
 int SmartServoClass::regRead(byte id, char name)
 {
 
 	byte com[2];
+
+	mutex.lock();
 
 	for (uint8_t i = 0; i<11; i++) {
 		if (name == regName[i]) {
@@ -186,9 +195,10 @@ int SmartServoClass::regRead(byte id, char name)
 		}
 	}
 
-	_tx(id,0x04,0x02,com);
-	delayMicroseconds(800);
-	_rx();
+	int len = _tx(id,0x04,0x02,com);
+	_rx(len);
+
+	mutex.unlock();
 
 	if ((_r[1] == 0xF5) && (_r[2] == id)) {
 		if (com[1] == 2) {
@@ -196,14 +206,6 @@ int SmartServoClass::regRead(byte id, char name)
 		}
 		else {
 			return _r[5];
-		}
-	}
-	else if ((_r[0] == 0xF5) && (_r[1] == id)) {
-		if (com[1] == 2) {
-			return word(_r[4],_r[5]);
-		}
-		else {
-			return _r[4];
 		}
 	}
 	else {
@@ -215,6 +217,8 @@ void SmartServoClass::regWrite(byte id, char name, uint16_t value)
 {
 	byte com[3];
 	uint8_t len;
+
+	mutex.lock();
 
 	for (uint8_t i = 0; i<11; i++) {
 		if (name == regName[i]) {
@@ -231,4 +235,6 @@ void SmartServoClass::regWrite(byte id, char name, uint16_t value)
 	}
 
 	_tx(id,3+len,0x03,com);
+
+	mutex.unlock();
 }

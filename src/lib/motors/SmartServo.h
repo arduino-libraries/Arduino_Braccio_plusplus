@@ -29,11 +29,11 @@ class SmartServoClass
     int regRead(byte id, char name);
     void regWrite(byte id, char name, uint16_t value);
 
-    void _tx(byte id, byte len, byte cmd, byte *prms);
-    void _rx();
+    int _tx(byte id, byte len, byte cmd, byte *prms);
+    void _rx(int len);
 
   private:
-    byte _r[38];
+    byte _r[400];
 
     RS485Class* _serial;
     rtos::Mutex mutex;
