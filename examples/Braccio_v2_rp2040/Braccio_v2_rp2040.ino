@@ -4,7 +4,7 @@
 #include "lib/ioexpander/TCA6424A.h"
 #include "lib/display/Backlight.h"
 #include "lib/motors/SmartServo.h"
-
+#include "drivers/Ticker.h"
 
 //Display
 #include <Adafruit_GFX.h>    // Core graphics library
@@ -16,7 +16,7 @@
 #include <WiFiNINA.h>
 #endif
 
-class PD_UFP_log_c PD_UFP;
+class PD_UFP_c PD_UFP;
 TCA6424A expander(TCA6424A_ADDRESS_ADDR_HIGH);
 Backlight bl;
 Adafruit_ST7789 display = Adafruit_ST7789(&SPI, 10, 9, -1);
@@ -36,11 +36,18 @@ int joystick_ok_status = -1;
 int button_enter_status = -1;
 
 RS485Class serial485(Serial1, 0, 7, 8); // TX, DE, RE
-SmartServoClass servos(serial485);
+SmartServoClass<6> servos(serial485);
+
 
 bool connected[8];
 
+rtos::EventFlags pd_events;
 rtos::Mutex pd_mutex;
+mbed::Ticker pd_timer;
+
+void unlock_pd_semaphore() {
+  pd_events.set(1);
+}
 
 void setup() {
   Serial.begin(115200);
@@ -49,17 +56,19 @@ void setup() {
 
   pinMode(6, OUTPUT);
 
-  PD_UFP.init_PPS(PPS_V(6.0), PPS_A(2.0));
+  PD_UFP.init_PPS(PPS_V(7.2), PPS_A(2.0));
 
 #ifdef __MBED__
   static rtos::Thread th;
   th.start(pd_thread);
+  attachInterrupt(PIN_FUSB302_INT, unlock_pd_semaphore, FALLING);
+  pd_timer.attach(unlock_pd_semaphore, 0.06f);
 #endif
 
   while (!PD_UFP.is_PPS_ready()) {
     pd_mutex.lock();
-    PD_UFP.print_status(Serial);
-    PD_UFP.set_PPS(PPS_V(6.0), PPS_A(2.0));
+    //PD_UFP.print_status(Serial);
+    PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
     pd_mutex.unlock();
   }
 
@@ -89,8 +98,8 @@ void setup() {
   }
 
   for (int i = 1; i < 7; i++) {
-    servos.hold(i, false);
-    delay(100);
+    //servos.hold(i, false);
+    //delay(100);
   }
 
   // Set SLEW to low
@@ -124,10 +133,10 @@ void setRed(int i) {
 
 void pd_thread() {
   while (1) {
+    pd_events.wait_any(0xFF);
     pd_mutex.lock();
     PD_UFP.run();
     pd_mutex.unlock();
-    delay(10);
     if (PD_UFP.is_power_ready() && PD_UFP.is_PPS_ready()) {
       Serial.println("error");
       while (1) {}
@@ -137,11 +146,12 @@ void pd_thread() {
 
 void motors_connected_thread() {
   while (1) {
-    for (int i = 1; i < 8; i++) {
-      connected[i] = servos.ping(i);
-      delay(100);
+    for (int i = 1; i < 7; i++) {
+      connected[i] = (servos.ping(i) == 0);
+      Serial.print(String(i) + ": ");
+      Serial.println(connected[i]);
       pd_mutex.lock();
-      if (connected[i] == true) {
+      if (connected[i]) {
         setGreen(i);
       } else {
         setRed(i);
@@ -202,7 +212,8 @@ void loop() {
     if (connected[i] == false) {
       continue;
     }
-    int position = servos.regRead(i, 'p');
+    //int position = servos.regRead(i, 'p');
+    float position = servos.getPosition(i);
     delay(10);
     Serial.print("Servo ");
     Serial.print(i);

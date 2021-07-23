@@ -10,7 +10,7 @@ class PD_UFP_log_c PD_UFP;
 TCA6424A expander(TCA6424A_ADDRESS_ADDR_HIGH);
 
 RS485Class serial485(Serial1, 0, 7, 8); // TX, DE, RE
-SmartServoClass servos(serial485);
+SmartServoClass<7> servos(serial485);
 
 rtos::Mutex pd_mutex;
 
@@ -20,40 +20,32 @@ void setup() {
   Serial.begin(115200);
   while (!Serial);
 
-  Serial.println("Write the ID you want to use for this motor:");
-  String ret = "";
-  do {
-    ret = Serial.readStringUntil('\n');
-  } while (ret == "");
-
-  int selected = ret.toInt();
-
-  Serial.println("Writing ID " + String(selected));
-
   pinMode(6, OUTPUT);
 
-/*
-  PD_UFP.init_PPS(PPS_V(6.5), PPS_A(2.0));
+  /*
+    PD_UFP.init_PPS(PPS_V(6.5), PPS_A(2.0));
 
-#ifdef __MBED__
-  static rtos::Thread th;
-  th.start(pd_thread);
-#endif
+    #ifdef __MBED__
+    static rtos::Thread th;
+    th.start(pd_thread);
+    #endif
 
-  while (!PD_UFP.is_PPS_ready()) {
-    pd_mutex.lock();
-    PD_UFP.print_status(Serial);
-    PD_UFP.set_PPS(PPS_V(6.5), PPS_A(2.0));
-    pd_mutex.unlock();
-  }
-*/
+    while (!PD_UFP.is_PPS_ready()) {
+      pd_mutex.lock();
+      PD_UFP.print_status(Serial);
+      PD_UFP.set_PPS(PPS_V(6.5), PPS_A(2.0));
+      pd_mutex.unlock();
+    }
+  */
 
   for (int i = 0; i < 14; i++) {
     expander.setPinDirection(i, 0);
   }
 
   servos.begin();
-  servos.setID(selected);
+
+  static rtos::Thread th;
+  th.start(connected_thd);
 }
 
 void pd_thread() {
@@ -69,6 +61,20 @@ void pd_thread() {
   }
 }
 
+void connected_thd() {
+  while (1) {
+    for (int i = 1; i < 8; i++) {
+      bool connected = (servos.ping(i) == 0);
+      if (connected == true) {
+        setGreen(i);
+      } else {
+        setRed(i);
+      }
+    }
+    delay(1000);
+  }
+}
+
 void setGreen(int i) {
   expander.writePin(i * 2 - 1, 0);
   expander.writePin(i * 2 - 2, 1);
@@ -80,13 +86,14 @@ void setRed(int i) {
 }
 
 void loop() {
-  for (int i = 1; i < 8; i++) {
-    bool connected = servos.ping(i);
-    if (connected == true) {
-      setGreen(i);
-    } else {
-      setRed(i);
-    }
-  }
-  delay(1000);
+  Serial.println("Write the ID you want to use for this motor:");
+  String ret = "";
+  do {
+    ret = Serial.readStringUntil('\n');
+  } while (ret == "");
+
+  int selected = ret.toInt();
+
+  Serial.println("Writing ID " + String(selected));
+  servos.setID(selected);
 }

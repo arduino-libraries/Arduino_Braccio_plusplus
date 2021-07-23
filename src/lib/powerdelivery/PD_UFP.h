@@ -22,6 +22,8 @@
 #include <Wire.h>
 #include <HardwareSerial.h>
 
+#define PIN_FUSB302_INT         A2
+
 extern "C" {
     #include "FUSB302_UFP.h"
     #include "PD_UFP_Protocol.h"

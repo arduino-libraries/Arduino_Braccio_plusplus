@@ -1,0 +1,267 @@
+#include <Arduino.h>
+
+template <int MAX_MOTORS> SmartServoClass<MAX_MOTORS>::SmartServoClass( RS485Class& RS485)  : _RS485(RS485) {}
+
+template <int MAX_MOTORS> int SmartServoClass<MAX_MOTORS>::calcChecksum() {
+  char csum =0xff-_txPacket.id-_txPacket.length-_txPacket.instruction;
+  int i=0;
+  for (i=0;(i<(_txPacket.length-2))&&(i<(MAX_TX_PAYLOAD_LEN-1));i++) {
+    csum -= _txPacket.payload[i];
+  }
+  _txPacket.payload[i]=csum;
+  return i+6;
+}
+
+template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::sendPacket()
+{
+  char *buffer = (char *) &_txPacket;
+  int len = calcChecksum();
+  _RS485.beginTransmission();
+  for (int i=0;i<len;i++) {
+    _RS485.write(*buffer++);
+  }
+  _RS485.endTransmission();
+}
+
+
+template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::writeCmd(uint8_t id,uint8_t instruction) {
+  _txPacket.id = id;
+  _txPacket.length = 2;
+  _txPacket.instruction = instruction;
+  sendPacket();
+}
+
+template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::writeByteCmd(uint8_t id,uint8_t address, uint8_t data) {
+  _txPacket.id = id;
+  _txPacket.length = 2+2;
+  _txPacket.instruction = OP_WRITE;
+  _txPacket.payload[0]=address;
+  _txPacket.payload[1]=data;
+  sendPacket();
+}
+
+template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::writeWordCmd(uint8_t id, uint8_t address, uint16_t data) {
+  _txPacket.id = id;
+  _txPacket.length = 2+3;
+  _txPacket.instruction = OP_WRITE;
+  _txPacket.payload[0]=address;
+  _txPacket.payload[1]=data>>8;
+  _txPacket.payload[2]=data;
+  sendPacket();
+}
+
+template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::receiveResponse() {
+  _rxLen=0;
+  _RS485.receive();
+  memset(_rxBuf, 0, sizeof(_rxBuf));
+  delayMicroseconds(300);
+  while (_RS485.available() && (_rxLen<MAX_RX_PAYLOAD_LEN)) {
+  	uint8_t c = _RS485.read();
+  	//Serial.print(c, HEX);
+  	//Serial.print(" ");
+    _rxBuf[_rxLen++]=c;
+    delayMicroseconds(2000);
+  }
+  //Serial.println();
+  _RS485.noReceive();
+}
+
+template <int MAX_MOTORS> uint16_t SmartServoClass<MAX_MOTORS>::readBuffer(uint8_t id, uint8_t address,uint8_t len) {
+  _txPacket.id = id;
+  _txPacket.length = 2+2;
+  _txPacket.instruction = OP_READ;
+  _txPacket.payload[0]=address;
+  _txPacket.payload[1]=len;
+  sendPacket();
+  receiveResponse();
+  if (_rxLen==(6+len) && 
+    _rxBuf[0]==0xff &&
+    _rxBuf[1]==0xf5 &&
+    _rxBuf[2]==id &&
+    _rxBuf[3]==len+2) {
+        
+    return 0;
+  }
+  return -1;
+}
+
+
+template <int MAX_MOTORS> uint16_t SmartServoClass<MAX_MOTORS>::readWordCmd(uint8_t id, uint8_t address) {
+  if (readBuffer(id,address,2)==0) {
+    return (_rxBuf[5]<<8)|_rxBuf[6];
+  }
+  return -1;
+}
+
+template <int MAX_MOTORS> uint8_t SmartServoClass<MAX_MOTORS>::readByteCmd(uint8_t id, uint8_t address) {
+  if (readBuffer(id,address,1)==0) {
+    return _rxBuf[5];
+  }
+  return -1;
+}
+
+template <int MAX_MOTORS> int SmartServoClass<MAX_MOTORS>::ping(uint8_t id) {
+  mutex.lock();
+  writeCmd(id, OP_PING);
+  // TODO: check return
+  receiveResponse();
+  if (_rxLen==6 && 
+    _rxBuf[0]==0xff &&
+    _rxBuf[1]==0xf5 &&
+    _rxBuf[2]==id &&
+    _rxBuf[3]==2) {
+
+  	mutex.unlock();
+    return _rxBuf[4];
+  }
+  mutex.unlock();
+  return -1;
+}
+
+template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::reset(uint8_t id) {
+  mutex.lock();
+  writeCmd(id, OP_RESET);
+  mutex.unlock();
+}
+
+template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::action(uint8_t id) {
+  mutex.lock();
+  writeCmd(id, OP_ACTION);
+  mutex.unlock();
+}
+
+template <int MAX_MOTORS> int SmartServoClass<MAX_MOTORS>::begin() {
+  if (_RS485) {
+    _txPacket.header[0] = 0xff;
+    _txPacket.header[1] = 0xff;
+    _RS485.begin(115200,0, 80);
+    writeByteCmd(BROADCAST,SERVO_MOTOR_MODE,1);
+    writeByteCmd(BROADCAST,TORQUE_SWITCH,1);
+    _positionMode = pmIMMEDIATE;
+    return 0;
+  } else {
+    return -1;
+  }
+}
+
+template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::setPositionMode(SmartServoClass<MAX_MOTORS>::positionMode mode) {
+  _positionMode = mode;
+}
+
+template <int MAX_MOTORS> uint16_t SmartServoClass<MAX_MOTORS>::angleToPosition (float angle) {
+  return (180.0+angle)/360.0*MAX_POSITION;
+}
+
+template <int MAX_MOTORS> float SmartServoClass<MAX_MOTORS>::positionToAngle (uint16_t position) {
+  return (360.0*position)/MAX_POSITION-180.0;
+}
+
+template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::setPosition(uint8_t id, float angle, uint16_t speed) {
+  mutex.lock();
+  if (id<MAX_MOTORS) {
+    _targetPosition[id] = angleToPosition(angle);
+    _targetSpeed[id] = speed;
+    if (_positionMode==pmIMMEDIATE) {
+      writeWordCmd(id,TARGET_POSITION_H,angleToPosition(angle));
+    }
+  }  
+  mutex.unlock();
+}
+
+template <int MAX_MOTORS> float SmartServoClass<MAX_MOTORS>::getPosition(uint8_t id) {
+  mutex.lock();
+  float ret = -1;
+  if (id<MAX_MOTORS) {
+    ret = positionToAngle(readWordCmd(id,POSITION_H));
+  }
+  mutex.unlock();
+  return ret;
+}
+
+template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::synchronize() {
+  mutex.lock();
+  _txPacket.id = 0xFE;
+  _txPacket.length = (4+1)*MAX_MOTORS +4;
+  _txPacket.instruction = OP_SYNC_WRITE;
+  _txPacket.payload[0] = TARGET_POSITION_H;
+  _txPacket.payload[1] = 4;
+  int index = 2;
+  
+  for (int i=0;i<MAX_MOTORS;i++) {
+    _txPacket.payload[index++] = i+1;
+    _txPacket.payload[index++] = _targetPosition[i] >>8;
+    _txPacket.payload[index++] = _targetPosition[i];
+    _txPacket.payload[index++] = _targetSpeed[i]>>8;
+    _txPacket.payload[index++] = _targetSpeed[i];
+  }
+  sendPacket();
+  mutex.unlock();
+}
+
+template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setTorque(bool torque) {
+  mutex.lock();
+  writeByteCmd(BROADCAST,TORQUE_SWITCH,torque ? 1 : 0);
+  mutex.unlock();
+}
+
+template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setTorque(uint8_t id, bool torque) {
+  mutex.lock();
+  writeByteCmd(id,TORQUE_SWITCH,torque ? 1 : 0);
+  mutex.unlock();
+}
+
+template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setMaxTorque(uint16_t torque) {
+  mutex.lock();
+  writeWordCmd(BROADCAST,MAX_TORQUE_H,torque );
+  mutex.unlock();
+}
+
+template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setMaxTorque(uint8_t id, uint16_t torque) {
+  mutex.lock();
+  writeWordCmd(id+1,MAX_TORQUE_H,torque );
+  mutex.unlock();
+}
+
+template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setID(uint8_t id) {
+  mutex.lock();
+  writeByteCmd(BROADCAST,ID,id);
+  mutex.unlock();
+}
+
+template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::engage(uint8_t id) {
+  mutex.lock();
+  writeWordCmd(id,TORQUE_SWITCH, 0xFF);
+  mutex.unlock();
+}
+
+template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::disengage(uint8_t id) {
+  mutex.lock();
+  writeWordCmd(id,TORQUE_SWITCH, 0);
+  mutex.unlock();
+}
+
+template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setStallProtectionTime(uint8_t time) {
+  mutex.lock();
+  writeByteCmd(BROADCAST,STALL_PROTECTION_TIME,time);
+  mutex.unlock();
+}
+
+template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setStallProtectionTime(uint8_t id, uint8_t time) {
+  writeByteCmd(id,STALL_PROTECTION_TIME,time);
+}
+
+template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setMinAngle(float angle) {
+  writeByteCmd(BROADCAST,MIN_ANGLE_LIMIT_H,angleToPosition(angle));
+}
+
+template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setMinAngle(uint8_t id, float angle) {
+  writeByteCmd(id,MIN_ANGLE_LIMIT_H,angleToPosition(angle));
+}
+
+template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setMaxAngle(float angle) {
+  writeByteCmd(BROADCAST,MAX_ANGLE_LIMIT_H,angleToPosition(angle));
+}
+
+template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setMaxAngle(uint8_t id, float angle) {
+  writeByteCmd(id,MAX_ANGLE_LIMIT_H,angleToPosition(angle));
+}

@@ -23,8 +23,6 @@
 #define t_RequestToPSReady      580     // combine t_SenderResponse and t_PSTransition
 #define t_PPSRequest            5000    // must less than 10000 (10s)
 
-#define PIN_FUSB302_INT         A2
-
 enum {
     STATUS_LOG_MSG_TX,
     STATUS_LOG_MSG_RX,
