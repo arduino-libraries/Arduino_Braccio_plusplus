@@ -36,7 +36,7 @@ int joystick_ok_status = -1;
 int button_enter_status = -1;
 
 RS485Class serial485(Serial1, 0, 7, 8); // TX, DE, RE
-SmartServoClass<6> servos(serial485);
+SmartServoClass<7> servos(serial485);
 
 
 bool connected[8];
@@ -49,10 +49,16 @@ void unlock_pd_semaphore() {
   pd_events.set(1);
 }
 
+void onErrors() {
+  Serial.println("got error");
+}
+
 void setup() {
   Serial.begin(115200);
   //while (!Serial);
   Wire.begin();
+
+  Serial.println("start");
 
   pinMode(6, OUTPUT);
 
@@ -81,6 +87,7 @@ void setup() {
   int ret = expander.testConnection();
 
   servos.begin();
+  servos.setPositionMode(pmSYNC);
 
   display.init(240, 240);
   display.setRotation(2);
@@ -92,6 +99,8 @@ void setup() {
   pinMode(JOYSTICK_UP, INPUT_PULLUP);
   pinMode(JOYSTICK_OK, INPUT_PULLUP);
   pinMode(BUTTON_ENTER, INPUT_PULLUP);
+
+  servos.onErrorCb(onErrors);
 
   for (int i = 0; i < 14; i++) {
     expander.setPinDirection(i, 0);
@@ -144,28 +153,44 @@ void pd_thread() {
   }
 }
 
-void motors_connected_thread() {
-  while (1) {
-    for (int i = 1; i < 7; i++) {
-      connected[i] = (servos.ping(i) == 0);
-      Serial.print(String(i) + ": ");
-      Serial.println(connected[i]);
-      pd_mutex.lock();
-      if (connected[i]) {
-        setGreen(i);
-      } else {
-        setRed(i);
-      }
-      pd_mutex.unlock();
-    }
-    delay(1000);
-  }
-}
+uint32_t uart_error = 0;
+
+enum learn_situation {
+  DISENGAGE,
+  ENGAGE,
+  LEARN,
+  REPLAY,
+  WAIT
+};
+
+int learn_index = 0;
+int learn_index_max = 0;
+int learn_mode = WAIT;
 
 int count_total = 0;
 int lost = 0;
 
-uint32_t uart_error = 0;
+float movement[1000][6];
+
+void motors_connected_thread() {
+  while (1) {
+    if (learn_mode == WAIT) {
+      for (int i = 1; i < 7; i++) {
+        connected[i] = (servos.ping(i) == 0);
+        Serial.print(String(i) + ": ");
+        Serial.println(connected[i]);
+        pd_mutex.lock();
+        if (connected[i]) {
+          setGreen(i);
+        } else {
+          setRed(i);
+        }
+        pd_mutex.unlock();
+      }
+    }
+    delay(1000);
+  }
+}
 
 void loop() {
 
@@ -176,6 +201,19 @@ void loop() {
     while (1) {}
   }
 #endif
+
+  if (Serial.available()) {
+    int action = Serial.read();
+    if (action == 'W') {
+        learn_mode = WAIT;
+    }
+    if (action == 'E') {
+        learn_mode = ENGAGE;
+    }
+    if (action == 'D') {
+        learn_mode = DISENGAGE;
+    }
+  }
 
   if (joystick_left_status != digitalRead(JOYSTICK_LEFT)) {
     joystick_left_status = digitalRead(JOYSTICK_LEFT);
@@ -203,22 +241,58 @@ void loop() {
     Serial.println("button_enter_status: " + String(button_enter_status));
   }
 
-  if (uart_error) {
-    Serial.println(uart_error, HEX);
-    uart_error = 0;
+  if (learn_mode == DISENGAGE) {
+    Serial.println("Learn mode enabled");
+    servos.setTorque(false);
+  } 
+
+  if (learn_mode == ENGAGE) {
+    Serial.println("Replay mode enabled");
+    servos.setTorque(true);
   }
 
   for (int i = 1; i < 7; i++) {
-    if (connected[i] == false) {
-      continue;
+    /*
+        if (connected[i] == false || (learn_index > sizeof(movement) / sizeof(float))) {
+          continue;
+        }
+    */
+    switch (learn_mode) {
+      /*
+                  case DISENGAGE:
+                    servos.disengage(i);
+                    break;
+      */
+      case ENGAGE:
+        servos.setTime(i, 100);
+        break;
+      case REPLAY:
+        if (learn_index < learn_index_max) {
+          servos.setPosition(i, movement[learn_index][i - 1], 0);
+        }
+        break;
+      case LEARN:
+        if (learn_index < 1000) {
+          movement[learn_index][i - 1] = servos.getPosition(i);
+        }
+        break;
     }
-    //int position = servos.regRead(i, 'p');
-    float position = servos.getPosition(i);
-    delay(10);
-    Serial.print("Servo ");
-    Serial.print(i);
-    Serial.print(" at ");
-    Serial.println(position);
+  }
+
+  if (learn_mode == DISENGAGE) {
+    learn_mode = LEARN;
+    learn_index = 0;
+  }
+  if (learn_mode == ENGAGE) {
+    learn_mode = REPLAY;
+    learn_index_max = learn_index;
+    learn_index = 0;
+  }
+  if (learn_mode == LEARN || learn_mode == REPLAY) {
+    learn_index++;
+  }
+  if (learn_mode == REPLAY) {
+    servos.synchronize();
   }
   delay(100);
 }

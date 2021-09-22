@@ -4,21 +4,21 @@
 #include <Arduino.h>
 #include "ArduinoRS485.h"
 
+typedef enum {
+  pmIMMEDIATE,
+  pmSYNC
+} positionMode;
+
 template <int MAX_MOTORS>
 class SmartServoClass
 {
 public:
   
-  typedef enum {
-    pmIMMEDIATE,
-    pmSYNC
-  } positionMode;
-
   SmartServoClass( RS485Class& RS485);
 
   int begin();
   void end();
-  void setPositionMode(SmartServoClass<MAX_MOTORS>::positionMode mode);
+  void setPositionMode(positionMode mode);
 
   void setPosition(uint8_t id, float angle, uint16_t speed);
 
@@ -52,9 +52,19 @@ public:
 
   void setMaxAngle(uint8_t id, float angle);
 
+  void setTime(uint8_t id, uint16_t time);
+
   int ping(uint8_t id);
 
   void reset(uint8_t id);
+
+  void onErrorCb(mbed::Callback<void()> _onError) {
+    onError = _onError;
+  }
+
+  int getErrors() {
+    return errors;
+  }
 
 private:
 
@@ -130,15 +140,19 @@ private:
   void     writeByteCmd    (uint8_t id,uint8_t address, uint8_t data);
   void     writeWordCmd    (uint8_t id, uint8_t address, uint16_t data);
   void     receiveResponse ();
-  uint16_t readBuffer      (uint8_t id, uint8_t address,uint8_t len);
-  uint16_t readWordCmd     (uint8_t id, uint8_t address);
-  uint8_t  readByteCmd     (uint8_t id, uint8_t address);
+  int readBuffer      (uint8_t id, uint8_t address,uint8_t len);
+  int readWordCmd     (uint8_t id, uint8_t address);
+  int  readByteCmd     (uint8_t id, uint8_t address);
   void     action          (uint8_t id);
   void     writeSyncCmd    (uint8_t *id, uint8_t num, uint8_t address, uint8_t len, uint8_t * data);
 
   uint16_t angleToPosition (float angle);
 
   float positionToAngle (uint16_t position);
+
+  mbed::Callback<void()> onError;
+
+  int errors = 0;
 
   RS485Class& _RS485;
 
