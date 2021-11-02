@@ -89,11 +89,6 @@ void setup() {
   servos.begin();
   servos.setPositionMode(pmSYNC);
 
-  display.init(240, 240);
-  display.setRotation(2);
-  display.fillScreen(ST77XX_BLACK);
-  drawArduino(0x04B3);
-
   pinMode(JOYSTICK_LEFT, INPUT_PULLUP);
   pinMode(JOYSTICK_RIGHT, INPUT_PULLUP);
   pinMode(JOYSTICK_UP, INPUT_PULLUP);
@@ -118,6 +113,15 @@ void setup() {
   // Set TERM to HIGH (default)
   expander.setPinDirection(19, 0); // P23 = 8 * 2 + 3
   expander.writePin(19, 1);
+
+  expander.setPinDirection(18, 0); // P22 = 8 * 2 + 2
+  expander.writePin(18, 0); // reset LCD
+  expander.writePin(18, 1); // LCD out of reset
+
+  display.init(240, 240);
+  display.setRotation(2);
+  display.fillScreen(ST77XX_BLACK);
+  drawArduino(0x04B3);
 
 #ifdef __MBED__
   static rtos::Thread connected_th;
