@@ -38,7 +38,7 @@ private:
 class BraccioClass {
 public:
 	BraccioClass() {}
-	bool begin(positionMode _positionMode);
+	bool begin(positionMode _positionMode = pmSYNC);
 	// setters
 	MotorsWrapper move(int joint_index) {
 		MotorsWrapper wrapper(servos, joint_index);
@@ -53,6 +53,9 @@ public:
 	void positions(float& a1, float& a2, float& a3, float& a4, float& a5, float& a6, float& a7);
 	int position(int joint_index);
 	float angle(int joint_index);
+	bool connected(int joint_index) {
+		return _connected[joint_index];
+	}
 
 protected:
 	// ioexpander APIs
@@ -70,14 +73,8 @@ private:
 	class PD_UFP_c PD_UFP;
 	TCA6424A expander = TCA6424A(TCA6424A_ADDRESS_ADDR_HIGH);
 	Backlight bl;
-	Adafruit_ST7789 gfx = Adafruit_ST7789(&SPI, 10, 9, -1);
 
-	const int BTN_LEFT = 5;
-	const int BTN_RIGHT = 4;
-	const int BTN_UP = 2;
-	const int BTN_DOWN = 3;
-	const int BTN_SEL = A0;
-	const int BTN_ENTER = A1;
+  	bool _connected[8];
 
 #ifdef __MBED__
 	rtos::EventFlags pd_events;
@@ -107,14 +104,18 @@ private:
 
 extern BraccioClass Braccio;
 
+struct __callback__container__ {
+  mbed::Callback<void()> fn;
+};
 
+inline void attachInterrupt(pin_size_t interruptNum, mbed::Callback<void()> func, PinStatus mode) {
+  struct __callback__container__* a = new __callback__container__();
+  a->fn = func;
+  auto callback = [](void* a) -> void {
+    ((__callback__container__*)a)->fn();
+  };
 
-
-
-
-
-
-
-
+  attachInterruptParam(interruptNum, callback, mode, (void*)a);
+}
 
 #endif //__BRACCIO_PLUSPLUS_H__
