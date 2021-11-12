@@ -49,13 +49,10 @@ bool BraccioClass::begin(positionMode _positionMode) {
 
 	braccio::encoder.begin();
 
-	braccio::gfx.init(240, 240);
-	braccio::gfx.setRotation(2);
-	braccio::gfx.setTextSize(textScale);//test scalling
-	braccio::gfx.setTextWrap(false);
-	braccio::gfx.fillScreen(ST7735_BLACK);
-	//gfx.setFont(&FreeMono12pt7b);
-	braccio::gfx.setTextColor(ST7735_RED, ST7735_BLACK);
+	braccio::gfx.init();
+	braccio::gfx.setRotation(4);
+	braccio::gfx.fillScreen(TFT_BLACK);
+	braccio::gfx.setFreeFont(&FreeMono18pt7b);
 	braccio::gfx.println("Arduino\nBraccio++");
 
 #ifdef __MBED__

@@ -11,7 +11,7 @@ const int BTN_DOWN = 3;
 const int BTN_SEL = A0;
 const int BTN_ENTER = A1;
 
-Adafruit_ST7789 gfx = Adafruit_ST7789(&SPI, 10, 9, -1);
+TFT_eSPI gfx = TFT_eSPI();
 
 static int selTest = 0;
 static SELECT(selTest, selMenu, "Select", doNothing, noEvent, noStyle
@@ -44,14 +44,14 @@ static MENU(mainMenu, "Braccio++", doNothing, noEvent, wrapStyle
      , EXIT("<Back")
     );
 
-#define ST7735_GRAY RGB565(128,128,128)
+#define TFT_GRAY RGB565(128,128,128)
 const colorDef<uint16_t> colors[6] MEMMODE = {
-	{{(uint16_t)ST7735_BLACK, (uint16_t)ST7735_BLACK}, {(uint16_t)ST7735_BLACK, (uint16_t)ST7735_BLUE,  (uint16_t)ST7735_BLUE}}, //bgColor
-	{{(uint16_t)ST7735_GRAY, (uint16_t)ST7735_GRAY},  {(uint16_t)ST7735_WHITE, (uint16_t)ST7735_WHITE, (uint16_t)ST7735_WHITE}},//fgColor
-	{{(uint16_t)ST7735_WHITE, (uint16_t)ST7735_BLACK}, {(uint16_t)ST7735_YELLOW, (uint16_t)ST7735_YELLOW, (uint16_t)ST7735_RED}}, //valColor
-	{{(uint16_t)ST7735_WHITE, (uint16_t)ST7735_BLACK}, {(uint16_t)ST7735_WHITE, (uint16_t)ST7735_YELLOW, (uint16_t)ST7735_YELLOW}}, //unitColor
-	{{(uint16_t)ST7735_WHITE, (uint16_t)ST7735_GRAY},  {(uint16_t)ST7735_BLACK, (uint16_t)ST7735_BLUE,  (uint16_t)ST7735_WHITE}}, //cursorColor
-	{{(uint16_t)ST7735_WHITE, (uint16_t)ST7735_YELLOW}, {(uint16_t)ST7735_BLUE,  (uint16_t)ST7735_RED,   (uint16_t)ST7735_RED}}, //titleColor
+	{{ TFT_BLACK, TFT_BLACK}, {TFT_BLACK, TFT_BLUE,  TFT_BLUE}}, //bgColor
+	{{ TFT_GRAY, TFT_GRAY},  {TFT_WHITE, TFT_WHITE, TFT_WHITE}}, //fgColor
+	{{ TFT_WHITE, TFT_BLACK}, {TFT_YELLOW, TFT_YELLOW, TFT_RED}}, //valColor
+	{{ TFT_WHITE, TFT_BLACK}, {TFT_WHITE, TFT_YELLOW, TFT_YELLOW}}, //unitColor
+	{{ TFT_WHITE, TFT_GRAY},  {TFT_BLACK, TFT_BLUE,  TFT_WHITE}}, //cursorColor
+	{{ TFT_WHITE, TFT_YELLOW}, {TFT_BLUE,  TFT_RED,   TFT_RED}}, //titleColor
 };
 
 static serialIn serial(Serial);
@@ -63,7 +63,7 @@ static MENU_INPUTS(in, &encStream, &serial);
 #define MAX_DEPTH 4
 #define textScale 3
 static MENU_OUTPUTS(out, MAX_DEPTH
-             , ADAGFX_OUT(gfx, colors, 6 * textScale, 9 * textScale, {0, 0, 14, 8}, {14, 0, 14, 8})
+             , TFT_eSPI_OUT(gfx, colors, 6 * textScale, 9 * textScale, {0, 0, 14, 8}, {14, 0, 14, 8})
              , SERIAL_OUT(Serial)
             );
 

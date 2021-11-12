@@ -9,15 +9,13 @@
 #include "drivers/Ticker.h"
 #include "lib/PCINT/src/pcint.h"
 #include "lib/ArduinoMenu/src/menu.h"
-#include "lib/ArduinoMenu/src/menuIO/adafruitGfxOut.h"
+#include "lib/ArduinoMenu/src/menuIO/TFT_eSPIOut.h"
 #include "lib/ArduinoMenu/src/menuIO/interruptPins.h"
 #include "lib/ArduinoMenu/src/menuIO/keyIn.h"
 #include "lib/ArduinoMenu/src/menuIO/chainStream.h"
 #include "lib/ArduinoMenu/src/menuIO/serialOut.h"
 #include "lib/ArduinoMenu/src/menuIO/serialIn.h"
-#include <Adafruit_GFX.h>    // Core graphics library
-#include <Adafruit_ST7735.h> // Hardware-specific library for ST7735
-#include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
+#include "lib/TFT_eSPI/TFT_eSPI.h" // Hardware-specific library
 
 class MotorsWrapper {
 public:
