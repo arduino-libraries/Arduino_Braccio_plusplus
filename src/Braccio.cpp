@@ -13,22 +13,27 @@ void my_print( const char * dsc )
 
 bool BraccioClass::begin(voidFuncPtr customMenu) {
 
-	Serial.begin(115200);
-
 	Wire.begin();
-	SPI.begin();
 
 	PD_UFP.init_PPS(PPS_V(7.2), PPS_A(2.0));
 
 #ifdef __MBED__
-	static rtos::Thread th;
+	static rtos::Thread th(osPriorityHigh);
 	th.start(mbed::callback(this, &BraccioClass::pd_thread));
 	attachInterrupt(PIN_FUSB302_INT, mbed::callback(this, &BraccioClass::unlock_pd_semaphore), FALLING);
-	pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 0.06f);
+	pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 0.05f);
 #endif
+
+	while (millis() < 200) {
+		PD_UFP.run();
+	}
 
 	pinMode(1, INPUT_PULLUP);
 
+	Serial.begin(115200);
+	SPI.begin();
+
+	pd_mutex.lock();
 	bl.begin();
 	if (bl.getChipID() != 0xCE) {
 		return false;
@@ -56,6 +61,7 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 	expander.setPinDirection(18, 0); // P22 = 8 * 2 + 2
 	expander.writePin(18, 0); // reset LCD
 	expander.writePin(18, 1); // LCD out of reset
+	pd_mutex.unlock();
 
 	pinMode(BTN_LEFT, INPUT_PULLUP);
 	pinMode(BTN_RIGHT, INPUT_PULLUP);
