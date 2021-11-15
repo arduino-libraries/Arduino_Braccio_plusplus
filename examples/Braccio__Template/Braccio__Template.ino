@@ -1,15 +1,22 @@
 #include "Braccio++.h"
 
+int demo_mode = 0;
+
 static void event_handler(lv_event_t * e)
 {
   lv_event_code_t code = lv_event_get_code(e);
   lv_obj_t * obj = lv_event_get_target(e);
-  if (code == LV_EVENT_VALUE_CHANGED) {
+  if (code == LV_EVENT_CLICKED) {
     uint32_t id = lv_btnmatrix_get_selected_btn(obj);
     const char * txt = lv_btnmatrix_get_btn_text(obj, id);
 
     LV_LOG_USER("%s was pressed\n", txt);
     Serial.println(txt);
+    if (strcmp(txt, "Demo") == 0) {
+      demo_mode = 1;
+    } else {
+      demo_mode = 0;
+    }
   }
 }
 
@@ -36,5 +43,10 @@ void setup() {
 }
 
 void loop() {
-
+  if (demo_mode) {
+    Braccio.move(4).to(20.0f);
+    delay(1000);
+    Braccio.move(4).to(10.0f);
+    delay(1000);
+  }
 }

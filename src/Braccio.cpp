@@ -105,14 +105,12 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 	gfx.fillScreen(TFT_BLACK);
 	gfx.println("\n\nPlease\nconnect\npower");
 
-/*
 	while (!PD_UFP.is_PPS_ready()) {
 		pd_mutex.lock();
 		//PD_UFP.print_status(Serial);
 		PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
 		pd_mutex.unlock();
 	}
-*/
 
 #ifdef __MBED__
 	static rtos::Thread display_th;
@@ -120,7 +118,7 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 #endif
 
 	servos->begin();
-	servos->setPositionMode(pmSYNC);
+	servos->setPositionMode(pmIMMEDIATE);
 
 #ifdef __MBED__
 	static rtos::Thread connected_th;

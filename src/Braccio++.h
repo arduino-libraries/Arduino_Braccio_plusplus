@@ -52,8 +52,12 @@ public:
 		MotorsWrapper wrapper(servos, joint_index);
 		return wrapper;
 	}
-	void moveTo(int joint_index, int position);
-	void moveTo(int joint_index, float angle);
+	void moveTo(int joint_index, int position) {
+		//servos->setPosition(joint_index, position, 100);
+	}
+	void moveTo(int joint_index, float angle) {
+		servos->setPosition(joint_index, angle, 100);
+	}
 	void moveTo(float a1, float a2, float a3, float a4, float a5, float a6, float a7);
 	// getters
 	void positions(int* buffer);
