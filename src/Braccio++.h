@@ -7,6 +7,7 @@
 #include "lib/display/Backlight.h"
 #include "lib/motors/SmartServo.h"
 #include "drivers/Ticker.h"
+/*
 #include "lib/PCINT/src/pcint.h"
 #include "lib/ArduinoMenu/src/menu.h"
 #include "lib/ArduinoMenu/src/menuIO/TFT_eSPIOut.h"
@@ -15,7 +16,16 @@
 #include "lib/ArduinoMenu/src/menuIO/chainStream.h"
 #include "lib/ArduinoMenu/src/menuIO/serialOut.h"
 #include "lib/ArduinoMenu/src/menuIO/serialIn.h"
+*/
 #include "lib/TFT_eSPI/TFT_eSPI.h" // Hardware-specific library
+#include <lvgl.h>
+
+extern const lv_img_dsc_t img_bulb_gif;
+
+extern "C" {
+	void braccio_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
+	void read_keypad(lv_indev_drv_t * indev, lv_indev_data_t * data);
+};
 
 class MotorsWrapper {
 public:
@@ -36,7 +46,7 @@ private:
 class BraccioClass {
 public:
 	BraccioClass() {}
-	bool begin(positionMode _positionMode = pmSYNC);
+	bool begin(voidFuncPtr customMenu = nullptr);
 	// setters
 	MotorsWrapper move(int joint_index) {
 		MotorsWrapper wrapper(servos, joint_index);
@@ -54,6 +64,18 @@ public:
 	bool connected(int joint_index) {
 		return _connected[joint_index];
 	}
+	void createMenu() {
+		if (_customMenu != NULL) {
+			_customMenu();
+		} else {
+		  defaultMenu();
+		}
+	}
+
+	int getKey();
+	void connectJoystickTo(lv_obj_t* obj);
+
+	TFT_eSPI gfx = TFT_eSPI();
 
 protected:
 	// ioexpander APIs
@@ -63,6 +85,11 @@ protected:
 	void drawMenu();
 	void hideMenu();
 	void drawImage(char* image);
+	void defaultMenu();
+
+	void setID(int id) {
+		servos->setID(id);
+	}
 
 private:
 	RS485Class serial485 = RS485Class(Serial1, 0, 7, 8); // TX, DE, RE
@@ -72,7 +99,23 @@ private:
 	TCA6424A expander = TCA6424A(TCA6424A_ADDRESS_ADDR_HIGH);
 	Backlight bl;
 
-  	bool _connected[8];
+	voidFuncPtr _customMenu = nullptr;
+
+	const int BTN_LEFT = 3;
+	const int BTN_RIGHT = 4;
+	const int BTN_UP = 5;
+	const int BTN_DOWN = 2;
+	const int BTN_SEL = A0;
+	const int BTN_ENTER = A1;
+
+  lv_disp_drv_t disp_drv;
+  lv_indev_drv_t indev_drv;
+	lv_disp_draw_buf_t disp_buf;
+	lv_color_t buf[240 * 240 / 10];
+	lv_group_t* p_objGroup;
+	lv_indev_t *kb_indev;
+
+  bool _connected[8];
 
 #ifdef __MBED__
 	rtos::EventFlags pd_events;
