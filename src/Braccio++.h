@@ -99,7 +99,7 @@ private:
 	RS485Class serial485 = RS485Class(Serial1, 0, 7, 8); // TX, DE, RE
 	SmartServoClass<7>* servos = new SmartServoClass<7>(serial485);
 
-	class PD_UFP_c PD_UFP;
+	PD_UFP_log_c PD_UFP = PD_UFP_log_c(PD_LOG_LEVEL_VERBOSE);
 	TCA6424A expander = TCA6424A(TCA6424A_ADDRESS_ADDR_HIGH);
 	Backlight bl;
 
@@ -125,6 +125,13 @@ private:
 	rtos::EventFlags pd_events;
 	rtos::Mutex pd_mutex;
 	mbed::Ticker pd_timer;
+
+	unsigned int start_pd_burst = 0xFFFFFFFF;
+
+	void unlock_pd_semaphore_irq() {
+		start_pd_burst = millis();
+		pd_events.set(2);
+	}
 
 	void unlock_pd_semaphore() {
 		pd_events.set(1);

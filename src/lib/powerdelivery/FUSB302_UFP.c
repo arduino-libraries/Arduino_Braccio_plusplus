@@ -357,6 +357,13 @@ static FUSB302_ret_t FUSB302_state_unattached(FUSB302_dev_t *dev, FUSB302_event_
 static FUSB302_ret_t FUSB302_state_attached(FUSB302_dev_t *dev, FUSB302_event_t * events)
 {
     REG_READ(ADDRESS_STATUS0A, &REG_STATUS0A, 7);
+
+/*
+    REG_READ(ADDRESS_INTERRUPTA, &REG_INTERRUPTA, 1);
+    REG_READ(ADDRESS_INTERRUPTB, &REG_INTERRUPTB, 1);
+    REG_READ(ADDRESS_INTERRUPT, &REG_INTERRUPT, 1);
+*/
+
     dev->interrupta |= REG_INTERRUPTA;
     dev->interruptb |= REG_INTERRUPTB;    
     if (dev->vbus_sense && ((REG_STATUS0 & VBUSOK) == 0)) {
@@ -394,6 +401,7 @@ static FUSB302_ret_t FUSB302_state_attached(FUSB302_dev_t *dev, FUSB302_event_t 
             reg_write(dev, ADDRESS_CONTROL1, &rx_flush, 1);
         }
     }
+
     return FUSB302_SUCCESS;
 }
 
@@ -588,6 +596,7 @@ FUSB302_ret_t FUSB302_alert(FUSB302_dev_t *dev, FUSB302_event_t * events)
         FUSB302_state_unattached,
         FUSB302_state_attached
     };
+
     if (dev->state < sizeof(handler) / sizeof(handler[0])) {
         return handler[dev->state](dev, events);
     }

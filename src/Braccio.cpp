@@ -14,23 +14,27 @@ void my_print( const char * dsc )
 bool BraccioClass::begin(voidFuncPtr customMenu) {
 
 	Wire.begin();
+	Serial.begin(115200);
 
-	PD_UFP.init_PPS(PPS_V(7.2), PPS_A(2.0));
+	pinMode(PIN_FUSB302_INT, INPUT_PULLUP);
 
 #ifdef __MBED__
 	static rtos::Thread th(osPriorityHigh);
 	th.start(mbed::callback(this, &BraccioClass::pd_thread));
-	attachInterrupt(PIN_FUSB302_INT, mbed::callback(this, &BraccioClass::unlock_pd_semaphore), FALLING);
-	pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 0.05f);
+	attachInterrupt(PIN_FUSB302_INT, mbed::callback(this, &BraccioClass::unlock_pd_semaphore_irq), FALLING);
+	pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 0.01f);
 #endif
 
+	PD_UFP.init_PPS(PPS_V(7.2), PPS_A(2.0));
+
+/*
 	while (millis() < 200) {
 		PD_UFP.run();
 	}
+*/
 
 	pinMode(1, INPUT_PULLUP);
 
-	Serial.begin(115200);
 	SPI.begin();
 
 	pd_mutex.lock();
@@ -111,10 +115,12 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 	gfx.fillScreen(TFT_BLACK);
 	gfx.println("\n\nPlease\nconnect\npower");
 
+	PD_UFP.print_status(Serial);
 	while (!PD_UFP.is_PPS_ready()) {
 		pd_mutex.lock();
+		PD_UFP.print_status(Serial);
 		//PD_UFP.print_status(Serial);
-		PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
+		PD_UFP.init_PPS(PPS_V(7.2), PPS_A(2.0));
 		pd_mutex.unlock();
 	}
 
@@ -138,14 +144,22 @@ void BraccioClass::connectJoystickTo(lv_obj_t* obj) {
 }
 
 void BraccioClass::pd_thread() {
+	start_pd_burst = millis();
   while (1) {
-    pd_events.wait_any(0xFF);
+    auto ret = pd_events.wait_any(0xFF);
+    if ((ret & 1) && (millis() - start_pd_burst > 1000)) {
+      pd_timer.detach();
+      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 1.0f);
+    }
+    if (ret & 2) {
+      pd_timer.detach();
+      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 0.05f);
+    }
     pd_mutex.lock();
     PD_UFP.run();
     pd_mutex.unlock();
     if (PD_UFP.is_power_ready() && PD_UFP.is_PPS_ready()) {
-      Serial.println("error");
-      while (1) {}
+
     }
   }
 }
