@@ -37,7 +37,7 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 
 	SPI.begin();
 
-	pd_mutex.lock();
+	i2c_mutex.lock();
 	bl.begin();
 	if (bl.getChipID() != 0xCE) {
 		return false;
@@ -65,7 +65,7 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 	expander.setPinDirection(18, 0); // P22 = 8 * 2 + 2
 	expander.writePin(18, 0); // reset LCD
 	expander.writePin(18, 1); // LCD out of reset
-	pd_mutex.unlock();
+	i2c_mutex.unlock();
 
 	pinMode(BTN_LEFT, INPUT_PULLUP);
 	pinMode(BTN_RIGHT, INPUT_PULLUP);
@@ -120,11 +120,11 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 
 	PD_UFP.print_status(Serial);
 	while (!PD_UFP.is_PPS_ready()) {
-		pd_mutex.lock();
+		i2c_mutex.lock();
 		PD_UFP.print_status(Serial);
 		//PD_UFP.print_status(Serial);
 		PD_UFP.init_PPS(PPS_V(7.2), PPS_A(2.0));
-		pd_mutex.unlock();
+		i2c_mutex.unlock();
 	}
 
 #ifdef __MBED__
@@ -158,9 +158,9 @@ void BraccioClass::pd_thread() {
       pd_timer.detach();
       pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 0.05f);
     }
-    pd_mutex.lock();
+    i2c_mutex.lock();
     PD_UFP.run();
-    pd_mutex.unlock();
+    i2c_mutex.unlock();
     if (PD_UFP.is_power_ready() && PD_UFP.is_PPS_ready()) {
 
     }
@@ -201,18 +201,20 @@ void BraccioClass::defaultMenu() {
 
 void BraccioClass::motors_connected_thread() {
   while (1) {
-    for (int i = 1; i < 7; i++) {
-      _connected[i] = (servos->ping(i) == 0);
-      //Serial.print(String(i) + ": ");
-      //Serial.println(_connected[i]);
-      pd_mutex.lock();
-      if (_connected[i]) {
-        setGreen(i);
-      } else {
-        setRed(i);
-      }
-      pd_mutex.unlock();
-    }
+    if (ping_allowed) {
+	    for (int i = 1; i < 7; i++) {
+	      _connected[i] = (servos->ping(i) == 0);
+	      //Serial.print(String(i) + ": ");
+	      //Serial.println(_connected[i]);
+	      i2c_mutex.lock();
+	      if (_connected[i]) {
+	        setGreen(i);
+	      } else {
+	        setRed(i);
+	      }
+	      i2c_mutex.unlock();
+	    }
+	  }
     delay(1000);
   }
 }

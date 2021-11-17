@@ -74,6 +74,8 @@ public:
 
 	TFT_eSPI gfx = TFT_eSPI();
 
+	bool ping_allowed = true;
+
 protected:
 	// ioexpander APIs
 	void digitalWrite(int pin, uint8_t value);
@@ -116,7 +118,7 @@ private:
 
 #ifdef __MBED__
 	rtos::EventFlags pd_events;
-	rtos::Mutex pd_mutex;
+	rtos::Mutex i2c_mutex;
 	mbed::Ticker pd_timer;
 
 	unsigned int start_pd_burst = 0xFFFFFFFF;
