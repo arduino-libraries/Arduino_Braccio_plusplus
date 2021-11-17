@@ -109,8 +109,11 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
   p_objGroup = lv_group_create();
   lv_group_set_default(p_objGroup);
 
-  _customMenu = customMenu;
-  createMenu();
+  if (customMenu) {
+    customMenu();
+  } else {
+    defaultMenu();
+  }
 
 	gfx.fillScreen(TFT_BLACK);
 	gfx.println("\n\nPlease\nconnect\npower");

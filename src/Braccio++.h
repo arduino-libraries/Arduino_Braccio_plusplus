@@ -68,13 +68,6 @@ public:
 	bool connected(int joint_index) {
 		return _connected[joint_index];
 	}
-	void createMenu() {
-		if (_customMenu != NULL) {
-			_customMenu();
-		} else {
-		  defaultMenu();
-		}
-	}
 
 	int getKey();
 	void connectJoystickTo(lv_obj_t* obj);
