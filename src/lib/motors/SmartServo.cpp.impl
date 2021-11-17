@@ -105,24 +105,44 @@ template <int MAX_MOTORS> int SmartServoClass<MAX_MOTORS>::readByteCmd(uint8_t i
 }
 
 template <int MAX_MOTORS> int SmartServoClass<MAX_MOTORS>::ping(uint8_t id) {
+  timestamps[0 + (id-1) * 6] = millis();
   mutex.lock();
+  timestamps[1 + (id-1) * 6] = millis();
   writeCmd(id, OP_PING);
+  timestamps[2 + (id-1) * 6] = millis();
   // TODO: check return
   receiveResponse();
+  timestamps[3 + (id-1) * 6] = millis();
   if (_rxLen==6 && 
     _rxBuf[0]==0xff &&
     _rxBuf[1]==0xf5 &&
     _rxBuf[2]==id &&
     _rxBuf[3]==2) {
 
+    timestamps[4 + (id-1) * 6] = millis();
   	mutex.unlock();
+    timestamps[5 + (id-1) * 6] = millis();
     return _rxBuf[4];
   }
+  timestamps[4 + (id-1) * 6] = millis();
   mutex.unlock();
   errors++;
   if (onError) onError();
+  timestamps[5 + (id-1) * 6] = millis();
   return -1;
 }
+
+template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::printTimestamps() {
+  Serial.print("\n-> ");
+  for (int i = 0; i<6; i++) {
+    for (int j = 0; j<6; j++) {
+      Serial.print(timestamps[6*i + j]);
+      Serial.print( " " );
+    }
+    Serial.println("");
+  }
+}
+
 
 template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::reset(uint8_t id) {
   mutex.lock();

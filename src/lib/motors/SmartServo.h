@@ -58,6 +58,8 @@ public:
 
   void reset(uint8_t id);
 
+  void printTimestamps();
+
   void onErrorCb(mbed::Callback<void()> _onError) {
     onError = _onError;
   }
@@ -80,6 +82,8 @@ private:
 
   #define BROADCAST 0xFE
   #define MAX_POSITION 4000
+
+  int timestamps[6 * 6] = {0};
 
   typedef enum {  
     _NI_MFG_YEAR,                //0  (0x00)  Servo factory: year        read/write    --                                           
