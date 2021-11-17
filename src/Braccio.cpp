@@ -213,14 +213,16 @@ void BraccioClass::motors_connected_thread() {
 	      _connected[i] = (servos->ping(i) == 0);
 	      //Serial.print(String(i) + ": ");
 	      //Serial.println(_connected[i]);
-	      i2c_mutex.lock();
+	    }
+	    i2c_mutex.lock();
+	    for (int i = 1; i < 7; i++) {
 	      if (_connected[i]) {
 	        setGreen(i);
 	      } else {
 	        setRed(i);
 	      }
-	      i2c_mutex.unlock();
 	    }
+	    i2c_mutex.unlock();
 	  }
     delay(1000);
   }

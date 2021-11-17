@@ -63,7 +63,9 @@ template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::receiveResponse() {
   	//Serial.print(c, HEX);
   	//Serial.print(" ");
     _rxBuf[_rxLen++]=c;
-    delayMicroseconds(2000);
+    if (!_RS485.available()) {
+      delay(1);
+    }
   }
   //Serial.println();
   _RS485.noReceive();
