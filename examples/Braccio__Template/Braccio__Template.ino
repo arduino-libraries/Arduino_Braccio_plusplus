@@ -14,7 +14,9 @@ static void event_handler(lv_event_t * e)
     Serial.println(txt);
     if (strcmp(txt, "Demo") == 0) {
       demo_mode = 1;
+      Braccio.ping_allowed = false;
     } else {
+      Braccio.ping_allowed = true;
       demo_mode = 0;
     }
   }
