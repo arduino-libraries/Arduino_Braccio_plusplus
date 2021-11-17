@@ -140,7 +140,7 @@ template <int MAX_MOTORS> int SmartServoClass<MAX_MOTORS>::begin() {
   if (_RS485) {
     _txPacket.header[0] = 0xff;
     _txPacket.header[1] = 0xff;
-    _RS485.begin(115200, 0, 80);
+    _RS485.begin(115200, 0, 90);
     writeByteCmd(BROADCAST,SERVO_MOTOR_MODE,1);
     writeByteCmd(BROADCAST,TORQUE_SWITCH,1);
     _positionMode = pmIMMEDIATE;

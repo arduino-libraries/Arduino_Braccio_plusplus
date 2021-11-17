@@ -127,7 +127,8 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 		i2c_mutex.lock();
 		PD_UFP.print_status(Serial);
 		//PD_UFP.print_status(Serial);
-		PD_UFP.init_PPS(PPS_V(7.2), PPS_A(2.0));
+		PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
+		delay(10);
 		i2c_mutex.unlock();
 	}
 

@@ -24,7 +24,7 @@ static void event_handler(lv_event_t * e)
 
 
 static const char * btnm_map[] = {"Demo", "Learn", "\n",
-                                  "Repeat", "Unlock", "\n",
+                                  "Repeat", "Unlock", "\n", "\0"
                                  };
 
 void customMenu() {
