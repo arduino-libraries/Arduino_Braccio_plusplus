@@ -6,10 +6,14 @@
 #error Please use lvgl >= 8.1
 #endif
 
+#include "mbed.h"
+
 void my_print( const char * dsc )
 {
     Serial.println(dsc);
 }
+
+using namespace std::chrono_literals;
 
 bool BraccioClass::begin(voidFuncPtr customMenu) {
 
@@ -22,7 +26,7 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 	static rtos::Thread th(osPriorityHigh);
 	th.start(mbed::callback(this, &BraccioClass::pd_thread));
 	attachInterrupt(PIN_FUSB302_INT, mbed::callback(this, &BraccioClass::unlock_pd_semaphore_irq), FALLING);
-	pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 0.01f);
+	pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 10ms);
 #endif
 
 	PD_UFP.init_PPS(PPS_V(7.2), PPS_A(2.0));
@@ -139,6 +143,8 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 	static rtos::Thread connected_th;
 	connected_th.start(mbed::callback(this, &BraccioClass::motors_connected_thread));
 #endif
+
+	return true;
 }
 
 void BraccioClass::connectJoystickTo(lv_obj_t* obj) {
@@ -152,11 +158,11 @@ void BraccioClass::pd_thread() {
     auto ret = pd_events.wait_any(0xFF);
     if ((ret & 1) && (millis() - start_pd_burst > 1000)) {
       pd_timer.detach();
-      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 1.0f);
+      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 1s);
     }
     if (ret & 2) {
       pd_timer.detach();
-      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 0.05f);
+      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 50ms);
     }
     i2c_mutex.lock();
     PD_UFP.run();
