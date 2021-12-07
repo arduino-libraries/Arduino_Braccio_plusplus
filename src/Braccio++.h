@@ -27,20 +27,43 @@ extern "C" {
 	void read_keypad(lv_indev_drv_t * indev, lv_indev_data_t * data);
 };
 
+enum speed_grade_t {
+	FAST = 10,
+	MEDIUM = 100,
+	SLOW = 1000,
+};
+
+#include <chrono>
+using namespace std::chrono;
+
 class MotorsWrapper {
 public:
 	MotorsWrapper(SmartServoClass<7>* servos, int idx) : _servos(servos), _idx(idx) {}
 	MotorsWrapper& to(float angle) {
-		_servos->setPosition(_idx, angle, default_speed);
+		_servos->setPosition(_idx, angle, _speed);
 		return *this;
 	}
-	MotorsWrapper& to(int position) {
+	MotorsWrapper& in(std::chrono::milliseconds len) {
+		_servos->setTime(_idx, len.count());
 		return *this;
 	}
+	MotorsWrapper& move() {
+		return *this;
+	}
+	float position() {
+		return _servos->getPosition(_idx);
+	}
+	bool connected() {
+		return _servos->ping(_idx) == 0;
+	}
+	operator bool() {
+		return connected();
+	}
+
 private:
 	SmartServoClass<7>* _servos;
 	int _idx;
-	const int default_speed = 1000;
+	int _speed = 100;
 };
 
 class BraccioClass {
@@ -52,21 +75,47 @@ public:
 		MotorsWrapper wrapper(servos, joint_index);
 		return wrapper;
 	}
+	MotorsWrapper get(int joint_index) {
+		return move(joint_index);
+	}
 	void moveTo(int joint_index, int position) {
 		//servos->setPosition(joint_index, position, 100);
 	}
 	void moveTo(int joint_index, float angle) {
 		servos->setPosition(joint_index, angle, 100);
 	}
-	void moveTo(float a1, float a2, float a3, float a4, float a5, float a6, float a7);
+	void moveTo(float a1, float a2, float a3, float a4, float a5, float a6) {
+		servos->setPositionMode(pmSYNC);
+		servos->setPosition(1, a1, runTime);
+		servos->setPosition(2, a2, runTime);
+		servos->setPosition(3, a3, runTime);
+		servos->setPosition(4, a4, runTime);
+		servos->setPosition(5, a5, runTime);
+		servos->setPosition(6, a6, runTime);
+		servos->setPositionMode(pmIMMEDIATE);
+	}
 	// getters
-	void positions(int* buffer);
-	void positions(float* buffer);
-	void positions(float& a1, float& a2, float& a3, float& a4, float& a5, float& a6, float& a7);
-	int position(int joint_index);
-	float angle(int joint_index);
+	void positions(float* buffer) {
+		for (int i = 1; i < 7; i++)	{
+			*buffer++ = servos->getPosition(i);
+		}
+	}
+	void positions(float& a1, float& a2, float& a3, float& a4, float& a5, float& a6) {
+		// TODO: add check if motors are actually connected
+		a1 = servos->getPosition(1);
+		a2 = servos->getPosition(2);
+		a3 = servos->getPosition(3);
+		a4 = servos->getPosition(4);
+		a5 = servos->getPosition(5);
+		a6 = servos->getPosition(6);
+	}
+	float position(int joint_index);
 	bool connected(int joint_index) {
 		return _connected[joint_index];
+	}
+
+	void speed(speed_grade_t speed_grade) {
+		runTime  = speed_grade;
 	}
 
 	int getKey();
@@ -97,6 +146,8 @@ private:
 	PD_UFP_log_c PD_UFP = PD_UFP_log_c(PD_LOG_LEVEL_VERBOSE);
 	TCA6424A expander = TCA6424A(TCA6424A_ADDRESS_ADDR_HIGH);
 	Backlight bl;
+
+	speed_grade_t runTime = MEDIUM; //ms
 
 	voidFuncPtr _customMenu = nullptr;
 
