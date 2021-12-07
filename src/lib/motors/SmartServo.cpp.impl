@@ -177,11 +177,11 @@ template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::setPositionMode(posi
 }
 
 template <int MAX_MOTORS> uint16_t SmartServoClass<MAX_MOTORS>::angleToPosition (float angle) {
-  return (180.0+angle)/360.0*MAX_POSITION;
+  return angle*MAX_POSITION/360.0;
 }
 
 template <int MAX_MOTORS> float SmartServoClass<MAX_MOTORS>::positionToAngle (uint16_t position) {
-  return (360.0*position)/MAX_POSITION-180.0;
+  return (360.0*position)/MAX_POSITION;
 }
 
 template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::setPosition(uint8_t id, float angle, uint16_t speed) {
