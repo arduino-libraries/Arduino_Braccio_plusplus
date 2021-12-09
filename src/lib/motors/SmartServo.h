@@ -60,6 +60,8 @@ public:
 
   void printTimestamps();
 
+  void getInfo(Stream& stream, uint8_t id);
+
   void onErrorCb(mbed::Callback<void()> _onError) {
     onError = _onError;
   }

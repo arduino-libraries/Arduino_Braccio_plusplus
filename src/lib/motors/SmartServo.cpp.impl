@@ -299,3 +299,21 @@ template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setMaxAngle(float a
 template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setMaxAngle(uint8_t id, float angle) {
   writeByteCmd(id,MAX_ANGLE_LIMIT_H,angleToPosition(angle));
 }
+
+template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::getInfo(Stream& stream, uint8_t id) {
+  mutex.lock();
+  uint8_t year = readByteCmd(id, _NI_MFG_YEAR);
+  uint8_t month = readByteCmd(id, _NI_MFG_MONTH);
+  uint8_t day = readByteCmd(id, _NI_MFG_DAY);
+  uint16_t sw_version = readWordCmd(id, SWVER_H);
+  uint16_t boot_times = readWordCmd(id, _NI_BOOT_TIMES_H);
+  uint8_t voltage = readWordCmd(id, _NI_VOLTAGE);
+  uint8_t temperature = readWordCmd(id, _NI_TEMPERATURE);
+  mutex.unlock();
+  stream.println("Motor " + String(id));
+  stream.println(String("* manufactured ") + year + "/" + month + "/" + day);
+  stream.println(String("* firmware version ") + sw_version);
+  stream.println(String("* boot times ") + boot_times);
+  stream.println(String("* voltage ") + voltage);
+  stream.println(String("* temperature ") + temperature);
+}

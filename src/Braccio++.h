@@ -59,6 +59,9 @@ public:
 	operator bool() {
 		return connected();
 	}
+	void info(Stream& stream) {
+		_servos->getInfo(stream, _idx);
+	}
 
 private:
 	SmartServoClass<7>* _servos;
