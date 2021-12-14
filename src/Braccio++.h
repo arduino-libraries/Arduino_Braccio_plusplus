@@ -71,9 +71,7 @@ private:
 
 class BraccioClass {
 public:
-	BraccioClass() {
-		servos = BraccioClass::get_servo_default_instance();
-	}
+	BraccioClass() {}
 	bool begin(voidFuncPtr customMenu = nullptr);
 
 	// setters
@@ -133,12 +131,6 @@ public:
 
 	static BraccioClass& get_default_instance();
 
-	static SmartServoClass<7>* get_servo_default_instance() {
-		 static RS485Class serial485(Serial1, 0, 7, 8); 	 // TX, DE, RE
-		 static SmartServoClass<7> dev(serial485);
-		 return &dev;
-	}
-
 protected:
 	// ioexpander APIs
 	void digitalWrite(int pin, uint8_t value);
@@ -154,7 +146,9 @@ protected:
 	}
 
 private:
-	SmartServoClass<7>* servos = nullptr;
+
+  RS485Class serial485 = RS485Class(Serial1, 0, 7, 8); // TX, DE, RE
+  SmartServoClass<7>* servos = new SmartServoClass<7>(serial485);
 
 	PD_UFP_log_c PD_UFP = PD_UFP_log_c(PD_LOG_LEVEL_VERBOSE);
 	TCA6424A expander = TCA6424A(TCA6424A_ADDRESS_ADDR_HIGH);
