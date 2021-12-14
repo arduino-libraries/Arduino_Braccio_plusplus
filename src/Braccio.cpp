@@ -250,7 +250,10 @@ int BraccioClass::getKey() {
 	return 0;
 }
 
-BraccioClass Braccio;
+BraccioClass& BraccioClass::get_default_instance() {
+	static BraccioClass dev;
+	return dev;
+}
 
 /* Display flushing */
 extern "C" void braccio_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
