@@ -129,7 +129,10 @@ public:
 
 	bool ping_allowed = true;
 
-	static BraccioClass& get_default_instance();
+	static BraccioClass& get_default_instance() {
+		static BraccioClass dev;
+		return dev;
+	}
 
 protected:
 	// ioexpander APIs
