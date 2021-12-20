@@ -21,6 +21,15 @@ template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::sendPacket()
     _RS485.write(*buffer++);
   }
   _RS485.endTransmission();
+  // should now receive an echo of what we just sent
+  while (_RS485.available() < len) {
+    delay(100);
+  }
+  // discard the echo
+  int i = len;
+  while (i-- > 0) {
+    _RS485.read();
+  }
 }
 
 
@@ -50,25 +59,18 @@ template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::writeWordCmd(uint8_t
   sendPacket();
 }
 
-template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::receiveResponse() {
+template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::receiveResponse(int howMany) {
   _rxLen=0;
-  _RS485.receive();
   memset(_rxBuf, 0, sizeof(_rxBuf));
-  delayMicroseconds(300);
-  if (!_RS485.available()) {
-    delay(1);
-  }
-  while (_RS485.available() && (_rxLen<MAX_RX_PAYLOAD_LEN)) {
-  	uint8_t c = _RS485.read();
-  	//Serial.print(c, HEX);
-  	//Serial.print(" ");
-    _rxBuf[_rxLen++]=c;
-    if (!_RS485.available()) {
-      delay(1);
+  long start = millis();
+  while ((millis() - start < 100) && (_rxLen < howMany)) {
+    if (_RS485.available()) {
+      uint8_t c = _RS485.read();
+      //Serial.print(c, HEX);
+      //Serial.print(" ");
+      _rxBuf[_rxLen++]=c;
     }
   }
-  //Serial.println();
-  _RS485.noReceive();
 }
 
 template <int MAX_MOTORS> int SmartServoClass<MAX_MOTORS>::readBuffer(uint8_t id, uint8_t address,uint8_t len) {
@@ -78,7 +80,7 @@ template <int MAX_MOTORS> int SmartServoClass<MAX_MOTORS>::readBuffer(uint8_t id
   _txPacket.payload[0]=address;
   _txPacket.payload[1]=len;
   sendPacket();
-  receiveResponse();
+  receiveResponse(6+len);
   if (_rxLen==(6+len) && 
     _rxBuf[0]==0xff &&
     _rxBuf[1]==0xf5 &&
@@ -113,7 +115,7 @@ template <int MAX_MOTORS> int SmartServoClass<MAX_MOTORS>::ping(uint8_t id) {
   writeCmd(id, OP_PING);
   timestamps[2 + (id-1) * 6] = millis();
   // TODO: check return
-  receiveResponse();
+  receiveResponse(6);
   timestamps[3 + (id-1) * 6] = millis();
   if (_rxLen==6 && 
     _rxBuf[0]==0xff &&
@@ -166,6 +168,7 @@ template <int MAX_MOTORS> int SmartServoClass<MAX_MOTORS>::begin() {
     _txPacket.header[0] = 0xff;
     _txPacket.header[1] = 0xff;
     _RS485.begin(115200, 0, 90);
+    _RS485.receive();
     writeByteCmd(BROADCAST,SERVO_MOTOR_MODE,1);
     writeByteCmd(BROADCAST,TORQUE_SWITCH,1);
     _positionMode = pmIMMEDIATE;

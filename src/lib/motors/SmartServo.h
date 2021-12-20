@@ -150,7 +150,7 @@ private:
   void     writeCmd        (uint8_t id,uint8_t instruction);
   void     writeByteCmd    (uint8_t id,uint8_t address, uint8_t data);
   void     writeWordCmd    (uint8_t id, uint8_t address, uint16_t data);
-  void     receiveResponse ();
+  void     receiveResponse (int howMany = MAX_RX_PAYLOAD_LEN);
   int readBuffer      (uint8_t id, uint8_t address,uint8_t len);
   int readWordCmd     (uint8_t id, uint8_t address);
   int  readByteCmd     (uint8_t id, uint8_t address);
