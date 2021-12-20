@@ -300,23 +300,33 @@ template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setStallProtectionT
 }
 
 template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setStallProtectionTime(uint8_t id, uint8_t time) {
+  mutex.lock();
   writeByteCmd(id,STALL_PROTECTION_TIME,time);
+  mutex.unlock();
 }
 
 template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setMinAngle(float angle) {
+  mutex.lock();
   writeByteCmd(BROADCAST,MIN_ANGLE_LIMIT_H,angleToPosition(angle));
+  mutex.unlock();
 }
 
 template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setMinAngle(uint8_t id, float angle) {
+  mutex.lock();
   writeByteCmd(id,MIN_ANGLE_LIMIT_H,angleToPosition(angle));
+  mutex.unlock();
 }
 
 template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setMaxAngle(float angle) {
+  mutex.lock();
   writeByteCmd(BROADCAST,MAX_ANGLE_LIMIT_H,angleToPosition(angle));
+  mutex.unlock();
 }
 
 template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setMaxAngle(uint8_t id, float angle) {
+  mutex.lock();
   writeByteCmd(id,MAX_ANGLE_LIMIT_H,angleToPosition(angle));
+  mutex.unlock();
 }
 
 template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::getInfo(Stream& stream, uint8_t id) {
