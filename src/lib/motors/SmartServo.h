@@ -72,20 +72,21 @@ public:
     return errors;
   }
 
+  static const int BROADCAST = 0xFE;
+
 private:
 
-  #define MAX_TX_PAYLOAD_LEN (5*MAX_MOTORS+4)
-  #define MAX_RX_PAYLOAD_LEN 10
-  #define OP_PING 1
-  #define OP_READ 2
-  #define OP_WRITE 3
-  #define OP_REG_WRITE 4
-  #define OP_ACTION 5
-  #define OP_RESET 6
-  #define OP_SYNC_WRITE 0x83
+  static const int MAX_TX_PAYLOAD_LEN = (5*MAX_MOTORS+4);
+  static const int MAX_RX_PAYLOAD_LEN = 10;
+  static const int OP_PING = 1;
+  static const int OP_READ = 2;
+  static const int OP_WRITE = 3;
+  static const int OP_REG_WRITE = 4;
+  static const int OP_ACTION = 5;
+  static const int OP_RESET = 6;
+  static const int OP_SYNC_WRITE = 0x83;
 
-  #define BROADCAST 0xFE
-  #define MAX_POSITION 4000
+  static const int MAX_POSITION = 4000;
 
   int timestamps[6 * 6] = {0};
 

@@ -145,12 +145,15 @@ template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::printTimestamps() {
   }
 }
 
+/*
+// ATTENTION: RESET also changes the ID of the motor
 
 template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::reset(uint8_t id) {
   mutex.lock();
   writeCmd(id, OP_RESET);
   mutex.unlock();
 }
+*/
 
 template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::action(uint8_t id) {
   mutex.lock();
