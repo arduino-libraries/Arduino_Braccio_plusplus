@@ -209,6 +209,12 @@ template <int MAX_MOTORS> float SmartServoClass<MAX_MOTORS>::getPosition(uint8_t
   return ret;
 }
 
+template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::center(uint8_t id, uint16_t position) {
+  mutex.lock();
+  writeWordCmd(id, CENTER_POINT_ADJ_H, position);
+  mutex.unlock();
+}
+
 template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::synchronize() {
   mutex.lock();
   _txPacket.id = 0xFE;

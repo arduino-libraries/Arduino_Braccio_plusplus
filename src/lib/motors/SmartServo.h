@@ -54,6 +54,8 @@ public:
 
   void setTime(uint8_t id, uint16_t time);
 
+  void center(uint8_t id, uint16_t position);
+
   int ping(uint8_t id);
 
   //void reset(uint8_t id = BROADCAST);
