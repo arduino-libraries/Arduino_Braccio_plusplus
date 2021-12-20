@@ -330,19 +330,20 @@ template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setMaxAngle(uint8_t
 }
 
 template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::getInfo(Stream& stream, uint8_t id) {
+  uint8_t regs[65];
+  memset(regs, 0x55, sizeof(regs));
+  int i = 0;
   mutex.lock();
-  uint8_t year = readByteCmd(id, _NI_MFG_YEAR);
-  uint8_t month = readByteCmd(id, _NI_MFG_MONTH);
-  uint8_t day = readByteCmd(id, _NI_MFG_DAY);
-  uint16_t sw_version = readWordCmd(id, SWVER_H);
-  uint16_t boot_times = readWordCmd(id, _NI_BOOT_TIMES_H);
-  uint8_t voltage = readWordCmd(id, _NI_VOLTAGE);
-  uint8_t temperature = readWordCmd(id, _NI_TEMPERATURE);
+  while (i < sizeof(regs)) {
+    if ((i > 29 && i < 40) || (i > 48 && i < 56)) {
+      i++;
+      continue;
+    }
+    regs[i++] = readByteCmd(id, i);
+  }
   mutex.unlock();
-  stream.println("Motor " + String(id));
-  stream.println(String("* manufactured ") + year + "/" + month + "/" + day);
-  stream.println(String("* firmware version ") + sw_version);
-  stream.println(String("* boot times ") + boot_times);
-  stream.println(String("* voltage ") + voltage);
-  stream.println(String("* temperature ") + temperature);
+  stream.println("regs map:");
+  for (i = 0; i < sizeof(regs); i++) {
+    stream.println(String(i, HEX) + " : " + String(regs[i], HEX));
+  }
 }
