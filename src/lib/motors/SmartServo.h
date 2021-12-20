@@ -56,7 +56,9 @@ public:
 
   int ping(uint8_t id);
 
-  void reset(uint8_t id);
+  //void reset(uint8_t id = BROADCAST);
+
+  bool isEngaged(uint8_t id);
 
   void printTimestamps();
 

@@ -264,14 +264,21 @@ template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setID(uint8_t id) {
 
 template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::engage(uint8_t id) {
   mutex.lock();
-  writeWordCmd(id,TORQUE_SWITCH, 0xFF);
+  writeByteCmd(id,TORQUE_SWITCH, 0x1);
   mutex.unlock();
 }
 
 template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::disengage(uint8_t id) {
   mutex.lock();
-  writeWordCmd(id,TORQUE_SWITCH, 0);
+  writeByteCmd(id,TORQUE_SWITCH, 0);
   mutex.unlock();
+}
+
+template <int MAX_MOTORS> bool SmartServoClass<MAX_MOTORS>::isEngaged(uint8_t id) {
+  mutex.lock();
+  int ret = readByteCmd(id,TORQUE_SWITCH);
+  mutex.unlock();
+  return ret != 0;
 }
 
 template <int MAX_MOTORS> void  SmartServoClass<MAX_MOTORS>::setStallProtectionTime(uint8_t time) {

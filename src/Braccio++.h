@@ -62,6 +62,15 @@ public:
 	void info(Stream& stream) {
 		_servos->getInfo(stream, _idx);
 	}
+	void disengage() {
+		_servos->disengage(_idx);
+	}
+	void engage() {
+		_servos->engage(_idx);
+	}
+	bool engaged() {
+		return _servos->isEngaged(_idx);
+	}
 
 private:
 	SmartServoClass<7>* _servos;
@@ -96,6 +105,7 @@ public:
 		servos->setPosition(4, a4, runTime);
 		servos->setPosition(5, a5, runTime);
 		servos->setPosition(6, a6, runTime);
+		servos->synchronize();
 		servos->setPositionMode(pmIMMEDIATE);
 	}
 	// getters
@@ -120,6 +130,14 @@ public:
 
 	void speed(speed_grade_t speed_grade) {
 		runTime  = speed_grade;
+	}
+
+	void disengage(int id = SmartServoClass<7>::BROADCAST) {
+		servos->disengage(id);
+	}
+
+	void engage(int id = SmartServoClass<7>::BROADCAST) {
+		servos->engage(id);
 	}
 
 	int getKey();
@@ -157,7 +175,7 @@ private:
 	TCA6424A expander = TCA6424A(TCA6424A_ADDRESS_ADDR_HIGH);
 	Backlight bl;
 
-	speed_grade_t runTime = MEDIUM; //ms
+	speed_grade_t runTime = SLOW; //ms
 
 	voidFuncPtr _customMenu = nullptr;
 
