@@ -155,18 +155,22 @@ void BraccioClass::connectJoystickTo(lv_obj_t* obj) {
 
 void BraccioClass::pd_thread() {
 	start_pd_burst = millis();
+	size_t last_time_ask_pps = 0;
   while (1) {
     auto ret = pd_events.wait_any(0xFF);
     if ((ret & 1) && (millis() - start_pd_burst > 1000)) {
-      PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
       pd_timer.detach();
-      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 1s);
+      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 5s);
     }
     if (ret & 2) {
       pd_timer.detach();
-      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 10ms);
+      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 50ms);
     }
     i2c_mutex.lock();
+    if (millis() - last_time_ask_pps > 5000) {
+      PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
+      last_time_ask_pps = millis();
+    }
     PD_UFP.run();
     i2c_mutex.unlock();
     if (PD_UFP.is_power_ready() && PD_UFP.is_PPS_ready()) {
