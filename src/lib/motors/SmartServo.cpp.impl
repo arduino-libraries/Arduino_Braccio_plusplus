@@ -63,7 +63,7 @@ template <int MAX_MOTORS> void SmartServoClass<MAX_MOTORS>::receiveResponse(int 
   _rxLen=0;
   memset(_rxBuf, 0, sizeof(_rxBuf));
   long start = millis();
-  while ((millis() - start < 100) && (_rxLen < howMany)) {
+  while ((millis() - start < howMany) && (_rxLen < howMany)) {  // timeout_min = 70uS * howMany
     if (_RS485.available()) {
       uint8_t c = _RS485.read();
       //Serial.print(c, HEX);
