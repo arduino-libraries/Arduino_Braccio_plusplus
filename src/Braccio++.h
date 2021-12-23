@@ -158,6 +158,7 @@ protected:
 
 	// default display APIs
 	void drawMenu();
+	void splashScreen(int duration = 700);
 	void hideMenu();
 	void drawImage(char* image);
 	void defaultMenu();

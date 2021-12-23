@@ -105,13 +105,17 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 	gfx.setAddrWindow(0, 0, 240, 240);
 	gfx.setFreeFont(&FreeSans18pt7b);
 
+/*
 	gfx.drawBitmap(44, 60, ArduinoLogo, 152, 72, 0x04B3);
   gfx.drawBitmap(48, 145, ArduinoText, 144, 23, 0x04B3);
+*/
 
-  delay(2000);
+  //delay(2000);
 
   p_objGroup = lv_group_create();
   lv_group_set_default(p_objGroup);
+
+  splashScreen();
 
   if (customMenu) {
     customMenu();
@@ -119,10 +123,12 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
     defaultMenu();
   }
 
-	gfx.fillScreen(TFT_BLACK);
-	gfx.println("\n\nPlease\nconnect\npower");
+  if (!PD_UFP.is_PPS_ready()) {
+		gfx.fillScreen(TFT_BLACK);
+		gfx.println("\n\nPlease\nconnect\npower");
+	}
 
-	PD_UFP.print_status(Serial);
+	//PD_UFP.print_status(Serial);
 	while (!PD_UFP.is_PPS_ready()) {
 		i2c_mutex.lock();
 		PD_UFP.print_status(Serial);
@@ -197,18 +203,24 @@ void BraccioClass::display_thread() {
 
 #include <extra/libs/gif/lv_gif.h>
 
-void BraccioClass::defaultMenu() {
-
-	lv_obj_t* welcomemessage = lv_label_create(lv_scr_act());
-	lv_label_set_long_mode(welcomemessage, LV_LABEL_LONG_SCROLL_CIRCULAR);
-	lv_obj_set_width(welcomemessage, lv_disp_get_hor_res( NULL ) / 2);
-	lv_label_set_text(welcomemessage, "ARDUINO BRACCIO ++ ");
-	lv_obj_align(welcomemessage, LV_ALIGN_CENTER, 50, 0);
-
+void BraccioClass::splashScreen(int duration) {
 	LV_IMG_DECLARE(img_bulb_gif);
 	lv_obj_t* img = lv_gif_create(lv_scr_act());
 	lv_gif_set_src(img, &img_bulb_gif);
-	lv_obj_align(img, LV_ALIGN_LEFT_MID, 20, 0);
+	lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
+
+	for (long start = millis(); millis() - start < duration;) {
+		lv_task_handler();
+    lv_tick_inc(LV_DISP_DEF_REFR_PERIOD);
+    delay(10);
+	}
+	lv_obj_del(img);
+}
+
+void BraccioClass::defaultMenu() {
+
+	// TODO: create a meaningful default menu
+
 }
 
 void BraccioClass::motors_connected_thread() {
