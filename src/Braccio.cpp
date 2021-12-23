@@ -133,7 +133,7 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 	}
 
 #ifdef __MBED__
-	static rtos::Thread display_th(osPriorityBelowNormal);
+	static rtos::Thread display_th;
 	display_th.start(mbed::callback(this, &BraccioClass::display_thread));
 #endif
 
@@ -141,7 +141,7 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 	servos->setPositionMode(pmIMMEDIATE);
 
 #ifdef __MBED__
-	static rtos::Thread connected_th(osPriorityLow);
+	static rtos::Thread connected_th;
 	connected_th.start(mbed::callback(this, &BraccioClass::motors_connected_thread));
 #endif
 
