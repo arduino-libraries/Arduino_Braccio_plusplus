@@ -106,7 +106,7 @@ void PD_UFP_core_c::run(void)
 
 bool PD_UFP_core_c::set_PPS(uint16_t PPS_voltage, uint8_t PPS_current)
 {
-    if (status_power == STATUS_POWER_PPS && PD_protocol_set_PPS(&protocol, PPS_voltage, PPS_current, true)) {
+    if (status_power == STATUS_POWER_PPS) { // && PD_protocol_set_PPS(&protocol, PPS_voltage, PPS_current, true)) {
         send_request = 1;
         return true;
     }

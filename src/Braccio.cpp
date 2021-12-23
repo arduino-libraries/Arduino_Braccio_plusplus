@@ -158,12 +158,13 @@ void BraccioClass::pd_thread() {
   while (1) {
     auto ret = pd_events.wait_any(0xFF);
     if ((ret & 1) && (millis() - start_pd_burst > 1000)) {
+      PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
       pd_timer.detach();
       pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 1s);
     }
     if (ret & 2) {
       pd_timer.detach();
-      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 50ms);
+      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 10ms);
     }
     i2c_mutex.lock();
     PD_UFP.run();
