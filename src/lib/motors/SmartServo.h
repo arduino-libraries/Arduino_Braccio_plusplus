@@ -2,6 +2,7 @@
 #define _SMARTMOTOR_H_
 
 #include <Arduino.h>
+#include <mbed.h>
 #include "RS485.h"
 
 typedef enum {
@@ -9,7 +10,8 @@ typedef enum {
   pmSYNC
 } positionMode;
 
-template <int MAX_MOTORS>
+static int constexpr MAX_MOTORS = 6;
+
 class SmartServoClass
 {
 public:
@@ -183,7 +185,5 @@ private:
 
   rtos::Mutex mutex;
 };
-
-#include "SmartServo.cpp.impl"
 
 #endif // _SMARTMOTOR_H_

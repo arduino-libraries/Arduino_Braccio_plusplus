@@ -38,7 +38,7 @@ using namespace std::chrono;
 
 class MotorsWrapper {
 public:
-	MotorsWrapper(SmartServoClass<7>* servos, int idx) : _servos(servos), _idx(idx) {}
+	MotorsWrapper(SmartServoClass* servos, int idx) : _servos(servos), _idx(idx) {}
 	MotorsWrapper& to(float angle) {
 		_servos->setPosition(_idx, angle, _speed);
 		return *this;
@@ -73,7 +73,7 @@ public:
 	}
 
 private:
-	SmartServoClass<7>* _servos;
+	SmartServoClass* _servos;
 	int _idx;
 	int _speed = 100;
 };
@@ -132,11 +132,11 @@ public:
 		runTime  = speed_grade;
 	}
 
-	void disengage(int id = SmartServoClass<7>::BROADCAST) {
+	void disengage(int id = SmartServoClass::BROADCAST) {
 		servos->disengage(id);
 	}
 
-	void engage(int id = SmartServoClass<7>::BROADCAST) {
+	void engage(int id = SmartServoClass::BROADCAST) {
 		servos->engage(id);
 	}
 
@@ -170,7 +170,7 @@ protected:
 private:
 
   RS485Class serial485 = RS485Class(Serial1, 0, 7, 8); // TX, DE, RE
-  SmartServoClass<7>* servos = new SmartServoClass<7>(serial485);
+  SmartServoClass* servos = new SmartServoClass(serial485);
 
 	PD_UFP_log_c PD_UFP = PD_UFP_log_c(PD_LOG_LEVEL_VERBOSE);
 	TCA6424A expander = TCA6424A(TCA6424A_ADDRESS_ADDR_HIGH);
