@@ -15,6 +15,19 @@ void my_print( const char * dsc )
 
 using namespace std::chrono_literals;
 
+BraccioClass::BraccioClass()
+: serial485{Serial1, 0, 7, 8} /* TX, DE, RE */
+, servos{new SmartServoClass(serial485)}
+, PD_UFP{PD_LOG_LEVEL_VERBOSE}
+, expander{TCA6424A_ADDRESS_ADDR_HIGH}
+, bl{}
+, runTime{SLOW}
+, _customMenu{nullptr}
+
+{
+
+}
+
 bool BraccioClass::begin(voidFuncPtr customMenu) {
 
 	Wire.begin();

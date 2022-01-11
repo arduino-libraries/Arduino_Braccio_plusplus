@@ -78,9 +78,12 @@ private:
 	int _speed = 100;
 };
 
-class BraccioClass {
+class BraccioClass
+{
 public:
-	BraccioClass() {}
+
+	BraccioClass();
+
 	bool begin(voidFuncPtr customMenu = nullptr);
 
 	// setters
@@ -169,16 +172,15 @@ protected:
 
 private:
 
-  RS485Class serial485 = RS485Class(Serial1, 0, 7, 8); // TX, DE, RE
-  SmartServoClass* servos = new SmartServoClass(serial485);
-
-	PD_UFP_log_c PD_UFP = PD_UFP_log_c(PD_LOG_LEVEL_VERBOSE);
-	TCA6424A expander = TCA6424A(TCA6424A_ADDRESS_ADDR_HIGH);
+    RS485Class serial485;
+    SmartServoClass* servos;
+	PD_UFP_log_c PD_UFP;
+	TCA6424A expander;
 	Backlight bl;
 
-	speed_grade_t runTime = SLOW; //ms
+	speed_grade_t runTime; //ms
 
-	voidFuncPtr _customMenu = nullptr;
+	voidFuncPtr _customMenu;
 
 	const int BTN_LEFT = 3;
 	const int BTN_RIGHT = 4;
