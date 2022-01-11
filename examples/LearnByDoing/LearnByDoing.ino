@@ -97,7 +97,6 @@ static mbed::FATFileSystem fs("fs");
 
 void setup() {
 
-  // Call Braccio.begin() for default menu or pass a function for custom menu
   Serial.begin(115200);
 
   // Mount file system for load/store movements
@@ -106,6 +105,7 @@ void setup() {
     err = fs.reformat(&bd);
   }
 
+  // Call Braccio.begin() for default menu or pass a function for custom menu
   Braccio.begin(customMenu);
   Serial.println("Replicate a movement");
 }
