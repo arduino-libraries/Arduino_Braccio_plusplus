@@ -38,42 +38,42 @@ using namespace std::chrono;
 
 class MotorsWrapper {
 public:
-	MotorsWrapper(SmartServoClass* servos, int idx) : _servos(servos), _idx(idx) {}
+	MotorsWrapper(SmartServoClass & servos, int idx) : _servos(servos), _idx(idx) {}
 	MotorsWrapper& to(float angle) {
-		_servos->setPosition(_idx, angle, _speed);
+		_servos.setPosition(_idx, angle, _speed);
 		return *this;
 	}
 	MotorsWrapper& in(std::chrono::milliseconds len) {
-		_servos->setTime(_idx, len.count());
+		_servos.setTime(_idx, len.count());
 		return *this;
 	}
 	MotorsWrapper& move() {
 		return *this;
 	}
 	float position() {
-		return _servos->getPosition(_idx);
+		return _servos.getPosition(_idx);
 	}
 	bool connected() {
-		return _servos->ping(_idx) == 0;
+		return _servos.ping(_idx) == 0;
 	}
 	operator bool() {
 		return connected();
 	}
 	void info(Stream& stream) {
-		_servos->getInfo(stream, _idx);
+		_servos.getInfo(stream, _idx);
 	}
 	void disengage() {
-		_servos->disengage(_idx);
+		_servos.disengage(_idx);
 	}
 	void engage() {
-		_servos->engage(_idx);
+		_servos.engage(_idx);
 	}
 	bool engaged() {
-		return _servos->isEngaged(_idx);
+		return _servos.isEngaged(_idx);
 	}
 
 private:
-	SmartServoClass* _servos;
+	SmartServoClass & _servos;
 	int _idx;
 	int _speed = 100;
 };
@@ -95,36 +95,36 @@ public:
 		return move(joint_index);
 	}
 	void moveTo(int joint_index, int position) {
-		//servos->setPosition(joint_index, position, 100);
+		//servos.setPosition(joint_index, position, 100);
 	}
 	void moveTo(int joint_index, float angle) {
-		servos->setPosition(joint_index, angle, 100);
+		servos.setPosition(joint_index, angle, 100);
 	}
 	void moveTo(float a1, float a2, float a3, float a4, float a5, float a6) {
-		servos->setPositionMode(pmSYNC);
-		servos->setPosition(1, a1, runTime);
-		servos->setPosition(2, a2, runTime);
-		servos->setPosition(3, a3, runTime);
-		servos->setPosition(4, a4, runTime);
-		servos->setPosition(5, a5, runTime);
-		servos->setPosition(6, a6, runTime);
-		servos->synchronize();
-		servos->setPositionMode(pmIMMEDIATE);
+		servos.setPositionMode(pmSYNC);
+		servos.setPosition(1, a1, runTime);
+		servos.setPosition(2, a2, runTime);
+		servos.setPosition(3, a3, runTime);
+		servos.setPosition(4, a4, runTime);
+		servos.setPosition(5, a5, runTime);
+		servos.setPosition(6, a6, runTime);
+		servos.synchronize();
+		servos.setPositionMode(pmIMMEDIATE);
 	}
 	// getters
 	void positions(float* buffer) {
 		for (int i = 1; i < 7; i++)	{
-			*buffer++ = servos->getPosition(i);
+			*buffer++ = servos.getPosition(i);
 		}
 	}
 	void positions(float& a1, float& a2, float& a3, float& a4, float& a5, float& a6) {
 		// TODO: add check if motors are actually connected
-		a1 = servos->getPosition(1);
-		a2 = servos->getPosition(2);
-		a3 = servos->getPosition(3);
-		a4 = servos->getPosition(4);
-		a5 = servos->getPosition(5);
-		a6 = servos->getPosition(6);
+		a1 = servos.getPosition(1);
+		a2 = servos.getPosition(2);
+		a3 = servos.getPosition(3);
+		a4 = servos.getPosition(4);
+		a5 = servos.getPosition(5);
+		a6 = servos.getPosition(6);
 	}
 	float position(int joint_index);
 	bool connected(int joint_index) {
@@ -136,11 +136,11 @@ public:
 	}
 
 	void disengage(int id = SmartServoClass::BROADCAST) {
-		servos->disengage(id);
+		servos.disengage(id);
 	}
 
 	void engage(int id = SmartServoClass::BROADCAST) {
-		servos->engage(id);
+		servos.engage(id);
 	}
 
 	int getKey();
@@ -167,13 +167,13 @@ protected:
 	void defaultMenu();
 
 	void setID(int id) {
-		servos->setID(id);
+		servos.setID(id);
 	}
 
 private:
 
     RS485Class serial485;
-    SmartServoClass* servos;
+    SmartServoClass servos;
 	PD_UFP_log_c PD_UFP;
 	TCA6424A expander;
 	Backlight bl;

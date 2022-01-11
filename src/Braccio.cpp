@@ -17,7 +17,7 @@ using namespace std::chrono_literals;
 
 BraccioClass::BraccioClass()
 : serial485{Serial1, 0, 7, 8} /* TX, DE, RE */
-, servos{new SmartServoClass(serial485)}
+, servos{serial485}
 , PD_UFP{PD_LOG_LEVEL_VERBOSE}
 , expander{TCA6424A_ADDRESS_ADDR_HIGH}
 , bl{}
@@ -156,8 +156,8 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 	display_th.start(mbed::callback(this, &BraccioClass::display_thread));
 #endif
 
-	servos->begin();
-	servos->setPositionMode(pmIMMEDIATE);
+	servos.begin();
+	servos.setPositionMode(pmIMMEDIATE);
 
 #ifdef __MBED__
 	static rtos::Thread connected_th;
@@ -240,7 +240,7 @@ void BraccioClass::motors_connected_thread() {
   while (1) {
     if (ping_allowed) {
 	    for (int i = 1; i < 7; i++) {
-	      _connected[i] = (servos->ping(i) == 0);
+	      _connected[i] = (servos.ping(i) == 0);
 	      //Serial.print(String(i) + ": ");
 	      //Serial.println(_connected[i]);
 	    }
