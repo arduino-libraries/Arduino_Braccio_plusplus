@@ -1,3 +1,8 @@
+/* This example allows a user to test if communication
+ * can be established with a motor which can be selected
+ * via inputting the desired number in the serial monitor.
+ */
+
 #include "Braccio++.h"
 
 void setup()
