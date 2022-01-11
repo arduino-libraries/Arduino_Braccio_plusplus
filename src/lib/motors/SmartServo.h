@@ -2,7 +2,7 @@
 #define _SMARTMOTOR_H_
 
 #include <Arduino.h>
-#include "ArduinoRS485.h"
+#include "RS485.h"
 
 typedef enum {
   pmIMMEDIATE,
