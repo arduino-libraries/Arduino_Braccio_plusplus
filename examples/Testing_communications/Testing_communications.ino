@@ -1,23 +1,32 @@
 #include "Braccio++.h"
 
-int selected_motor = 0;
-
-void setup() {
+void setup()
+{
   Serial.begin(115200);
-  while(!Serial){}
-  Serial.println("Testing the motor communication!");
+  while(!Serial) { }
+
   Braccio.begin();
+  Serial.println("Testing motor communication!");
+  Serial.println("Choose motor 1 to 6 to test the connection");
+  Serial.print(">> ");
 }
 
-void loop() {
-  Serial.println("Choose the motor 1 to 6 to test the connection:");
-  while((Serial.available() <= 0)){};
-  int motorID = Serial.parseInt();
+void loop()
+{
+  while(Serial.available() <= 0) { }
+  int const motorID = Serial.parseInt();
+  while(Serial.read() != '\n') { }
+
+  if (motorID < 1 || motorID > 6) {
+    Serial.println("Error, wrong motor id, choose value between 1 and 6");
+    Serial.print(">> ");
+    return;
+  }
   
-  bool connected = (Braccio.connected(motorID));
-  if (connected)
+  if (Braccio.connected(motorID))
     Serial.println("Communcation with motor " + String(motorID) + " successful");
   else
     Serial.println("Communcation failure - Please check the motor " + String(motorID) + " connection");
-  Serial.println();
+
+  Serial.print(">> ");
 }
