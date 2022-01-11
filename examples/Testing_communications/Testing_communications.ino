@@ -24,9 +24,9 @@ void loop()
   }
   
   if (Braccio.connected(motorID))
-    Serial.println("Communcation with motor " + String(motorID) + " successful");
+    Serial.println("Communication with motor " + String(motorID) + " successful");
   else
-    Serial.println("Communcation failure - Please check the motor " + String(motorID) + " connection");
+    Serial.println("Communication  failure - Please check the motor " + String(motorID) + " connection");
 
   Serial.print(">> ");
 }
