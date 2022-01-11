@@ -161,18 +161,6 @@ int SmartServoClass::begin() {
   }
 }
 
-void SmartServoClass::setPositionMode(PositionMode mode) {
-  _positionMode = mode;
-}
-
-uint16_t SmartServoClass::angleToPosition (float angle) {
-  return angle*MAX_POSITION/360.0;
-}
-
-float SmartServoClass::positionToAngle (uint16_t position) {
-  return (360.0*position)/MAX_POSITION;
-}
-
 void SmartServoClass::setPosition(uint8_t id, float angle, uint16_t speed) {
   mutex.lock();
   if (id<MAX_MOTORS) {

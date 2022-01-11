@@ -21,7 +21,8 @@ public:
 
   int begin();
   void end();
-  void setPositionMode(PositionMode mode);
+
+  inline void setPositionMode(PositionMode mode) { _positionMode = mode; }
 
   void setPosition(uint8_t id, float angle, uint16_t speed);
 
@@ -160,9 +161,8 @@ private:
   void     action          (uint8_t id);
   void     writeSyncCmd    (uint8_t *id, uint8_t num, uint8_t address, uint8_t len, uint8_t * data);
 
-  uint16_t angleToPosition (float angle);
-
-  float positionToAngle (uint16_t position);
+  inline uint16_t angleToPosition(float angle) { return (angle*MAX_POSITION)/360.0; }
+  inline float    positionToAngle(uint16_t position) { return (360.0*position)/MAX_POSITION; }
 
   mbed::Callback<void()> onError;
 
