@@ -157,7 +157,7 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 #endif
 
 	servos.begin();
-	servos.setPositionMode(pmIMMEDIATE);
+	servos.setPositionMode(PositionMode::IMMEDIATE);
 
 #ifdef __MBED__
 	static rtos::Thread connected_th;

@@ -5,10 +5,11 @@
 #include <mbed.h>
 #include "RS485.h"
 
-typedef enum {
-  pmIMMEDIATE,
-  pmSYNC
-} positionMode;
+enum class PositionMode
+{
+  IMMEDIATE,
+  SYNC
+};
 
 static int constexpr MAX_MOTORS = 6;
 
@@ -20,7 +21,7 @@ public:
 
   int begin();
   void end();
-  void setPositionMode(positionMode mode);
+  void setPositionMode(PositionMode mode);
 
   void setPosition(uint8_t id, float angle, uint16_t speed);
 
@@ -181,7 +182,7 @@ private:
   uint8_t _rxLen;
   uint16_t _targetPosition[MAX_MOTORS];
   uint16_t _targetSpeed[MAX_MOTORS];
-  positionMode _positionMode;
+  PositionMode _positionMode;
 
   rtos::Mutex mutex;
 };

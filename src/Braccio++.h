@@ -101,7 +101,7 @@ public:
 		servos.setPosition(joint_index, angle, 100);
 	}
 	void moveTo(float a1, float a2, float a3, float a4, float a5, float a6) {
-		servos.setPositionMode(pmSYNC);
+		servos.setPositionMode(PositionMode::SYNC);
 		servos.setPosition(1, a1, runTime);
 		servos.setPosition(2, a2, runTime);
 		servos.setPosition(3, a3, runTime);
@@ -109,7 +109,7 @@ public:
 		servos.setPosition(5, a5, runTime);
 		servos.setPosition(6, a6, runTime);
 		servos.synchronize();
-		servos.setPositionMode(pmIMMEDIATE);
+		servos.setPositionMode(PositionMode::IMMEDIATE);
 	}
 	// getters
 	void positions(float* buffer) {

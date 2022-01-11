@@ -154,14 +154,14 @@ int SmartServoClass::begin() {
     _RS485.receive();
     writeByteCmd(BROADCAST,SERVO_MOTOR_MODE,1);
     writeByteCmd(BROADCAST,TORQUE_SWITCH,1);
-    _positionMode = pmIMMEDIATE;
+    _positionMode = PositionMode::IMMEDIATE;
     return 0;
   } else {
     return -1;
   }
 }
 
-void SmartServoClass::setPositionMode(positionMode mode) {
+void SmartServoClass::setPositionMode(PositionMode mode) {
   _positionMode = mode;
 }
 
@@ -178,7 +178,7 @@ void SmartServoClass::setPosition(uint8_t id, float angle, uint16_t speed) {
   if (id<MAX_MOTORS) {
     _targetPosition[id] = angleToPosition(angle);
     _targetSpeed[id] = speed;
-    if (_positionMode==pmIMMEDIATE) {
+    if (_positionMode==PositionMode::IMMEDIATE) {
       writeWordCmd(id,TARGET_POSITION_H,angleToPosition(angle));
     }
   }  
