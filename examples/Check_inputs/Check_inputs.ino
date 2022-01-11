@@ -1,30 +1,36 @@
-#include "Braccio++.h"
+#include <Braccio++.h>
 
-String message = "";
+String toMessage(int const input)
+{
+  static String const message[] =
+  { "",
+    "LEFT   (Joystick)",
+    "RIGHT  (Joystick)",
+    "SELECT (Joystick)",
+    "UP     (Joystick)",
+    "DOWN   (Joystick)",
+    "ENTER  (Button)"
+  };
 
-String checkInputs(int input){
-  String check[] = { "",
-    "Joystick left was moved!",
-    "Joystick right was moved!",
-    "Joystick select button was pressed!",
-    "Joystick up was moved!",
-    "Joystick down was moved!",
-    "Enter button was pressed!"};
-   return check[input];
+  if (input < 7)
+    return message[input];
+  else
+    return String("Error, invalid input value");
 }
 
-void setup() {
+void setup()
+{
   Serial.begin(115200);
   while(!Serial){}
+
   Braccio.begin();
   Serial.println("Press any button or move the joystick.");
 }
 
-void loop() {
-  message = checkInputs(Braccio.getKey());
-  if(message != ""){
+void loop()
+{
+  String const message = toMessage(Braccio.getKey());
+  if(message != "")
     Serial.println(message);
-    message = "";
-  }
-  delay(500);
+  delay(100);
 }
