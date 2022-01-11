@@ -20,6 +20,10 @@ on:
   workflow_dispatch:
   repository_dispatch:
 
+env:
+  SKETCHES_REPORTS_PATH: sketches-reports
+  SKETCHES_REPORTS_ARTIFACT_NAME: sketches-reports
+
 jobs:
   build:
     name: ${{ matrix.board.fqbn }}
@@ -53,3 +57,34 @@ jobs:
             # See: https://github.com/arduino/compile-sketches#libraries
           sketch-paths: |
             - examples
+          enable-deltas-report: true
+          sketches-report-path: ${{ env.SKETCHES_REPORTS_PATH }}
+
+      - name: Save sketches report as workflow artifact
+        uses: actions/upload-artifact@v2
+        with:
+          if-no-files-found: error
+          path: ${{ env.SKETCHES_REPORTS_PATH }}
+          name: ${{ env.SKETCHES_REPORTS_ARTIFACT_NAME }}
+
+  report-size-deltas:
+    needs: build
+    # Run even if some compilations failed.
+    if: always() && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download sketches reports artifact
+        id: download-artifact
+        continue-on-error: true # If compilation failed for all boards then there are no artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.SKETCHES_REPORTS_ARTIFACT_NAME }}
+          path: ${{ env.SKETCHES_REPORTS_PATH }}
+
+      - name: Comment size deltas report to PR
+        uses: arduino/report-size-deltas@v1
+        # If actions/download-artifact failed, there are no artifacts to report from.
+        if: steps.download-artifact.outcome == 'success'
+        with:
+          sketches-reports-source: ${{ env.SKETCHES_REPORTS_PATH }}
