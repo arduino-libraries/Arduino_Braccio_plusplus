@@ -3,7 +3,7 @@
  * via inputting the desired number in the serial monitor.
  */
 
-#include "Braccio++.h"
+#include <Braccio++.h>
 
 void setup()
 {
