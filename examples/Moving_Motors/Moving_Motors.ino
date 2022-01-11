@@ -7,7 +7,7 @@ void setup() {
   Braccio.begin();
   Serial.begin(115200);
   while(!Serial){}
-  Serial.println("Testing the motor angular moviment!");
+  Serial.println("Testing the motor angular movement!");
 }
 
 void loop() {
