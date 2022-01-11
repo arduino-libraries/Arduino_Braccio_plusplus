@@ -32,9 +32,9 @@ void loop()
     return;
   }
 
-  for (float i = 0.0; i <= 180.0; i+=10.0) {
-    Braccio.move(selected_motor).to(i);
-    Serial.println("Current angle: " + String(i));
+  for (float angle = 0.0; angle <= 180.0; angle += 10.0) {
+    Braccio.move(selected_motor).to(angle);
+    Serial.println("Current angle: " + String(angle));
     delay(100);
   }
 }
