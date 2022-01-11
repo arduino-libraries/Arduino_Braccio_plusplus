@@ -3,6 +3,7 @@
 `Braccio++`
 ===========
 
+[![Check Arduino status](https://github.com/arduino-libraries/Braccio_v2_library/actions/workflows/check-arduino.yml/badge.svg)](https://github.com/arduino-libraries/Braccio_v2_library/actions/workflows/check-arduino.yml)
 [![Spell Check status](https://github.com/arduino-libraries/Braccio_v2_library/actions/workflows/spell-check.yml/badge.svg)](https://github.com/arduino-libraries/Braccio_v2_library/actions/workflows/spell-check.yml)
 
 This library allows you to control and interact with the 6 DOF Braccio++ robot arm.
