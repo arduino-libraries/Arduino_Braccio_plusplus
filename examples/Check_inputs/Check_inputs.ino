@@ -1,3 +1,9 @@
+/* This example allows the user to read the
+ * inputs of the Braccio++ shield UI devices:
+ * - joystick (up,down,left,right,select)
+ * - button (enter)
+ */
+
 #include <Braccio++.h>
 
 String toMessage(int const input)
