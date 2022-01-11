@@ -1,3 +1,8 @@
+/* This example demonstrates how to use the motor
+ * API of the Braccio++ to directly control the
+ * angle for each smart servo motor.
+ */
+
 #include <Braccio++.h>
 
 void setup()
