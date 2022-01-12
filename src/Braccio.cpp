@@ -112,6 +112,8 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
   indev_drv.read_cb = read_keypad;
   kb_indev = lv_indev_drv_register(&indev_drv);
 
+  lv_style_init(&_lv_style);
+
   gfx.init();
   gfx.setRotation(4);
   gfx.fillScreen(TFT_BLACK);
@@ -140,9 +142,15 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
     i2c_mutex.unlock();
   }
 
-  if (!PD_UFP.is_PPS_ready()) {
-    gfx.fillScreen(TFT_BLACK);
-    gfx.println("\n\nPlease\nconnect\npower");
+  if (!PD_UFP.is_PPS_ready())
+  {
+    lv_style_set_text_font(&_lv_style, &lv_font_montserrat_32);
+    lv_obj_t * label1 = lv_label_create(lv_scr_act());
+    lv_obj_add_style(label1, &_lv_style, 0);
+    lv_label_set_text(label1, "Please\nconnect\npower.");
+    lv_label_set_long_mode(label1, LV_LABEL_LONG_SCROLL);
+    lv_obj_set_align(label1, LV_ALIGN_CENTER);
+    lv_obj_set_pos(label1, 0, 0);
   }
 
   if (customMenu) {

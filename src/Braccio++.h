@@ -195,6 +195,7 @@ private:
   lv_color_t buf[240 * 240 / 10];
   lv_group_t* p_objGroup;
   lv_indev_t *kb_indev;
+  lv_style_t _lv_style;
 
   bool _connected[8];
 
