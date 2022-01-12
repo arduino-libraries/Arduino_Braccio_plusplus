@@ -7,8 +7,6 @@
 
 #include "SmartServoConst.h"
 
-static int constexpr MAX_MOTORS = 6;
-
 class SmartServoClass
 {
 public:
@@ -74,9 +72,10 @@ public:
 
 private:
 
-  static const int MAX_TX_PAYLOAD_LEN = (5*MAX_MOTORS+4);
-  static const int MAX_RX_PAYLOAD_LEN = 10;
-  static const int MAX_POSITION = 4000;
+  static int constexpr MAX_MOTORS = 6;
+  static int constexpr MAX_TX_PAYLOAD_LEN = (5*MAX_MOTORS+4);
+  static int constexpr MAX_RX_PAYLOAD_LEN = 10;
+  static int constexpr MAX_POSITION = 4000;
 
   int timestamps[6 * 6] = {0};
 
