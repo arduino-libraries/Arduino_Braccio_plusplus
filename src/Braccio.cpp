@@ -120,13 +120,6 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
   gfx.setAddrWindow(0, 0, 240, 240);
   gfx.setFreeFont(&FreeSans18pt7b);
 
-/*
-  gfx.drawBitmap(44, 60, ArduinoLogo, 152, 72, 0x04B3);
-  gfx.drawBitmap(48, 145, ArduinoText, 144, 23, 0x04B3);
-*/
-
-  //delay(2000);
-
   p_objGroup = lv_group_create();
   lv_group_set_default(p_objGroup);
 
