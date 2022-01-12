@@ -123,6 +123,11 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
   p_objGroup = lv_group_create();
   lv_group_set_default(p_objGroup);
 
+#ifdef __MBED__
+  static rtos::Thread display_th;
+  display_th.start(mbed::callback(this, &BraccioClass::display_thread));
+#endif
+
   splashScreen();
 
   for(auto const now = millis();
@@ -151,11 +156,6 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
   } else {
     defaultMenu();
   }
-
-#ifdef __MBED__
-  static rtos::Thread display_th;
-  display_th.start(mbed::callback(this, &BraccioClass::display_thread));
-#endif
 
   servos.begin();
   servos.setPositionMode(PositionMode::IMMEDIATE);
@@ -223,11 +223,10 @@ void BraccioClass::splashScreen(int duration) {
   lv_gif_set_src(img, &img_bulb_gif);
   lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
 
-  for (long start = millis(); millis() - start < duration;) {
-    lv_task_handler();
-    lv_tick_inc(LV_DISP_DEF_REFR_PERIOD);
+  /* Wait until the splash screen duration is over. */
+  for (long start = millis(); millis() - start < duration;)
     delay(10);
-  }
+
   lv_obj_del(img);
   lv_obj_clean(lv_scr_act());
 }
