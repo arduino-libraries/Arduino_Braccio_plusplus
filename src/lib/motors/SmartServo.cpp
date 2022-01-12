@@ -157,8 +157,8 @@ int SmartServoClass::begin() {
     _txPacket.header[1] = 0xff;
     _RS485.begin(115200, 0, 90);
     _RS485.receive();
-    writeByteCmd(BROADCAST,SERVO_MOTOR_MODE,1);
-    writeByteCmd(BROADCAST,TORQUE_SWITCH,1);
+    writeByteCmd(BROADCAST, toVal(SmartServoRegister::SERVO_MOTOR_MODE), 1);
+    writeByteCmd(BROADCAST, toVal(SmartServoRegister::TORQUE_SWITCH) ,1);
     _positionMode = PositionMode::IMMEDIATE;
     return 0;
   } else {
@@ -172,7 +172,7 @@ void SmartServoClass::setPosition(uint8_t const id, float const angle, uint16_t 
     _targetPosition[id] = angleToPosition(angle);
     _targetSpeed[id] = speed;
     if (_positionMode==PositionMode::IMMEDIATE) {
-      writeWordCmd(id,TARGET_POSITION_H,angleToPosition(angle));
+      writeWordCmd(id, toVal(SmartServoRegister::TARGET_POSITION_H), angleToPosition(angle));
     }
   }  
   mutex.unlock();
@@ -182,7 +182,7 @@ float SmartServoClass::getPosition(uint8_t const id) {
   mutex.lock();
   float ret = -1;
   if (id<MAX_MOTORS) {
-    ret = positionToAngle(readWordCmd(id,POSITION_H));
+    ret = positionToAngle(readWordCmd(id, toVal(SmartServoRegister::POSITION_H)));
   }
   mutex.unlock();
   return ret;
@@ -190,7 +190,7 @@ float SmartServoClass::getPosition(uint8_t const id) {
 
 void SmartServoClass::center(uint8_t const id, uint16_t const position) {
   mutex.lock();
-  writeWordCmd(id, CENTER_POINT_ADJ_H, position);
+  writeWordCmd(id, toVal(SmartServoRegister::CENTER_POINT_ADJ_H), position);
   mutex.unlock();
 }
 
@@ -199,7 +199,7 @@ void SmartServoClass::synchronize() {
   _txPacket.id = 0xFE;
   _txPacket.length = (4+1)*MAX_MOTORS +4;
   _txPacket.instruction = OP_SYNC_WRITE;
-  _txPacket.payload[0] = TARGET_POSITION_H;
+  _txPacket.payload[0] = toVal(SmartServoRegister::TARGET_POSITION_H);
   _txPacket.payload[1] = 4;
   int index = 2;
   
@@ -216,92 +216,92 @@ void SmartServoClass::synchronize() {
 
 void  SmartServoClass::setTorque(bool const torque) {
   mutex.lock();
-  writeByteCmd(BROADCAST,TORQUE_SWITCH,torque ? 1 : 0);
+  writeByteCmd(BROADCAST, toVal(SmartServoRegister::TORQUE_SWITCH), torque ? 1 : 0);
   mutex.unlock();
 }
 
 void  SmartServoClass::setTorque(uint8_t const id, bool const torque) {
   mutex.lock();
-  writeByteCmd(id,TORQUE_SWITCH,torque ? 1 : 0);
+  writeByteCmd(id, toVal(SmartServoRegister::TORQUE_SWITCH), torque ? 1 : 0);
   mutex.unlock();
 }
 
 void  SmartServoClass::setTime(uint8_t const id, uint16_t const time) {
   mutex.lock();
-  writeWordCmd(id, RUN_TIME_H, time);
+  writeWordCmd(id, toVal(SmartServoRegister::RUN_TIME_H), time);
   mutex.unlock();
 }
 
 void  SmartServoClass::setMaxTorque(uint16_t const torque) {
   mutex.lock();
-  writeWordCmd(BROADCAST,MAX_TORQUE_H, torque);
+  writeWordCmd(BROADCAST, toVal(SmartServoRegister::MAX_TORQUE_H), torque);
   mutex.unlock();
 }
 
 void  SmartServoClass::setMaxTorque(uint8_t const id, uint16_t const torque) {
   mutex.lock();
-  writeWordCmd(id+1,MAX_TORQUE_H, torque);
+  writeWordCmd(id+1, toVal(SmartServoRegister::MAX_TORQUE_H), torque);
   mutex.unlock();
 }
 
 void  SmartServoClass::setID(uint8_t const id) {
   mutex.lock();
-  writeByteCmd(BROADCAST,ID,id);
+  writeByteCmd(BROADCAST, toVal(SmartServoRegister::ID), id);
   mutex.unlock();
 }
 
 void  SmartServoClass::engage(uint8_t const id) {
   mutex.lock();
-  writeByteCmd(id,TORQUE_SWITCH, 0x1);
+  writeByteCmd(id, toVal(SmartServoRegister::TORQUE_SWITCH), 0x1);
   mutex.unlock();
 }
 
 void  SmartServoClass::disengage(uint8_t const id) {
   mutex.lock();
-  writeByteCmd(id,TORQUE_SWITCH, 0);
+  writeByteCmd(id, toVal(SmartServoRegister::TORQUE_SWITCH), 0);
   mutex.unlock();
 }
 
 bool SmartServoClass::isEngaged(uint8_t const id) {
   mutex.lock();
-  int ret = readByteCmd(id,TORQUE_SWITCH);
+  int ret = readByteCmd(id, toVal(SmartServoRegister::TORQUE_SWITCH));
   mutex.unlock();
   return ret != 0;
 }
 
 void  SmartServoClass::setStallProtectionTime(uint8_t const time) {
   mutex.lock();
-  writeByteCmd(BROADCAST,STALL_PROTECTION_TIME,time);
+  writeByteCmd(BROADCAST, toVal(SmartServoRegister::STALL_PROTECTION_TIME), time);
   mutex.unlock();
 }
 
 void  SmartServoClass::setStallProtectionTime(uint8_t const id, uint8_t const time) {
   mutex.lock();
-  writeByteCmd(id,STALL_PROTECTION_TIME,time);
+  writeByteCmd(id, toVal(SmartServoRegister::STALL_PROTECTION_TIME), time);
   mutex.unlock();
 }
 
 void  SmartServoClass::setMinAngle(float const angle) {
   mutex.lock();
-  writeByteCmd(BROADCAST,MIN_ANGLE_LIMIT_H,angleToPosition(angle));
+  writeByteCmd(BROADCAST, toVal(SmartServoRegister::MIN_ANGLE_LIMIT_H), angleToPosition(angle));
   mutex.unlock();
 }
 
 void  SmartServoClass::setMinAngle(uint8_t const id, float const angle) {
   mutex.lock();
-  writeByteCmd(id,MIN_ANGLE_LIMIT_H,angleToPosition(angle));
+  writeByteCmd(id, toVal(SmartServoRegister::MIN_ANGLE_LIMIT_H), angleToPosition(angle));
   mutex.unlock();
 }
 
 void  SmartServoClass::setMaxAngle(float const angle) {
   mutex.lock();
-  writeByteCmd(BROADCAST,MAX_ANGLE_LIMIT_H,angleToPosition(angle));
+  writeByteCmd(BROADCAST, toVal(SmartServoRegister::MAX_ANGLE_LIMIT_H), angleToPosition(angle));
   mutex.unlock();
 }
 
 void  SmartServoClass::setMaxAngle(uint8_t const id, float const angle) {
   mutex.lock();
-  writeByteCmd(id,MAX_ANGLE_LIMIT_H,angleToPosition(angle));
+  writeByteCmd(id, toVal(SmartServoRegister::MAX_ANGLE_LIMIT_H), angleToPosition(angle));
   mutex.unlock();
 }
 

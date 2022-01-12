@@ -2,10 +2,16 @@
 #define SMART_SERVO_CONST_H_
 
 /**************************************************************************************
+ * INCLUDE
+ **************************************************************************************/
+
+#include <cstdint>
+
+/**************************************************************************************
  * TYPEDEF
  **************************************************************************************/
 
-typedef enum
+enum class SmartServoRegister : uint8_t
 {  
   _NI_MFG_YEAR = 0,        //0  (0x00)  Servo factory: year        read/write    --                                           
   _NI_MFG_MONTH,           //1  (0x01)  Servo factory: month       read/write    --                         
@@ -57,6 +63,16 @@ typedef enum
   REG_WRITE_SIGN,          //64 (0x40) REG WRITE sign              read           00             
   SPEED_CONTROL_H,         //65 (0x41) Speed control (H)           read/write                  Low-order 8 bits of data actually used              
   SPEED_CONTROL_L          //66 (0x42) Speed control (L)           read/write                 
-} SmartServoRegister;   
+};
+
+/**************************************************************************************
+ * CONVERSION FUNCTIONS
+ **************************************************************************************/
+
+template <typename Enumeration>
+constexpr auto toVal(Enumeration const value) -> typename std::underlying_type<Enumeration>::type
+{
+  return static_cast<typename std::underlying_type<Enumeration>::type>(value);
+}
 
 #endif /* SMART_SERVO_CONST_H_ */
