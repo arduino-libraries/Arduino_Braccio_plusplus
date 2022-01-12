@@ -50,7 +50,7 @@ void SmartServoClass::writeCmd(uint8_t const id, uint8_t const instruction) {
 void SmartServoClass::writeByteCmd(uint8_t const id, uint8_t const address, uint8_t const data) {
   _txPacket.id = id;
   _txPacket.length = 2+2;
-  _txPacket.instruction = OP_WRITE;
+  _txPacket.instruction = toVal(SmartServoOperation::WRITE);
   _txPacket.payload[0]=address;
   _txPacket.payload[1]=data;
   sendPacket();
@@ -59,7 +59,7 @@ void SmartServoClass::writeByteCmd(uint8_t const id, uint8_t const address, uint
 void SmartServoClass::writeWordCmd(uint8_t const id, uint8_t const address, uint16_t const data) {
   _txPacket.id = id;
   _txPacket.length = 2+3;
-  _txPacket.instruction = OP_WRITE;
+  _txPacket.instruction = toVal(SmartServoOperation::WRITE);
   _txPacket.payload[0]=address;
   _txPacket.payload[1]=data>>8;
   _txPacket.payload[2]=data;
@@ -83,7 +83,7 @@ void SmartServoClass::receiveResponse(int const howMany) {
 int SmartServoClass::readBuffer(uint8_t const id, uint8_t const address,uint8_t const len) {
   _txPacket.id = id;
   _txPacket.length = 2+2;
-  _txPacket.instruction = OP_READ;
+  _txPacket.instruction = toVal(SmartServoOperation::READ);
   _txPacket.payload[0]=address;
   _txPacket.payload[1]=len;
   sendPacket();
@@ -117,7 +117,7 @@ int SmartServoClass::readByteCmd(uint8_t const id, uint8_t const address) {
 
 int SmartServoClass::ping(uint8_t const id) {
   mutex.lock();
-  writeCmd(id, OP_PING);
+  writeCmd(id, toVal(SmartServoOperation::PING));
   // TODO: check return
   receiveResponse(6);
   if (_rxLen==6 && 
@@ -140,14 +140,14 @@ int SmartServoClass::ping(uint8_t const id) {
 
 void SmartServoClass::reset(uint8_t const id) {
   mutex.lock();
-  writeCmd(id, OP_RESET);
+  writeCmd(id, toVal(SmartServoOperation::RESET));
   mutex.unlock();
 }
 */
 
 void SmartServoClass::action(uint8_t const id) {
   mutex.lock();
-  writeCmd(id, OP_ACTION);
+  writeCmd(id, toVal(SmartServoOperation::ACTION));
   mutex.unlock();
 }
 
@@ -198,7 +198,7 @@ void SmartServoClass::synchronize() {
   mutex.lock();
   _txPacket.id = 0xFE;
   _txPacket.length = (4+1)*MAX_MOTORS +4;
-  _txPacket.instruction = OP_SYNC_WRITE;
+  _txPacket.instruction = toVal(SmartServoOperation::SYNC_WRITE);
   _txPacket.payload[0] = toVal(SmartServoRegister::TARGET_POSITION_H);
   _txPacket.payload[1] = 4;
   int index = 2;

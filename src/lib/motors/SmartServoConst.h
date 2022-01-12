@@ -65,6 +65,17 @@ enum class SmartServoRegister : uint8_t
   SPEED_CONTROL_L          //66 (0x42) Speed control (L)           read/write                 
 };
 
+enum class SmartServoOperation : uint8_t
+{
+  PING       = 1,
+  READ       = 2,
+  WRITE      = 3,
+  REG_WRITE  = 4,
+  ACTION     = 5,
+  RESET      = 6,
+  SYNC_WRITE = 0x83,
+};
+
 /**************************************************************************************
  * CONVERSION FUNCTIONS
  **************************************************************************************/

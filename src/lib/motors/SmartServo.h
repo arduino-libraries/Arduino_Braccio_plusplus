@@ -80,14 +80,6 @@ private:
 
   static const int MAX_TX_PAYLOAD_LEN = (5*MAX_MOTORS+4);
   static const int MAX_RX_PAYLOAD_LEN = 10;
-  static const int OP_PING = 1;
-  static const int OP_READ = 2;
-  static const int OP_WRITE = 3;
-  static const int OP_REG_WRITE = 4;
-  static const int OP_ACTION = 5;
-  static const int OP_RESET = 6;
-  static const int OP_SYNC_WRITE = 0x83;
-
   static const int MAX_POSITION = 4000;
 
   int timestamps[6 * 6] = {0};
