@@ -140,7 +140,7 @@ int SmartServoClass::ping(uint8_t const id) {
     _rxBuf[2]==id &&
     _rxBuf[3]==2) {
 
-  	mutex.unlock();
+    mutex.unlock();
     return _rxBuf[4];
   }
   mutex.unlock();

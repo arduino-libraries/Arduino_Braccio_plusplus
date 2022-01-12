@@ -70,7 +70,7 @@ THE SOFTWARE.
                                       // ^^^ NBWire implementation is still buggy w/some interrupts!
 #define I2CDEV_BUILTIN_FASTWIRE     3 // FastWire object from Francesco Ferrara's project
 #define I2CDEV_I2CMASTER_LIBRARY    4 // I2C object from DSSCircuits I2C-Master Library at https://github.com/DSSCircuits/I2C-Master-Library
-#define I2CDEV_BUILTIN_SBWIRE	    5 // I2C object from Shuning (Steve) Bian's SBWire Library at https://github.com/freespace/SBWire 
+#define I2CDEV_BUILTIN_SBWIRE      5 // I2C object from Shuning (Steve) Bian's SBWire Library at https://github.com/freespace/SBWire 
 #define I2CDEV_TEENSY_3X_WIRE       6 // Teensy 3.x support using i2c_t3 library
 
 // -----------------------------------------------------------------------------

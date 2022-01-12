@@ -643,7 +643,7 @@ void TFT_eSPI::init(uint8_t tc)
     #include "TFT_Drivers/R61581_Init.h"
 
 #elif defined (RM68140_DRIVER)
-	#include "TFT_Drivers/RM68140_Init.h"
+  #include "TFT_Drivers/RM68140_Init.h"
 
 #elif defined (ST7789_2_DRIVER)
     #include "TFT_Drivers/ST7789_2_Init.h"
@@ -731,7 +731,7 @@ void TFT_eSPI::setRotation(uint8_t m)
     #include "TFT_Drivers/R61581_Rotation.h"
 
 #elif defined (RM68140_DRIVER)
-	#include "TFT_Drivers/RM68140_Rotation.h"
+  #include "TFT_Drivers/RM68140_Rotation.h"
 
 #elif defined (ST7789_2_DRIVER)
     #include "TFT_Drivers/ST7789_2_Rotation.h"

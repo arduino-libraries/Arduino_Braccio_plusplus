@@ -1,7 +1,7 @@
 #define ILI9481_DRIVER
 
-#define TFT_BL   12				// LED back-light control pin
-#define TFT_BACKLIGHT_ON HIGH	// Level to turn ON back-light (HIGH or LOW)
+#define TFT_BL   12        // LED back-light control pin
+#define TFT_BACKLIGHT_ON HIGH  // Level to turn ON back-light (HIGH or LOW)
 
 #define TFT_MISO 23
 #define TFT_MOSI 19
@@ -21,5 +21,5 @@
 
 #define SMOOTH_FONT
 
-#define SPI_FREQUENCY		26666666
+#define SPI_FREQUENCY    26666666
 #define SPI_READ_FREQUENCY  20000000

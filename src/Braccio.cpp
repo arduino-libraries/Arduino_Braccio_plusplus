@@ -30,69 +30,69 @@ BraccioClass::BraccioClass()
 
 bool BraccioClass::begin(voidFuncPtr customMenu) {
 
-	Wire.begin();
-	Serial.begin(115200);
+  Wire.begin();
+  Serial.begin(115200);
 
-	pinMode(PIN_FUSB302_INT, INPUT_PULLUP);
+  pinMode(PIN_FUSB302_INT, INPUT_PULLUP);
 
 #ifdef __MBED__
-	static rtos::Thread th(osPriorityHigh);
-	th.start(mbed::callback(this, &BraccioClass::pd_thread));
-	attachInterrupt(PIN_FUSB302_INT, mbed::callback(this, &BraccioClass::unlock_pd_semaphore_irq), FALLING);
-	pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 10ms);
+  static rtos::Thread th(osPriorityHigh);
+  th.start(mbed::callback(this, &BraccioClass::pd_thread));
+  attachInterrupt(PIN_FUSB302_INT, mbed::callback(this, &BraccioClass::unlock_pd_semaphore_irq), FALLING);
+  pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 10ms);
 #endif
 
-	PD_UFP.init_PPS(PPS_V(7.2), PPS_A(2.0));
+  PD_UFP.init_PPS(PPS_V(7.2), PPS_A(2.0));
 
 /*
-	while (millis() < 200) {
-		PD_UFP.run();
-	}
+  while (millis() < 200) {
+    PD_UFP.run();
+  }
 */
 
-	pinMode(1, INPUT_PULLUP);
+  pinMode(1, INPUT_PULLUP);
 
-	SPI.begin();
+  SPI.begin();
 
-	i2c_mutex.lock();
-	bl.begin();
-	if (bl.getChipID() != 0xCE) {
-		return false;
-	}
-	bl.setColor(red);
+  i2c_mutex.lock();
+  bl.begin();
+  if (bl.getChipID() != 0xCE) {
+    return false;
+  }
+  bl.setColor(red);
 
-	int ret = expander.testConnection();
+  int ret = expander.testConnection();
 
-	if (ret == false) {
-		return ret;
-	}
+  if (ret == false) {
+    return ret;
+  }
 
-	for (int i = 0; i < 14; i++) {
-		expander.setPinDirection(i, 0);
-	}
+  for (int i = 0; i < 14; i++) {
+    expander.setPinDirection(i, 0);
+  }
 
-	// Set SLEW to low
-	expander.setPinDirection(21, 0); // P25 = 8 * 2 + 5
-	expander.writePin(21, 0);
+  // Set SLEW to low
+  expander.setPinDirection(21, 0); // P25 = 8 * 2 + 5
+  expander.writePin(21, 0);
 
-	// Set TERM to HIGH (default)
-	expander.setPinDirection(19, 0); // P23 = 8 * 2 + 3
-	expander.writePin(19, 1);
+  // Set TERM to HIGH (default)
+  expander.setPinDirection(19, 0); // P23 = 8 * 2 + 3
+  expander.writePin(19, 1);
 
-	expander.setPinDirection(18, 0); // P22 = 8 * 2 + 2
-	expander.writePin(18, 0); // reset LCD
-	expander.writePin(18, 1); // LCD out of reset
-	i2c_mutex.unlock();
+  expander.setPinDirection(18, 0); // P22 = 8 * 2 + 2
+  expander.writePin(18, 0); // reset LCD
+  expander.writePin(18, 1); // LCD out of reset
+  i2c_mutex.unlock();
 
-	pinMode(BTN_LEFT, INPUT_PULLUP);
-	pinMode(BTN_RIGHT, INPUT_PULLUP);
-	pinMode(BTN_UP, INPUT_PULLUP);
-	pinMode(BTN_DOWN, INPUT_PULLUP);
-	pinMode(BTN_SEL, INPUT_PULLUP);
-	pinMode(BTN_ENTER, INPUT_PULLUP);
+  pinMode(BTN_LEFT, INPUT_PULLUP);
+  pinMode(BTN_RIGHT, INPUT_PULLUP);
+  pinMode(BTN_UP, INPUT_PULLUP);
+  pinMode(BTN_DOWN, INPUT_PULLUP);
+  pinMode(BTN_SEL, INPUT_PULLUP);
+  pinMode(BTN_ENTER, INPUT_PULLUP);
 
 #if LV_USE_LOG
-	lv_log_register_print_cb( my_print );
+  lv_log_register_print_cb( my_print );
 #endif
 
   lv_init();
@@ -112,14 +112,14 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
   indev_drv.read_cb = read_keypad;
   kb_indev = lv_indev_drv_register(&indev_drv);
 
-	gfx.init();
-	gfx.setRotation(4);
-	gfx.fillScreen(TFT_BLACK);
-	gfx.setAddrWindow(0, 0, 240, 240);
-	gfx.setFreeFont(&FreeSans18pt7b);
+  gfx.init();
+  gfx.setRotation(4);
+  gfx.fillScreen(TFT_BLACK);
+  gfx.setAddrWindow(0, 0, 240, 240);
+  gfx.setFreeFont(&FreeSans18pt7b);
 
 /*
-	gfx.drawBitmap(44, 60, ArduinoLogo, 152, 72, 0x04B3);
+  gfx.drawBitmap(44, 60, ArduinoLogo, 152, 72, 0x04B3);
   gfx.drawBitmap(48, 145, ArduinoText, 144, 23, 0x04B3);
 */
 
@@ -137,34 +137,34 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
   }
 
   if (!PD_UFP.is_PPS_ready()) {
-		gfx.fillScreen(TFT_BLACK);
-		gfx.println("\n\nPlease\nconnect\npower");
-	}
+    gfx.fillScreen(TFT_BLACK);
+    gfx.println("\n\nPlease\nconnect\npower");
+  }
 
-	//PD_UFP.print_status(Serial);
-	while (!PD_UFP.is_PPS_ready()) {
-		i2c_mutex.lock();
-		PD_UFP.print_status(Serial);
-		//PD_UFP.print_status(Serial);
-		PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
-		delay(10);
-		i2c_mutex.unlock();
-	}
-
-#ifdef __MBED__
-	static rtos::Thread display_th;
-	display_th.start(mbed::callback(this, &BraccioClass::display_thread));
-#endif
-
-	servos.begin();
-	servos.setPositionMode(PositionMode::IMMEDIATE);
+  //PD_UFP.print_status(Serial);
+  while (!PD_UFP.is_PPS_ready()) {
+    i2c_mutex.lock();
+    PD_UFP.print_status(Serial);
+    //PD_UFP.print_status(Serial);
+    PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
+    delay(10);
+    i2c_mutex.unlock();
+  }
 
 #ifdef __MBED__
-	static rtos::Thread connected_th;
-	connected_th.start(mbed::callback(this, &BraccioClass::motors_connected_thread));
+  static rtos::Thread display_th;
+  display_th.start(mbed::callback(this, &BraccioClass::display_thread));
 #endif
 
-	return true;
+  servos.begin();
+  servos.setPositionMode(PositionMode::IMMEDIATE);
+
+#ifdef __MBED__
+  static rtos::Thread connected_th;
+  connected_th.start(mbed::callback(this, &BraccioClass::motors_connected_thread));
+#endif
+
+  return true;
 }
 
 void BraccioClass::connectJoystickTo(lv_obj_t* obj) {
@@ -173,8 +173,8 @@ void BraccioClass::connectJoystickTo(lv_obj_t* obj) {
 }
 
 void BraccioClass::pd_thread() {
-	start_pd_burst = millis();
-	size_t last_time_ask_pps = 0;
+  start_pd_burst = millis();
+  size_t last_time_ask_pps = 0;
   while (1) {
     auto ret = pd_events.wait_any(0xFF);
     if ((ret & 1) && (millis() - start_pd_burst > 1000)) {
@@ -200,7 +200,7 @@ void BraccioClass::pd_thread() {
 
 void BraccioClass::display_thread() {
   while (1) {
-  	/*
+    /*
     if ((braccio::encoder.menu_running) && (braccio::encoder.menu_interrupt)) {
       braccio::encoder.menu_interrupt = false;
       braccio::nav.doInput();
@@ -217,68 +217,68 @@ void BraccioClass::display_thread() {
 #include <extra/libs/gif/lv_gif.h>
 
 void BraccioClass::splashScreen(int duration) {
-	LV_IMG_DECLARE(img_bulb_gif);
-	lv_obj_t* img = lv_gif_create(lv_scr_act());
-	lv_gif_set_src(img, &img_bulb_gif);
-	lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
+  LV_IMG_DECLARE(img_bulb_gif);
+  lv_obj_t* img = lv_gif_create(lv_scr_act());
+  lv_gif_set_src(img, &img_bulb_gif);
+  lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
 
-	for (long start = millis(); millis() - start < duration;) {
-		lv_task_handler();
+  for (long start = millis(); millis() - start < duration;) {
+    lv_task_handler();
     lv_tick_inc(LV_DISP_DEF_REFR_PERIOD);
     delay(10);
-	}
-	lv_obj_del(img);
-	lv_obj_clean(lv_scr_act());
+  }
+  lv_obj_del(img);
+  lv_obj_clean(lv_scr_act());
 }
 
 void BraccioClass::defaultMenu() {
 
-	// TODO: create a meaningful default menu
+  // TODO: create a meaningful default menu
 
 }
 
 void BraccioClass::motors_connected_thread() {
   while (1) {
     if (ping_allowed) {
-	    for (int i = 1; i < 7; i++) {
-	      _connected[i] = (servos.ping(i) == 0);
-	      //Serial.print(String(i) + ": ");
-	      //Serial.println(_connected[i]);
-	    }
-	    i2c_mutex.lock();
-	    for (int i = 1; i < 7; i++) {
-	      if (_connected[i]) {
-	        setGreen(i);
-	      } else {
-	        setRed(i);
-	      }
-	    }
-	    i2c_mutex.unlock();
-	  }
+      for (int i = 1; i < 7; i++) {
+        _connected[i] = (servos.ping(i) == 0);
+        //Serial.print(String(i) + ": ");
+        //Serial.println(_connected[i]);
+      }
+      i2c_mutex.lock();
+      for (int i = 1; i < 7; i++) {
+        if (_connected[i]) {
+          setGreen(i);
+        } else {
+          setRed(i);
+        }
+      }
+      i2c_mutex.unlock();
+    }
     delay(1000);
   }
 }
 
 int BraccioClass::getKey() {
-	if (digitalRead(BTN_LEFT) == LOW) {
-		return 1;
-	}
-	if (digitalRead(BTN_RIGHT) == LOW) {
-		return 2;
-	}
-	if (digitalRead(BTN_SEL) == LOW) {
-		return 3;
-	}
-	if (digitalRead(BTN_UP) == LOW) {
-		return 4;
-	}
-	if (digitalRead(BTN_DOWN) == LOW) {
-		return 5;
-	}
-	if (digitalRead(BTN_ENTER) == LOW) {
-		return 6;
-	}
-	return 0;
+  if (digitalRead(BTN_LEFT) == LOW) {
+    return 1;
+  }
+  if (digitalRead(BTN_RIGHT) == LOW) {
+    return 2;
+  }
+  if (digitalRead(BTN_SEL) == LOW) {
+    return 3;
+  }
+  if (digitalRead(BTN_UP) == LOW) {
+    return 4;
+  }
+  if (digitalRead(BTN_DOWN) == LOW) {
+    return 5;
+  }
+  if (digitalRead(BTN_ENTER) == LOW) {
+    return 6;
+  }
+  return 0;
 }
 
 /* Display flushing */

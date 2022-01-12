@@ -126,8 +126,8 @@
 #define Imax_frac  0x80 // Imax_frac/256 * Imax = current
 
 enum RGBColors {
-	off = 0,
-	red = 1,
+  off = 0,
+  red = 1,
   green = 2,
   blue = 3,
   yellow = 4,

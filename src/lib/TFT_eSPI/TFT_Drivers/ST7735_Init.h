@@ -7,7 +7,7 @@
 // See ILI9341_Setup.h file for an alternative simpler format
 
 {
-	// Initialization commands for ST7735 screens
+  // Initialization commands for ST7735 screens
   static const uint8_t PROGMEM
   Bcmd[] = {                  // Initialization commands for 7735B screens
     18,                       // 18 commands in list:
@@ -146,7 +146,7 @@
      }
      else 
      {
-	     commandList(Rcmd1);
+       commandList(Rcmd1);
 
        if (tabcolor == INITR_GREENTAB)
        {
