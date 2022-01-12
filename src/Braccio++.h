@@ -172,11 +172,12 @@ protected:
 
 private:
 
-    RS485Class serial485;
-    SmartServoClass servos;
+  RS485Class serial485;
+  SmartServoClass servos;
   PD_UFP_log_c PD_UFP;
   TCA6424A expander;
   Backlight bl;
+  rtos::Thread _display_thread;
 
   speed_grade_t runTime; //ms
 

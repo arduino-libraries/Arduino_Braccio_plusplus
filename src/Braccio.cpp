@@ -21,9 +21,9 @@ BraccioClass::BraccioClass()
 , PD_UFP{PD_LOG_LEVEL_VERBOSE}
 , expander{TCA6424A_ADDRESS_ADDR_HIGH}
 , bl{}
+, _display_thread{}
 , runTime{SLOW}
 , _customMenu{nullptr}
-
 {
 
 }
@@ -123,10 +123,7 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
   p_objGroup = lv_group_create();
   lv_group_set_default(p_objGroup);
 
-#ifdef __MBED__
-  static rtos::Thread display_th;
-  display_th.start(mbed::callback(this, &BraccioClass::display_thread));
-#endif
+  _display_thread.start(mbed::callback(this, &BraccioClass::display_thread));
 
   splashScreen();
 
