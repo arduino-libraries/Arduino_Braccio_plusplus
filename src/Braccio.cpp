@@ -130,10 +130,14 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 
   splashScreen();
 
-  if (customMenu) {
-    customMenu();
-  } else {
-    defaultMenu();
+  for(auto const now = millis();
+      ((millis() - now) < 5000) && !PD_UFP.is_PPS_ready();)
+  {
+    i2c_mutex.lock();
+    PD_UFP.print_status(Serial);
+    PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
+    delay(10);
+    i2c_mutex.unlock();
   }
 
   if (!PD_UFP.is_PPS_ready()) {
@@ -141,14 +145,10 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
     gfx.println("\n\nPlease\nconnect\npower");
   }
 
-  //PD_UFP.print_status(Serial);
-  while (!PD_UFP.is_PPS_ready()) {
-    i2c_mutex.lock();
-    PD_UFP.print_status(Serial);
-    //PD_UFP.print_status(Serial);
-    PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
-    delay(10);
-    i2c_mutex.unlock();
+  if (customMenu) {
+    customMenu();
+  } else {
+    defaultMenu();
   }
 
 #ifdef __MBED__
