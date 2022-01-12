@@ -17,66 +17,62 @@ class SmartServoClass
 {
 public:
   
-  SmartServoClass( RS485Class& RS485);
+  SmartServoClass(RS485Class & RS485);
 
   int begin();
   void end();
 
-  inline void setPositionMode(PositionMode mode) { _positionMode = mode; }
+  inline void setPositionMode(PositionMode const mode) { _positionMode = mode; }
 
-  void setPosition(uint8_t id, float angle, uint16_t speed);
+  void setPosition(uint8_t const id, float const angle, uint16_t const speed);
 
-  float getPosition(uint8_t id);
+  float getPosition(uint8_t const id);
 
   void synchronize();
 
-  void setTorque(bool torque);
+  void setTorque(bool const torque);
 
-  void setTorque(uint8_t id, bool torque);
+  void setTorque(uint8_t const id, bool const torque);
 
-  void setMaxTorque(uint16_t torque);
+  void setMaxTorque(uint16_t const torque);
 
-  void setMaxTorque(uint8_t id, uint16_t torque);
+  void setMaxTorque(uint8_t const id, uint16_t const torque);
 
-  void setID(uint8_t id);
+  void setID(uint8_t const id);
 
-  void engage(uint8_t id);
+  void engage(uint8_t const id);
 
-  void disengage(uint8_t id);
+  void disengage(uint8_t const id);
 
-  void setStallProtectionTime(uint8_t time);
+  void setStallProtectionTime(uint8_t const time);
 
-  void setStallProtectionTime(uint8_t id, uint8_t time);
+  void setStallProtectionTime(uint8_t const id, uint8_t const time);
 
-  void setMinAngle(float angle);
+  void setMinAngle(float const angle);
 
-  void setMinAngle(uint8_t id, float angle);
+  void setMinAngle(uint8_t const id, float const angle);
 
-  void setMaxAngle(float angle);
+  void setMaxAngle(float const angle);
 
-  void setMaxAngle(uint8_t id, float angle);
+  void setMaxAngle(uint8_t const id, float const angle);
 
-  void setTime(uint8_t id, uint16_t time);
+  void setTime(uint8_t const id, uint16_t const time);
 
-  void center(uint8_t id, uint16_t position);
+  void center(uint8_t const id, uint16_t const position);
 
-  int ping(uint8_t id);
+  int ping(uint8_t const id);
 
-  //void reset(uint8_t id = BROADCAST);
+  //void reset(uint8_t const id = BROADCAST);
 
-  bool isEngaged(uint8_t id);
+  bool isEngaged(uint8_t const id);
 
   void printTimestamps();
 
-  void getInfo(Stream& stream, uint8_t id);
+  void getInfo(Stream & stream, uint8_t const id);
 
-  void onErrorCb(mbed::Callback<void()> _onError) {
-    onError = _onError;
-  }
+  inline void onErrorCb(mbed::Callback<void()> _onError) { onError = _onError; }
 
-  int getErrors() {
-    return errors;
-  }
+  inline int getErrors() const { return errors; }
 
   static const int BROADCAST = 0xFE;
 
@@ -151,18 +147,18 @@ private:
 
   int      calcChecksum    ();
   void     sendPacket      ();
-  void     writeCmd        (uint8_t id,uint8_t instruction);
-  void     writeByteCmd    (uint8_t id,uint8_t address, uint8_t data);
-  void     writeWordCmd    (uint8_t id, uint8_t address, uint16_t data);
-  void     receiveResponse (int howMany = MAX_RX_PAYLOAD_LEN);
-  int readBuffer      (uint8_t id, uint8_t address,uint8_t len);
-  int readWordCmd     (uint8_t id, uint8_t address);
-  int  readByteCmd     (uint8_t id, uint8_t address);
-  void     action          (uint8_t id);
-  void     writeSyncCmd    (uint8_t *id, uint8_t num, uint8_t address, uint8_t len, uint8_t * data);
+  void     writeCmd        (uint8_t const id, uint8_t const instruction);
+  void     writeByteCmd    (uint8_t const id, uint8_t const address, uint8_t const data);
+  void     writeWordCmd    (uint8_t const id, uint8_t const address, uint16_t const data);
+  void     receiveResponse (int const howMany = MAX_RX_PAYLOAD_LEN);
+  int      readBuffer      (uint8_t const id, uint8_t const address, uint8_t const len);
+  int      readWordCmd     (uint8_t const id, uint8_t const address);
+  int      readByteCmd     (uint8_t const id, uint8_t const address);
+  void     action          (uint8_t const id);
+  void     writeSyncCmd    (uint8_t *id, uint8_t const num, uint8_t const address, uint8_t const len, uint8_t const * data);
 
-  inline uint16_t angleToPosition(float angle) { return (angle*MAX_POSITION)/360.0; }
-  inline float    positionToAngle(uint16_t position) { return (360.0*position)/MAX_POSITION; }
+  inline uint16_t angleToPosition(float const angle) { return (angle*MAX_POSITION)/360.0; }
+  inline float    positionToAngle(uint16_t const position) { return (360.0*position)/MAX_POSITION; }
 
   mbed::Callback<void()> onError;
 
