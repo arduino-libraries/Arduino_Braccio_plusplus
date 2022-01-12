@@ -106,7 +106,7 @@ private:
   mbed::Callback<void()> _onError;
 
 
-  struct {
+  struct __attribute__((packed)) {
     uint8_t header [2];
     uint8_t id;
     uint8_t length;
