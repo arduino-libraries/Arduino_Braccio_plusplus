@@ -1,6 +1,7 @@
 #include <Arduino.h>
 
 #include "SmartServo.h"
+#include "SmartServoConst.h"
 
 SmartServoClass::SmartServoClass(RS485Class & RS485)
 : _RS485{RS485}
