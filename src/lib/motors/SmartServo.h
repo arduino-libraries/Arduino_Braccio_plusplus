@@ -72,7 +72,7 @@ public:
 
   void getInfo(Stream & stream, uint8_t const id);
 
-  inline void onErrorCb(mbed::Callback<void()> _onError) { onError = _onError; }
+  inline void onErrorCb(mbed::Callback<void()> onError) { _onError = onError; }
 
   inline int getErrors() const { return _errors; }
 
@@ -102,10 +102,11 @@ private:
   inline uint16_t angleToPosition(float const angle) { return (angle*MAX_POSITION)/360.0; }
   inline float    positionToAngle(uint16_t const position) { return (360.0*position)/MAX_POSITION; }
 
-  mbed::Callback<void()> onError;
 
   RS485Class& _RS485;
   int _errors;
+  mbed::Callback<void()> _onError;
+
 
   struct {
     uint8_t header [2];

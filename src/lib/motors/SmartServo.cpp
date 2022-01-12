@@ -13,6 +13,7 @@
 SmartServoClass::SmartServoClass(RS485Class & RS485)
 : _RS485{RS485}
 , _errors{0}
+, _onError{}
 {
 
 }
@@ -107,7 +108,7 @@ int SmartServoClass::readBuffer(uint8_t const id, uint8_t const address,uint8_t 
     return 0;
   }
   _errors++;
-  if (onError) onError();
+  if (_onError) _onError();
   return -1;
 }
 
@@ -146,7 +147,7 @@ int SmartServoClass::ping(uint8_t const id) {
   }
   mutex.unlock();
   _errors++;
-  if (onError) onError();
+  if (_onError) _onError();
   return -1;
 }
 
