@@ -92,4 +92,11 @@ constexpr auto toVal(Enumeration const value) -> typename std::underlying_type<E
   return static_cast<typename std::underlying_type<Enumeration>::type>(value);
 }
 
+/**************************************************************************************
+ * MACROS
+ **************************************************************************************/
+
+#define REG(enum_val) toVal(enum_val)
+#define CMD(enum_val) toVal(enum_val)
+
 #endif /* SMART_SERVO_CONST_H_ */
