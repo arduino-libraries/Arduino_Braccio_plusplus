@@ -127,6 +127,15 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 
   splashScreen();
 
+  {
+    lv_style_set_text_font(&_lv_style, &lv_font_montserrat_48);
+    lv_obj_t * label1 = lv_label_create(lv_scr_act());
+    lv_obj_add_style(label1, &_lv_style, 0);
+    lv_label_set_text(label1, LV_SYMBOL_BATTERY_EMPTY);
+    lv_obj_set_align(label1, LV_ALIGN_CENTER);
+    lv_obj_set_pos(label1, 0, 0);
+  }
+
   for(auto const now = millis();
       ((millis() - now) < 5000) && !PD_UFP.is_PPS_ready();)
   {
@@ -136,6 +145,8 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
     delay(10);
     i2c_mutex.unlock();
   }
+
+  lv_obj_clean(lv_scr_act());
 
   if (!PD_UFP.is_PPS_ready())
   {
