@@ -1,5 +1,5 @@
 /*
-	UGLY MENU STUFF
+  UGLY MENU STUFF
 */
 
 namespace braccio {
@@ -46,12 +46,12 @@ static MENU(mainMenu, "Braccio++", doNothing, noEvent, wrapStyle
 
 #define TFT_GRAY RGB565(128,128,128)
 const colorDef<uint16_t> colors[6] MEMMODE = {
-	{{ TFT_BLACK, TFT_BLACK}, {TFT_BLACK, TFT_BLUE,  TFT_BLUE}}, //bgColor
-	{{ TFT_GRAY, TFT_GRAY},  {TFT_WHITE, TFT_WHITE, TFT_WHITE}}, //fgColor
-	{{ TFT_WHITE, TFT_BLACK}, {TFT_YELLOW, TFT_YELLOW, TFT_RED}}, //valColor
-	{{ TFT_WHITE, TFT_BLACK}, {TFT_WHITE, TFT_YELLOW, TFT_YELLOW}}, //unitColor
-	{{ TFT_WHITE, TFT_GRAY},  {TFT_BLACK, TFT_BLUE,  TFT_WHITE}}, //cursorColor
-	{{ TFT_WHITE, TFT_YELLOW}, {TFT_BLUE,  TFT_RED,   TFT_RED}}, //titleColor
+  {{ TFT_BLACK, TFT_BLACK}, {TFT_BLACK, TFT_BLUE,  TFT_BLUE}}, //bgColor
+  {{ TFT_GRAY, TFT_GRAY},  {TFT_WHITE, TFT_WHITE, TFT_WHITE}}, //fgColor
+  {{ TFT_WHITE, TFT_BLACK}, {TFT_YELLOW, TFT_YELLOW, TFT_RED}}, //valColor
+  {{ TFT_WHITE, TFT_BLACK}, {TFT_WHITE, TFT_YELLOW, TFT_YELLOW}}, //unitColor
+  {{ TFT_WHITE, TFT_GRAY},  {TFT_BLACK, TFT_BLUE,  TFT_WHITE}}, //cursorColor
+  {{ TFT_WHITE, TFT_YELLOW}, {TFT_BLUE,  TFT_RED,   TFT_RED}}, //titleColor
 };
 
 static serialIn serial(Serial);

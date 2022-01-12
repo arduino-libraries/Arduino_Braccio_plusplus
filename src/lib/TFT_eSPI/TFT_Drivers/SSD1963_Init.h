@@ -367,8 +367,8 @@
   writecommand(0x36);   //rotation
   writedata(0x21 | TFT_MAD_COLOR_ORDER);      //set to rotate
 
-	//writecommand(0x003A); //Set the current pixel format for RGB image data
-	//writedata(0x0050);    //16-bit/pixel
+  //writecommand(0x003A); //Set the current pixel format for RGB image data
+  //writedata(0x0050);    //16-bit/pixel
 
   writecommand(0xF0);   //pixel data interface
   writedata(0x00);      //000 = 8 bit bus, 011 = 16 bit, 110 = 9 bit

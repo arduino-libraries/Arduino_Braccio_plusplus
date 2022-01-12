@@ -42,7 +42,7 @@
 
   //---------------------------------ST7789V Power setting--------------------------------------//
   writecommand(ST7789_VCOMS);
-  writedata(0x28);		// JLX240 display datasheet
+  writedata(0x28);    // JLX240 display datasheet
 
   writecommand(ST7789_LCMCTRL);
   writedata(0x0C);

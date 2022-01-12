@@ -86,10 +86,10 @@
 #define M_BC_LVL        (0x01 << 0)
 
 /* Power : 0Bh */
-#define PWR_INT_OSC     (0x01 << 3) 	/* Enable internal oscillator */
-#define PWR_MEASURE     (0x01 << 2) 	/* Measure block powered */
-#define PWR_RECEIVER    (0x01 << 1) 	/* Receiver powered and current reference for Measure block */
-#define PWR_BANDGAP     (0x01 << 0) 	/* Bandgap and wake circuitry */
+#define PWR_INT_OSC     (0x01 << 3)   /* Enable internal oscillator */
+#define PWR_MEASURE     (0x01 << 2)   /* Measure block powered */
+#define PWR_RECEIVER    (0x01 << 1)   /* Receiver powered and current reference for Measure block */
+#define PWR_BANDGAP     (0x01 << 0)   /* Bandgap and wake circuitry */
 
 /* Reset : 0Ch */
 #define PD_RESET        (0x01 << 1)
@@ -281,7 +281,7 @@ static FUSB302_ret_t FUSB302_read_cc_lvl(FUSB302_dev_t *dev, uint8_t * cc_value)
         }
     }
     *cc_value = cc;
-	return FUSB302_SUCCESS;
+  return FUSB302_SUCCESS;
 }
 
 static FUSB302_ret_t FUSB302_read_incoming_packet(FUSB302_dev_t *dev, FUSB302_event_t * events)
@@ -425,7 +425,7 @@ FUSB302_ret_t FUSB302_init(FUSB302_dev_t *dev)
         return FUSB302_ERR_READ_DEVICE;
     }
 
-	if ((dev->reg_control[1] & 0x80) == 0) {
+  if ((dev->reg_control[1] & 0x80) == 0) {
         dev->err_msg = FUSB302_ERR_MSG("Invalid device version");
         return FUSB302_ERR_DEVICE_ID;
     }
@@ -445,7 +445,7 @@ FUSB302_ret_t FUSB302_init(FUSB302_dev_t *dev)
     REG_SWITCHES0 = PDWN1 | PDWN2;
     REG_SWITCHES1 = SPECREV0;
     REG_MEASURE = 49;
-	REG_WRITE(ADDRESS_SWITCHES0, &REG_SWITCHES0, 3);
+  REG_WRITE(ADDRESS_SWITCHES0, &REG_SWITCHES0, 3);
 
     /* configure auto retries */
     REG_CONTROL3 &= ~N_RETRIES_MASK;
@@ -475,7 +475,7 @@ FUSB302_ret_t FUSB302_init(FUSB302_dev_t *dev)
     
     dev->vbus_sense = 1;
     dev->err_msg = FUSB302_ERR_MSG("");
-	return FUSB302_SUCCESS;
+  return FUSB302_SUCCESS;
 }
 
 FUSB302_ret_t FUSB302_pd_reset(FUSB302_dev_t *dev)
@@ -488,7 +488,7 @@ FUSB302_ret_t FUSB302_pd_reset(FUSB302_dev_t *dev)
 FUSB302_ret_t FUSB302_pdwn_cc(FUSB302_dev_t *dev, uint8_t enable)
 {
     REG_SWITCHES0 = enable ? (PDWN1 | PDWN2) : 0;
-	REG_WRITE(ADDRESS_SWITCHES0, &REG_SWITCHES0, 1);
+  REG_WRITE(ADDRESS_SWITCHES0, &REG_SWITCHES0, 1);
     return FUSB302_SUCCESS;
 }
 
@@ -528,7 +528,7 @@ FUSB302_ret_t FUSB302_get_cc(FUSB302_dev_t *dev, uint8_t *cc1, uint8_t *cc2)
     if (cc2) {
         *cc2 = dev->cc2;
     }
-	return FUSB302_SUCCESS;
+  return FUSB302_SUCCESS;
 }
 
 FUSB302_ret_t FUSB302_get_vbus_level(FUSB302_dev_t *dev, uint8_t *vbus)
@@ -536,7 +536,7 @@ FUSB302_ret_t FUSB302_get_vbus_level(FUSB302_dev_t *dev, uint8_t *vbus)
     uint8_t reg_control;
     REG_READ(ADDRESS_STATUS0, &reg_control, 1);
     *vbus = reg_control & VBUSOK ? 1 : 0;
-	return FUSB302_SUCCESS;
+  return FUSB302_SUCCESS;
 }
 
 FUSB302_ret_t FUSB302_get_message(FUSB302_dev_t *dev, uint16_t * header, uint32_t * data)
@@ -548,7 +548,7 @@ FUSB302_ret_t FUSB302_get_message(FUSB302_dev_t *dev, uint16_t * header, uint32_
         uint8_t len = (dev->rx_header >> 12) & 0x7;
         memcpy(data, dev->rx_buffer, len * 4);
     }
-	return FUSB302_SUCCESS;
+  return FUSB302_SUCCESS;
 }
 
 FUSB302_ret_t FUSB302_tx_sop(FUSB302_dev_t *dev, uint16_t header, const uint32_t *data)
@@ -576,7 +576,7 @@ FUSB302_ret_t FUSB302_tx_sop(FUSB302_dev_t *dev, uint16_t header, const uint32_t
     *pbuf++ = (uint8_t)TX_TOKEN_TXON;
     REG_WRITE(ADDRESS_FIFOS, buf, pbuf - buf);
     dev->delay_ms(1);
-	return FUSB302_SUCCESS;
+  return FUSB302_SUCCESS;
 }
 
 FUSB302_ret_t FUSB302_tx_hard_reset(FUSB302_dev_t *dev)

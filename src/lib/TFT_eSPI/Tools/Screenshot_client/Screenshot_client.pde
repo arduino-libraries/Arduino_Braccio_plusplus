@@ -64,7 +64,7 @@ Serial serial;           // Create an instance called serial
 int serialCount = 0;     // Count of colour bytes arriving
 
 // Stage window graded background colours
-color bgcolor1 = color(0, 100, 104);			// Arduino IDE style background color 1
+color bgcolor1 = color(0, 100, 104);      // Arduino IDE style background color 1
 color bgcolor2 = color(77, 183, 187);     // Arduino IDE style background color 2
 //color bgcolor2 = color(255, 255, 255);  // White
 
