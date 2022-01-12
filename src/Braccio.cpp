@@ -196,19 +196,13 @@ void BraccioClass::pd_thread() {
   }
 }
 
-void BraccioClass::display_thread() {
-  while (1) {
-    /*
-    if ((braccio::encoder.menu_running) && (braccio::encoder.menu_interrupt)) {
-      braccio::encoder.menu_interrupt = false;
-      braccio::nav.doInput();
-      braccio::nav.doOutput();
-    }
-    yield();
-    */
+void BraccioClass::display_thread()
+{
+  for(;;)
+  {
     lv_task_handler();
     lv_tick_inc(LV_DISP_DEF_REFR_PERIOD);
-    delay(30);
+    delay(LV_DISP_DEF_REFR_PERIOD);
   }
 }
 
