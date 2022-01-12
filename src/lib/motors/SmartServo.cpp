@@ -1,7 +1,6 @@
 #include <Arduino.h>
 
 #include "SmartServo.h"
-#include "SmartServoConst.h"
 
 SmartServoClass::SmartServoClass(RS485Class & RS485)
 : _RS485{RS485}
@@ -40,10 +39,10 @@ void SmartServoClass::sendPacket()
 }
 
 
-void SmartServoClass::writeCmd(uint8_t const id, uint8_t const instruction) {
+void SmartServoClass::writeCmd(uint8_t const id, SmartServoOperation const instruction) {
   _txPacket.id = id;
   _txPacket.length = 2;
-  _txPacket.instruction = instruction;
+  _txPacket.instruction = toVal(instruction);
   sendPacket();
 }
 
@@ -117,7 +116,7 @@ int SmartServoClass::readByteCmd(uint8_t const id, uint8_t const address) {
 
 int SmartServoClass::ping(uint8_t const id) {
   mutex.lock();
-  writeCmd(id, toVal(SmartServoOperation::PING));
+  writeCmd(id, SmartServoOperation::PING);
   // TODO: check return
   receiveResponse(6);
   if (_rxLen==6 && 
@@ -140,14 +139,14 @@ int SmartServoClass::ping(uint8_t const id) {
 
 void SmartServoClass::reset(uint8_t const id) {
   mutex.lock();
-  writeCmd(id, toVal(SmartServoOperation::RESET));
+  writeCmd(id, SmartServoOperation::RESET);
   mutex.unlock();
 }
 */
 
 void SmartServoClass::action(uint8_t const id) {
   mutex.lock();
-  writeCmd(id, toVal(SmartServoOperation::ACTION));
+  writeCmd(id, SmartServoOperation::ACTION);
   mutex.unlock();
 }
 

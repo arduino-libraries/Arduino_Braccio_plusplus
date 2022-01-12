@@ -5,6 +5,8 @@
 #include <mbed.h>
 #include "RS485.h"
 
+#include "SmartServoConst.h"
+
 enum class PositionMode
 {
   IMMEDIATE,
@@ -86,7 +88,7 @@ private:
 
   int      calcChecksum    ();
   void     sendPacket      ();
-  void     writeCmd        (uint8_t const id, uint8_t const instruction);
+  void     writeCmd        (uint8_t const id, SmartServoOperation const instruction);
   void     writeByteCmd    (uint8_t const id, uint8_t const address, uint8_t const data);
   void     writeWordCmd    (uint8_t const id, uint8_t const address, uint16_t const data);
   void     receiveResponse (int const howMany = MAX_RX_PAYLOAD_LEN);
