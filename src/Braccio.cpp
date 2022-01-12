@@ -116,7 +116,7 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 
   gfx.init();
   gfx.setRotation(4);
-  gfx.fillScreen(TFT_BLACK);
+  gfx.fillScreen(TFT_WHITE);
   gfx.setAddrWindow(0, 0, 240, 240);
   gfx.setFreeFont(&FreeSans18pt7b);
 
