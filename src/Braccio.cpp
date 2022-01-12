@@ -228,6 +228,7 @@ void BraccioClass::splashScreen(int duration) {
     delay(10);
 	}
 	lv_obj_del(img);
+	lv_obj_clean(lv_scr_act());
 }
 
 void BraccioClass::defaultMenu() {
