@@ -74,7 +74,7 @@ public:
 
   inline void onErrorCb(mbed::Callback<void()> _onError) { onError = _onError; }
 
-  inline int getErrors() const { return errors; }
+  inline int getErrors() const { return _errors; }
 
   static const int BROADCAST = 0xFE;
 
@@ -104,9 +104,8 @@ private:
 
   mbed::Callback<void()> onError;
 
-  int errors = 0;
-
   RS485Class& _RS485;
+  int _errors;
 
   struct {
     uint8_t header [2];
