@@ -1,12 +1,24 @@
+/**************************************************************************************
+ * INCLUDE
+ **************************************************************************************/
+
 #include <Arduino.h>
 
 #include "SmartServo.h"
+
+/**************************************************************************************
+ * CTOR/DTOR
+ **************************************************************************************/
 
 SmartServoClass::SmartServoClass(RS485Class & RS485)
 : _RS485{RS485}
 {
 
 }
+
+/**************************************************************************************
+ * PRIVATE MEMBER FUNCTIONS
+ **************************************************************************************/
 
 int SmartServoClass::calcChecksum() {
   char csum =0xff-_txPacket.id-_txPacket.length-_txPacket.instruction;
@@ -37,7 +49,6 @@ void SmartServoClass::sendPacket()
     _RS485.read();
   }
 }
-
 
 void SmartServoClass::writeCmd(uint8_t const id, SmartServoOperation const instruction) {
   _txPacket.id = id;
@@ -113,6 +124,10 @@ int SmartServoClass::readByteCmd(uint8_t const id, uint8_t const address) {
   }
   return -1;
 }
+
+/**************************************************************************************
+ * PUBLIC MEMBER FUNCTIONS
+ **************************************************************************************/
 
 int SmartServoClass::ping(uint8_t const id) {
   mutex.lock();
