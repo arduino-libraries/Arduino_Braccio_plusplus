@@ -85,8 +85,6 @@ private:
   static int constexpr MAX_RX_PAYLOAD_LEN = 10;
   static int constexpr MAX_POSITION = 4000;
 
-  int timestamps[6 * 6] = {0};
-
   int      calcChecksum    ();
   void     sendPacket      ();
   void     writeCmd        (uint8_t const id, SmartServoOperation const instruction);
