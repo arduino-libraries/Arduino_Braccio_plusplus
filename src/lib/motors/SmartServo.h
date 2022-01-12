@@ -7,12 +7,6 @@
 
 #include "SmartServoConst.h"
 
-enum class PositionMode
-{
-  IMMEDIATE,
-  SYNC
-};
-
 static int constexpr MAX_MOTORS = 6;
 
 class SmartServoClass

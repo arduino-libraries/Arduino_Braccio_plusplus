@@ -76,6 +76,12 @@ enum class SmartServoOperation : uint8_t
   SYNC_WRITE = 0x83,
 };
 
+enum class PositionMode
+{
+  IMMEDIATE,
+  SYNC
+};
+
 /**************************************************************************************
  * CONVERSION FUNCTIONS
  **************************************************************************************/
