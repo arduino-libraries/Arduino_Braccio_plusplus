@@ -126,32 +126,22 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
   _display_thread.start(mbed::callback(this, &BraccioClass::display_thread));
 
   lvgl_splashScreen(2000);
+  lv_obj_clean(lv_scr_act());
 
   if (!PD_UFP.is_PPS_ready())
-    lvgl_emptyBatterySymbol();
+    lvgl_pleaseConnectPower();
 
-  for(auto const now = millis();
-      ((millis() - now) < 5000) && !PD_UFP.is_PPS_ready();)
+  /* Loop forever, if no power is attached. */
+  while(!PD_UFP.is_PPS_ready())
   {
     i2c_mutex.lock();
     PD_UFP.print_status(Serial);
     PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
     delay(10);
     i2c_mutex.unlock();
+    Serial.println(millis());
   }
-
   lv_obj_clean(lv_scr_act());
-
-  if (!PD_UFP.is_PPS_ready())
-  {
-    lv_style_set_text_font(&_lv_style, &lv_font_montserrat_32);
-    lv_obj_t * label1 = lv_label_create(lv_scr_act());
-    lv_obj_add_style(label1, &_lv_style, 0);
-    lv_label_set_text(label1, "Please\nconnect\npower.");
-    lv_label_set_long_mode(label1, LV_LABEL_LONG_SCROLL);
-    lv_obj_set_align(label1, LV_ALIGN_CENTER);
-    lv_obj_set_pos(label1, 0, 0);
-  }
 
   if (customMenu) {
     customMenu();
@@ -237,23 +227,29 @@ void BraccioClass::lvgl_splashScreen(unsigned long const duration_ms)
   }
 
   lv_obj_del(img);
-  lv_obj_clean(lv_scr_act());
 }
 
-void BraccioClass::lvgl_emptyBatterySymbol()
+void BraccioClass::lvgl_pleaseConnectPower()
 {
-  lv_style_set_text_font(&_lv_style, &lv_font_montserrat_48);
+  lv_style_set_text_font(&_lv_style, &lv_font_montserrat_32);
   lv_obj_t * label1 = lv_label_create(lv_scr_act());
   lv_obj_add_style(label1, &_lv_style, 0);
-  lv_label_set_text(label1, LV_SYMBOL_BATTERY_EMPTY);
+  lv_label_set_text(label1, "Please\nconnect\npower.");
+  lv_label_set_long_mode(label1, LV_LABEL_LONG_SCROLL);
   lv_obj_set_align(label1, LV_ALIGN_CENTER);
   lv_obj_set_pos(label1, 0, 0);
 }
 
-void BraccioClass::defaultMenu() {
-
+void BraccioClass::defaultMenu()
+{
   // TODO: create a meaningful default menu
-
+  lv_style_set_text_font(&_lv_style, &lv_font_montserrat_32);
+  lv_obj_t * label1 = lv_label_create(lv_scr_act());
+  lv_obj_add_style(label1, &_lv_style, 0);
+  lv_label_set_text(label1, "Braccio++");
+  lv_label_set_long_mode(label1, LV_LABEL_LONG_SCROLL);
+  lv_obj_set_align(label1, LV_ALIGN_CENTER);
+  lv_obj_set_pos(label1, 0, 0);
 }
 
 void BraccioClass::motors_connected_thread() {

@@ -161,7 +161,7 @@ protected:
 
   // default display APIs
   void lvgl_splashScreen(unsigned long const duration_ms);
-  void lvgl_emptyBatterySymbol();
+  void lvgl_pleaseConnectPower();
   void defaultMenu();
 
   void setID(int id) {
