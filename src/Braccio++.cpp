@@ -272,22 +272,22 @@ void BraccioClass::motors_connected_thread() {
 }
 
 int BraccioClass::getKey() {
-  if (digitalRead(BTN_LEFT) == LOW) {
+  if (isJoystickPressed_LEFT()) {
     return 1;
   }
-  if (digitalRead(BTN_RIGHT) == LOW) {
+  if (isJoystickPressed_RIGHT()) {
     return 2;
   }
-  if (digitalRead(BTN_SEL) == LOW) {
+  if (isJoystickPressed_SELECT()) {
     return 3;
   }
-  if (digitalRead(BTN_UP) == LOW) {
+  if (isJoystickPressed_UP()) {
     return 4;
   }
-  if (digitalRead(BTN_DOWN) == LOW) {
+  if (isJoystickPressed_DOWN()) {
     return 5;
   }
-  if (digitalRead(BTN_ENTER) == LOW) {
+  if (isButtonPressed_ENTER()) {
     return 6;
   }
   return 0;
