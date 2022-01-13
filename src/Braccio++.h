@@ -146,6 +146,13 @@ public:
   int getKey();
   void connectJoystickTo(lv_obj_t* obj);
 
+  inline bool isJoystickPressed_LEFT()   { return (digitalRead(BTN_LEFT) == LOW); }
+  inline bool isJoystickPressed_RIGHT()  { return (digitalRead(BTN_RIGHT) == LOW); }
+  inline bool isJoystickPressed_SELECT() { return (digitalRead(BTN_SEL) == LOW); }
+  inline bool isJoystickPressed_UP()     { return (digitalRead(BTN_UP) == LOW); }
+  inline bool isJoystickPressed_DOWN()   { return (digitalRead(BTN_DOWN) == LOW); }
+  inline bool isButtonPressed_ENTER()    { return (digitalRead(BTN_ENTER) == LOW); }
+
   TFT_eSPI gfx = TFT_eSPI();
 
   bool ping_allowed = true;
