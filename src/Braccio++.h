@@ -160,7 +160,7 @@ protected:
   void digitalWrite(int pin, uint8_t value);
 
   // default display APIs
-  void splashScreen(int duration = 2000);
+  void lvgl_splashScreen(unsigned long const duration_ms);
   void defaultMenu();
 
   void setID(int id) {

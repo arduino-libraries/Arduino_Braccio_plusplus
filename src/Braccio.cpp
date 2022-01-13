@@ -125,7 +125,7 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 
   _display_thread.start(mbed::callback(this, &BraccioClass::display_thread));
 
-  splashScreen();
+  lvgl_splashScreen(2000);
 
   {
     lv_style_set_text_font(&_lv_style, &lv_font_montserrat_48);
@@ -219,15 +219,15 @@ void BraccioClass::display_thread()
 
 #include <extra/libs/gif/lv_gif.h>
 
-void BraccioClass::splashScreen(int duration) {
+void BraccioClass::lvgl_splashScreen(unsigned long const duration_ms)
+{
   LV_IMG_DECLARE(img_bulb_gif);
   lv_obj_t* img = lv_gif_create(lv_scr_act());
   lv_gif_set_src(img, &img_bulb_gif);
   lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
 
   /* Wait until the splash screen duration is over. */
-  for (long start = millis(); millis() - start < duration;)
-    delay(10);
+  for (unsigned long const start = millis(); millis() - start < duration_ms; delay(10)) { }
 
   lv_obj_del(img);
   lv_obj_clean(lv_scr_act());
