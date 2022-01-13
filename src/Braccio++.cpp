@@ -1,5 +1,4 @@
 #include "Braccio++.h"
-#include "splash.h"
 //#include "menu.impl"
 
 #if LVGL_VERSION_MAJOR < 8 || (LVGL_VERSION_MAJOR == 8 && LVGL_VERSION_MINOR < 1)
