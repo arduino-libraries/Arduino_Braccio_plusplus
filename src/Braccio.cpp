@@ -21,9 +21,9 @@ BraccioClass::BraccioClass()
 , PD_UFP{PD_LOG_LEVEL_VERBOSE}
 , expander{TCA6424A_ADDRESS_ADDR_HIGH}
 , bl{}
+, _display_thread{}
 , runTime{SLOW}
 , _customMenu{nullptr}
-
 {
 
 }
@@ -112,49 +112,47 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
   indev_drv.read_cb = read_keypad;
   kb_indev = lv_indev_drv_register(&indev_drv);
 
+  lv_style_init(&_lv_style);
+
   gfx.init();
   gfx.setRotation(4);
-  gfx.fillScreen(TFT_BLACK);
+  gfx.fillScreen(TFT_WHITE);
   gfx.setAddrWindow(0, 0, 240, 240);
   gfx.setFreeFont(&FreeSans18pt7b);
-
-/*
-  gfx.drawBitmap(44, 60, ArduinoLogo, 152, 72, 0x04B3);
-  gfx.drawBitmap(48, 145, ArduinoText, 144, 23, 0x04B3);
-*/
-
-  //delay(2000);
 
   p_objGroup = lv_group_create();
   lv_group_set_default(p_objGroup);
 
-  splashScreen();
+  _display_thread.start(mbed::callback(this, &BraccioClass::display_thread));
+
+  auto check_power_func = [this]()
+  {
+    if (!PD_UFP.is_PPS_ready())
+    {
+      i2c_mutex.lock();
+      PD_UFP.print_status(Serial);
+      PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
+      delay(10);
+      i2c_mutex.unlock();
+    }
+  };
+
+  lvgl_splashScreen(2000, check_power_func);
+  lv_obj_clean(lv_scr_act());
+
+  if (!PD_UFP.is_PPS_ready())
+    lvgl_pleaseConnectPower();
+
+  /* Loop forever, if no power is attached. */
+  while(!PD_UFP.is_PPS_ready())
+    check_power_func();
+  lv_obj_clean(lv_scr_act());
 
   if (customMenu) {
     customMenu();
   } else {
     defaultMenu();
   }
-
-  if (!PD_UFP.is_PPS_ready()) {
-    gfx.fillScreen(TFT_BLACK);
-    gfx.println("\n\nPlease\nconnect\npower");
-  }
-
-  //PD_UFP.print_status(Serial);
-  while (!PD_UFP.is_PPS_ready()) {
-    i2c_mutex.lock();
-    PD_UFP.print_status(Serial);
-    //PD_UFP.print_status(Serial);
-    PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
-    delay(10);
-    i2c_mutex.unlock();
-  }
-
-#ifdef __MBED__
-  static rtos::Thread display_th;
-  display_th.start(mbed::callback(this, &BraccioClass::display_thread));
-#endif
 
   servos.begin();
   servos.setPositionMode(PositionMode::IMMEDIATE);
@@ -198,43 +196,58 @@ void BraccioClass::pd_thread() {
   }
 }
 
-void BraccioClass::display_thread() {
-  while (1) {
-    /*
-    if ((braccio::encoder.menu_running) && (braccio::encoder.menu_interrupt)) {
-      braccio::encoder.menu_interrupt = false;
-      braccio::nav.doInput();
-      braccio::nav.doOutput();
-    }
-    yield();
-    */
+void BraccioClass::display_thread()
+{
+  for(;;)
+  {
     lv_task_handler();
     lv_tick_inc(LV_DISP_DEF_REFR_PERIOD);
-    delay(30);
+    delay(LV_DISP_DEF_REFR_PERIOD);
   }
 }
 
 #include <extra/libs/gif/lv_gif.h>
 
-void BraccioClass::splashScreen(int duration) {
+void BraccioClass::lvgl_splashScreen(unsigned long const duration_ms, std::function<void()> check_power_func)
+{
   LV_IMG_DECLARE(img_bulb_gif);
   lv_obj_t* img = lv_gif_create(lv_scr_act());
   lv_gif_set_src(img, &img_bulb_gif);
   lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
 
-  for (long start = millis(); millis() - start < duration;) {
-    lv_task_handler();
-    lv_tick_inc(LV_DISP_DEF_REFR_PERIOD);
-    delay(10);
+  /* Wait until the splash screen duration is over.
+   * Meanwhile use the wait time for checking the
+   * power.
+   */
+  for (unsigned long const start = millis(); millis() - start < duration_ms;)
+  {
+    check_power_func();
   }
+
   lv_obj_del(img);
-  lv_obj_clean(lv_scr_act());
 }
 
-void BraccioClass::defaultMenu() {
+void BraccioClass::lvgl_pleaseConnectPower()
+{
+  lv_style_set_text_font(&_lv_style, &lv_font_montserrat_32);
+  lv_obj_t * label1 = lv_label_create(lv_scr_act());
+  lv_obj_add_style(label1, &_lv_style, 0);
+  lv_label_set_text(label1, "Please\nconnect\npower.");
+  lv_label_set_long_mode(label1, LV_LABEL_LONG_SCROLL);
+  lv_obj_set_align(label1, LV_ALIGN_CENTER);
+  lv_obj_set_pos(label1, 0, 0);
+}
 
+void BraccioClass::defaultMenu()
+{
   // TODO: create a meaningful default menu
-
+  lv_style_set_text_font(&_lv_style, &lv_font_montserrat_32);
+  lv_obj_t * label1 = lv_label_create(lv_scr_act());
+  lv_obj_add_style(label1, &_lv_style, 0);
+  lv_label_set_text(label1, "Braccio++");
+  lv_label_set_long_mode(label1, LV_LABEL_LONG_SCROLL);
+  lv_obj_set_align(label1, LV_ALIGN_CENTER);
+  lv_obj_set_pos(label1, 0, 0);
 }
 
 void BraccioClass::motors_connected_thread() {

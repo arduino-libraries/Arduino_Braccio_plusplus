@@ -160,10 +160,8 @@ protected:
   void digitalWrite(int pin, uint8_t value);
 
   // default display APIs
-  void drawMenu();
-  void splashScreen(int duration = 1000);
-  void hideMenu();
-  void drawImage(char* image);
+  void lvgl_splashScreen(unsigned long const duration_ms, std::function<void()> check_power_func);
+  void lvgl_pleaseConnectPower();
   void defaultMenu();
 
   void setID(int id) {
@@ -172,11 +170,12 @@ protected:
 
 private:
 
-    RS485Class serial485;
-    SmartServoClass servos;
+  RS485Class serial485;
+  SmartServoClass servos;
   PD_UFP_log_c PD_UFP;
   TCA6424A expander;
   Backlight bl;
+  rtos::Thread _display_thread;
 
   speed_grade_t runTime; //ms
 
@@ -195,6 +194,7 @@ private:
   lv_color_t buf[240 * 240 / 10];
   lv_group_t* p_objGroup;
   lv_indev_t *kb_indev;
+  lv_style_t _lv_style;
 
   bool _connected[8];
 
