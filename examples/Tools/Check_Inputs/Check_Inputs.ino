@@ -6,24 +6,6 @@
 
 #include <Braccio++.h>
 
-String toMessage(int const input)
-{
-  static String const message[] =
-  { "",
-    "LEFT   (Joystick)",
-    "RIGHT  (Joystick)",
-    "SELECT (Joystick)",
-    "UP     (Joystick)",
-    "DOWN   (Joystick)",
-    "ENTER  (Button)"
-  };
-
-  if (input < 7)
-    return message[input];
-  else
-    return String("Error, invalid input value");
-}
-
 void setup()
 {
   Serial.begin(115200);
@@ -35,8 +17,11 @@ void setup()
 
 void loop()
 {
-  String const message = toMessage(Braccio.getKey());
-  if(message != "")
-    Serial.println(message);
+  if(Braccio.isJoystickPressed_LEFT())  Serial.println("LEFT   (Joystick)");
+  if(Braccio.isJoystickPressed_RIGHT()) Serial.println("RIGHT  (Joystick)");
+  if(Braccio.isJoystickPressed_SELECT())Serial.println("SELECT (Joystick)");
+  if(Braccio.isJoystickPressed_UP())    Serial.println("UP     (Joystick)");
+  if(Braccio.isJoystickPressed_DOWN())  Serial.println("DOWN   (Joystick)");
+  if(Braccio.isButtonPressed_ENTER())   Serial.println("ENTER  (Button)");
   delay(100);
 }
