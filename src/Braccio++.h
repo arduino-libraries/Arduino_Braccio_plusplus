@@ -163,7 +163,6 @@ protected:
   void drawMenu();
   void splashScreen(int duration = 2000);
   void hideMenu();
-  void drawImage(char* image);
   void defaultMenu();
 
   void setID(int id) {
