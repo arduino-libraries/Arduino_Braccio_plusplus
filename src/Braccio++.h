@@ -84,7 +84,8 @@ public:
 
   BraccioClass();
 
-  bool begin(voidFuncPtr customMenu = nullptr);
+  inline bool begin() { return begin(nullptr); }
+         bool begin(voidFuncPtr customMenu);
 
   // setters
   MotorsWrapper move(int joint_index) {
