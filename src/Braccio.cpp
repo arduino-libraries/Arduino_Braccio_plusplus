@@ -127,14 +127,8 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 
   lvgl_splashScreen(2000);
 
-  {
-    lv_style_set_text_font(&_lv_style, &lv_font_montserrat_48);
-    lv_obj_t * label1 = lv_label_create(lv_scr_act());
-    lv_obj_add_style(label1, &_lv_style, 0);
-    lv_label_set_text(label1, LV_SYMBOL_BATTERY_EMPTY);
-    lv_obj_set_align(label1, LV_ALIGN_CENTER);
-    lv_obj_set_pos(label1, 0, 0);
-  }
+  if (!PD_UFP.is_PPS_ready())
+    lvgl_emptyBatterySymbol();
 
   for(auto const now = millis();
       ((millis() - now) < 5000) && !PD_UFP.is_PPS_ready();)
@@ -226,11 +220,34 @@ void BraccioClass::lvgl_splashScreen(unsigned long const duration_ms)
   lv_gif_set_src(img, &img_bulb_gif);
   lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
 
-  /* Wait until the splash screen duration is over. */
-  for (unsigned long const start = millis(); millis() - start < duration_ms; delay(10)) { }
+  /* Wait until the splash screen duration is over.
+   * Meanwhile use the wait time for checking the
+   * power.
+   */
+  for (unsigned long const start = millis(); millis() - start < duration_ms;)
+  {
+    if (!PD_UFP.is_PPS_ready())
+    {
+      i2c_mutex.lock();
+      PD_UFP.print_status(Serial);
+      PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
+      delay(10);
+      i2c_mutex.unlock();
+    }
+  }
 
   lv_obj_del(img);
   lv_obj_clean(lv_scr_act());
+}
+
+void BraccioClass::lvgl_emptyBatterySymbol()
+{
+  lv_style_set_text_font(&_lv_style, &lv_font_montserrat_48);
+  lv_obj_t * label1 = lv_label_create(lv_scr_act());
+  lv_obj_add_style(label1, &_lv_style, 0);
+  lv_label_set_text(label1, LV_SYMBOL_BATTERY_EMPTY);
+  lv_obj_set_align(label1, LV_ALIGN_CENTER);
+  lv_obj_set_pos(label1, 0, 0);
 }
 
 void BraccioClass::defaultMenu() {
