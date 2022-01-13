@@ -125,7 +125,19 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 
   _display_thread.start(mbed::callback(this, &BraccioClass::display_thread));
 
-  lvgl_splashScreen(2000);
+  auto check_power_func = [this]()
+  {
+    if (!PD_UFP.is_PPS_ready())
+    {
+      i2c_mutex.lock();
+      PD_UFP.print_status(Serial);
+      PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
+      delay(10);
+      i2c_mutex.unlock();
+    }
+  };
+
+  lvgl_splashScreen(2000, check_power_func);
   lv_obj_clean(lv_scr_act());
 
   if (!PD_UFP.is_PPS_ready())
@@ -133,14 +145,7 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
 
   /* Loop forever, if no power is attached. */
   while(!PD_UFP.is_PPS_ready())
-  {
-    i2c_mutex.lock();
-    PD_UFP.print_status(Serial);
-    PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
-    delay(10);
-    i2c_mutex.unlock();
-    Serial.println(millis());
-  }
+    check_power_func();
   lv_obj_clean(lv_scr_act());
 
   if (customMenu) {
@@ -203,7 +208,7 @@ void BraccioClass::display_thread()
 
 #include <extra/libs/gif/lv_gif.h>
 
-void BraccioClass::lvgl_splashScreen(unsigned long const duration_ms)
+void BraccioClass::lvgl_splashScreen(unsigned long const duration_ms, std::function<void()> check_power_func)
 {
   LV_IMG_DECLARE(img_bulb_gif);
   lv_obj_t* img = lv_gif_create(lv_scr_act());
@@ -216,14 +221,7 @@ void BraccioClass::lvgl_splashScreen(unsigned long const duration_ms)
    */
   for (unsigned long const start = millis(); millis() - start < duration_ms;)
   {
-    if (!PD_UFP.is_PPS_ready())
-    {
-      i2c_mutex.lock();
-      PD_UFP.print_status(Serial);
-      PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
-      delay(10);
-      i2c_mutex.unlock();
-    }
+    check_power_func();
   }
 
   lv_obj_del(img);
