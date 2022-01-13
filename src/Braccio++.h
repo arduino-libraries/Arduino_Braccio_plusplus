@@ -160,7 +160,6 @@ protected:
   void digitalWrite(int pin, uint8_t value);
 
   // default display APIs
-  void drawMenu();
   void splashScreen(int duration = 2000);
   void defaultMenu();
 
