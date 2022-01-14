@@ -297,25 +297,25 @@ void  SmartServoClass::setStallProtectionTime(uint8_t const id, uint8_t const ti
 
 void  SmartServoClass::setMinAngle(float const angle) {
   mutex.lock();
-  writeByteCmd(BROADCAST, REG(SmartServoRegister::MIN_ANGLE_LIMIT_H), angleToPosition(angle));
+  writeWordCmd(BROADCAST, REG(SmartServoRegister::MIN_ANGLE_LIMIT_H), angleToPosition(angle));
   mutex.unlock();
 }
 
 void  SmartServoClass::setMinAngle(uint8_t const id, float const angle) {
   mutex.lock();
-  writeByteCmd(id, REG(SmartServoRegister::MIN_ANGLE_LIMIT_H), angleToPosition(angle));
+  writeWordCmd(id, REG(SmartServoRegister::MIN_ANGLE_LIMIT_H), angleToPosition(angle));
   mutex.unlock();
 }
 
 void  SmartServoClass::setMaxAngle(float const angle) {
   mutex.lock();
-  writeByteCmd(BROADCAST, REG(SmartServoRegister::MAX_ANGLE_LIMIT_H), angleToPosition(angle));
+  writeWordCmd(BROADCAST, REG(SmartServoRegister::MAX_ANGLE_LIMIT_H), angleToPosition(angle));
   mutex.unlock();
 }
 
 void  SmartServoClass::setMaxAngle(uint8_t const id, float const angle) {
   mutex.lock();
-  writeByteCmd(id, REG(SmartServoRegister::MAX_ANGLE_LIMIT_H), angleToPosition(angle));
+  writeWordCmd(id, REG(SmartServoRegister::MAX_ANGLE_LIMIT_H), angleToPosition(angle));
   mutex.unlock();
 }
 
