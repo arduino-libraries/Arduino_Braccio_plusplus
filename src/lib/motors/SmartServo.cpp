@@ -219,10 +219,10 @@ void SmartServoClass::synchronize() {
   
   for (int i = MIN_MOTOR_ID; i <= MAX_MOTOR_ID; i++) {
     _txPacket.payload[index++] = i;
-    _txPacket.payload[index++] = _targetPosition[i-1] >>8;
-    _txPacket.payload[index++] = _targetPosition[i-1];
-    _txPacket.payload[index++] = _targetSpeed[i-1]>>8;
-    _txPacket.payload[index++] = _targetSpeed[i-1];
+    _txPacket.payload[index++] = _targetPosition[idToArrayIndex(i)] >>8;
+    _txPacket.payload[index++] = _targetPosition[idToArrayIndex(i)];
+    _txPacket.payload[index++] = _targetSpeed[idToArrayIndex(i)]>>8;
+    _txPacket.payload[index++] = _targetSpeed[idToArrayIndex(i)];
   }
   sendPacket();
   mutex.unlock();

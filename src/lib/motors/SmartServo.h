@@ -89,6 +89,7 @@ private:
   static int constexpr MAX_MOTOR_ID = 6;
 
   inline bool isValidId(int const id) const { return ((id >= MIN_MOTOR_ID) && (id <= MAX_MOTOR_ID)); }
+  inline int  idToArrayIndex(int const id) const { return (id - 1); }
 
   int      calcChecksum    ();
   void     sendPacket      ();
