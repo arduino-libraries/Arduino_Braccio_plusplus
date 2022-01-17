@@ -80,10 +80,16 @@ public:
 
 private:
 
-  static int constexpr MAX_MOTORS = 6;
-  static int constexpr MAX_TX_PAYLOAD_LEN = (5*MAX_MOTORS+4);
+  static int constexpr NUM_MOTORS = 6;
+  static int constexpr MAX_TX_PAYLOAD_LEN = (5*NUM_MOTORS+4);
   static int constexpr MAX_RX_PAYLOAD_LEN = 10;
   static int constexpr MAX_POSITION = 4000;
+
+  static int constexpr MIN_MOTOR_ID = 1;
+  static int constexpr MAX_MOTOR_ID = 6;
+
+  inline bool isValidId(int const id) const { return ((id >= MIN_MOTOR_ID) && (id <= MAX_MOTOR_ID)); }
+  inline int  idToArrayIndex(int const id) const { return (id - 1); }
 
   int      calcChecksum    ();
   void     sendPacket      ();
@@ -116,8 +122,8 @@ private:
 
   uint8_t _rxBuf[MAX_RX_PAYLOAD_LEN];
   uint8_t _rxLen;
-  uint16_t _targetPosition[MAX_MOTORS];
-  uint16_t _targetSpeed[MAX_MOTORS];
+  uint16_t _targetPosition[NUM_MOTORS];
+  uint16_t _targetSpeed[NUM_MOTORS];
   PositionMode _positionMode;
 
   rtos::Mutex mutex;
