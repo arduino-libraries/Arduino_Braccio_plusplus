@@ -36,47 +36,7 @@ enum speed_grade_t {
 #include <chrono>
 using namespace std::chrono;
 
-class MotorsWrapper {
-public:
-  MotorsWrapper(SmartServoClass & servos, int idx) : _servos(servos), _idx(idx) {}
-  MotorsWrapper& to(float angle) {
-    _servos.setPosition(_idx, angle, _speed);
-    return *this;
-  }
-  MotorsWrapper& in(std::chrono::milliseconds len) {
-    _servos.setTime(_idx, len.count());
-    return *this;
-  }
-  MotorsWrapper& move() {
-    return *this;
-  }
-  float position() {
-    return _servos.getPosition(_idx);
-  }
-  bool connected() {
-    return _servos.ping(_idx) == 0;
-  }
-  operator bool() {
-    return connected();
-  }
-  void info(Stream& stream) {
-    _servos.getInfo(stream, _idx);
-  }
-  void disengage() {
-    _servos.disengage(_idx);
-  }
-  void engage() {
-    _servos.engage(_idx);
-  }
-  bool engaged() {
-    return _servos.isEngaged(_idx);
-  }
-
-private:
-  SmartServoClass & _servos;
-  int _idx;
-  int _speed = 100;
-};
+class MotorsWrapper;
 
 class BraccioClass
 {
@@ -88,17 +48,18 @@ public:
          bool begin(voidFuncPtr customMenu);
 
 
-         MotorsWrapper move(int const id);
-  inline MotorsWrapper get(int const id) { return move(id); }
+  void pingOn();
+  void pingOff();
+  bool connected(int const id);
+
+
+  MotorsWrapper move(int const id);
+  MotorsWrapper get (int const id);
 
   void moveTo(float const a1, float const a2, float const a3, float const a4, float const a5, float const a6);
   void positions(float * buffer);
   void positions(float & a1, float & a2, float & a3, float & a4, float & a5, float & a6);
 
-
-  bool connected(int joint_index) {
-    return _connected[joint_index];
-  }
 
   void speed(speed_grade_t speed_grade) {
     runTime  = speed_grade;
@@ -123,8 +84,6 @@ public:
   inline bool isButtonPressed_ENTER()    { return (digitalRead(BTN_ENTER) == LOW); }
 
   TFT_eSPI gfx = TFT_eSPI();
-
-  bool ping_allowed = true;
 
   static BraccioClass& get_default_instance() {
     static BraccioClass dev;
@@ -151,7 +110,16 @@ private:
   PD_UFP_log_c PD_UFP;
   TCA6424A expander;
   Backlight bl;
-  rtos::Thread _display_thread;
+  rtos::Thread _display_thd;
+  void display_thread_func();
+
+  bool _is_ping_allowed;
+  bool _is_motor_connected[SmartServoClass::NUM_MOTORS];
+  rtos::Mutex _motors_connected_mtx;
+  rtos::Thread _motors_connected_thd;
+  bool isPingAllowed();
+  void setMotorConnectionStatus(int const id, bool const is_connected);
+  void motorConnectedThreadFunc();
 
   speed_grade_t runTime; //ms
 
@@ -171,8 +139,6 @@ private:
   lv_group_t* p_objGroup;
   lv_indev_t *kb_indev;
   lv_style_t _lv_style;
-
-  bool _connected[8];
 
 #ifdef __MBED__
   rtos::EventFlags pd_events;
@@ -201,13 +167,53 @@ private:
   }
 
   void pd_thread();
-  void display_thread();
-  void motors_connected_thread();
 #endif
 
 };
 
 #define Braccio BraccioClass::get_default_instance()
+
+class MotorsWrapper {
+public:
+  MotorsWrapper(SmartServoClass & servos, int idx) : _servos(servos), _idx(idx) {}
+  MotorsWrapper& to(float angle) {
+    _servos.setPosition(_idx, angle, _speed);
+    return *this;
+  }
+  MotorsWrapper& in(std::chrono::milliseconds len) {
+    _servos.setTime(_idx, len.count());
+    return *this;
+  }
+  MotorsWrapper& move() {
+    return *this;
+  }
+  float position() {
+    return _servos.getPosition(_idx);
+  }
+
+  inline bool connected() { return Braccio.connected(_idx); }
+
+  operator bool() {
+    return connected();
+  }
+  void info(Stream& stream) {
+    _servos.getInfo(stream, _idx);
+  }
+  void disengage() {
+    _servos.disengage(_idx);
+  }
+  void engage() {
+    _servos.engage(_idx);
+  }
+  bool engaged() {
+    return _servos.isEngaged(_idx);
+  }
+
+private:
+  SmartServoClass & _servos;
+  int _idx;
+  int _speed = 100;
+};
 
 struct __callback__container__ {
   mbed::Callback<void()> fn;

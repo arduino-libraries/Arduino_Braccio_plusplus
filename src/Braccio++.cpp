@@ -20,15 +20,19 @@ BraccioClass::BraccioClass()
 , PD_UFP{PD_LOG_LEVEL_VERBOSE}
 , expander{TCA6424A_ADDRESS_ADDR_HIGH}
 , bl{}
-, _display_thread{}
+, _display_thd{}
+, _is_ping_allowed{true}
+, _is_motor_connected{false}
+, _motors_connected_mtx{}
+, _motors_connected_thd{}
 , runTime{SLOW}
 , _customMenu{nullptr}
 {
 
 }
 
-bool BraccioClass::begin(voidFuncPtr customMenu) {
-
+bool BraccioClass::begin(voidFuncPtr customMenu)
+{
   Wire.begin();
   Serial.begin(115200);
 
@@ -81,6 +85,11 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
   expander.setPinDirection(18, 0); // P22 = 8 * 2 + 2
   expander.writePin(18, 0); // reset LCD
   expander.writePin(18, 1); // LCD out of reset
+
+  /* Set all motor status LEDs to red. */
+  for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
+    setRed(id);
+  }
   i2c_mutex.unlock();
 
   pinMode(BTN_LEFT, INPUT_PULLUP);
@@ -122,7 +131,7 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
   p_objGroup = lv_group_create();
   lv_group_set_default(p_objGroup);
 
-  _display_thread.start(mbed::callback(this, &BraccioClass::display_thread));
+  _display_thd.start(mbed::callback(this, &BraccioClass::display_thread_func));
 
   auto check_power_func = [this]()
   {
@@ -156,18 +165,38 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
   servos.begin();
   servos.setPositionMode(PositionMode::IMMEDIATE);
 
-#ifdef __MBED__
-  static rtos::Thread connected_th;
-  connected_th.start(mbed::callback(this, &BraccioClass::motors_connected_thread));
-#endif
+  _motors_connected_thd.start(mbed::callback(this, &BraccioClass::motorConnectedThreadFunc));
 
   return true;
+}
+
+void BraccioClass::pingOn()
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_motors_connected_mtx);
+  _is_ping_allowed = true;
+}
+
+void BraccioClass::pingOff()
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_motors_connected_mtx);
+  _is_ping_allowed = false;
+}
+
+bool BraccioClass::connected(int const id)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_motors_connected_mtx);
+  return _is_motor_connected[SmartServoClass::idToArrayIndex(id)];
 }
 
 MotorsWrapper BraccioClass::move(int const id)
 {
   MotorsWrapper wrapper(servos, id);
   return wrapper;
+}
+
+MotorsWrapper BraccioClass::get(int const id)
+{
+  return move(id);
 }
 
 void BraccioClass::moveTo(float const a1, float const a2, float const a3, float const a4, float const a5, float const a6)
@@ -231,7 +260,7 @@ void BraccioClass::pd_thread() {
   }
 }
 
-void BraccioClass::display_thread()
+void BraccioClass::display_thread_func()
 {
   for(;;)
   {
@@ -285,21 +314,36 @@ void BraccioClass::defaultMenu()
   lv_obj_set_pos(label1, 0, 0);
 }
 
-void BraccioClass::motors_connected_thread() {
-  while (1) {
-    if (ping_allowed) {
-      for (int i = 1; i < 7; i++) {
-        _connected[i] = (servos.ping(i) == 0);
-        //Serial.print(String(i) + ": ");
-        //Serial.println(_connected[i]);
+bool BraccioClass::isPingAllowed()
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_motors_connected_mtx);
+  return _is_ping_allowed;
+}
+
+void BraccioClass::setMotorConnectionStatus(int const id, bool const is_connected)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_motors_connected_mtx);
+  _is_motor_connected[SmartServoClass::idToArrayIndex(id)] = is_connected;
+}
+
+void BraccioClass::motorConnectedThreadFunc()
+{
+  for (;;)
+  {
+    if (isPingAllowed())
+    {
+      for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++)
+      {
+        bool const is_connected = (servos.ping(id) == 0);
+        setMotorConnectionStatus(id, is_connected);
       }
+
       i2c_mutex.lock();
-      for (int i = 1; i < 7; i++) {
-        if (_connected[i]) {
-          setGreen(i);
-        } else {
-          setRed(i);
-        }
+      for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
+        if (connected(id))
+          setGreen(id);
+        else
+          setRed(id);
       }
       i2c_mutex.unlock();
     }
