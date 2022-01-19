@@ -74,14 +74,14 @@ public:
   inline int getErrors() const { return _errors; }
 
   static const int BROADCAST = 0xFE;
+  static float constexpr MAX_ANGLE = 315.0f;
 
 private:
 
-  static int   constexpr NUM_MOTORS = 6;
-  static int   constexpr MAX_TX_PAYLOAD_LEN = (5*NUM_MOTORS+4);
-  static int   constexpr MAX_RX_PAYLOAD_LEN = 10;
-  static int   constexpr MAX_POSITION = 4000;
-  static float constexpr MAX_ANGLE = 315.0f;
+  static int constexpr NUM_MOTORS = 6;
+  static int constexpr MAX_TX_PAYLOAD_LEN = (5*NUM_MOTORS+4);
+  static int constexpr MAX_RX_PAYLOAD_LEN = 10;
+  static int constexpr MAX_POSITION = 4000;
 
   static int constexpr MIN_MOTOR_ID = 1;
   static int constexpr MAX_MOTOR_ID = 6;

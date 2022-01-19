@@ -35,7 +35,7 @@ void test_motor(int const id)
   Serial.println("OK.");
   delay(1500);
 
-  for (float target_angle = 0.0f; target_angle < 315.0f; target_angle += 1.0f)
+  for (float target_angle = 0.0f; target_angle < SmartServoClass::MAX_ANGLE; target_angle += 1.0f)
   {
     Braccio.get(id).move().to(target_angle).in(200ms);
     delay(250);
