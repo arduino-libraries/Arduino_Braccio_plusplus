@@ -20,7 +20,7 @@ BraccioClass::BraccioClass()
 , PD_UFP{PD_LOG_LEVEL_VERBOSE}
 , expander{TCA6424A_ADDRESS_ADDR_HIGH}
 , bl{}
-, _display_thread{}
+, _display_thd{}
 , _ping_allowed{true}
 , _connected{false}
 , _motors_connected_thd{}
@@ -130,7 +130,7 @@ bool BraccioClass::begin(voidFuncPtr customMenu)
   p_objGroup = lv_group_create();
   lv_group_set_default(p_objGroup);
 
-  _display_thread.start(mbed::callback(this, &BraccioClass::display_thread));
+  _display_thd.start(mbed::callback(this, &BraccioClass::display_thread_func));
 
   auto check_power_func = [this]()
   {
@@ -241,7 +241,7 @@ void BraccioClass::pd_thread() {
   }
 }
 
-void BraccioClass::display_thread()
+void BraccioClass::display_thread_func()
 {
   for(;;)
   {

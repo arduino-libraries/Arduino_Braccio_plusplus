@@ -109,7 +109,8 @@ private:
   PD_UFP_log_c PD_UFP;
   TCA6424A expander;
   Backlight bl;
-  rtos::Thread _display_thread;
+  rtos::Thread _display_thd;
+  void display_thread_func();
 
   bool _ping_allowed;
   bool _connected[8];
@@ -162,7 +163,6 @@ private:
   }
 
   void pd_thread();
-  void display_thread();
 #endif
 
 };
