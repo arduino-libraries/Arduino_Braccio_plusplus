@@ -50,13 +50,10 @@ public:
 
   void setStallProtectionTime(uint8_t const id, uint8_t const time);
 
-  void setMinAngle(float const angle);
-
-  void setMinAngle(uint8_t const id, float const angle);
-
-  void setMaxAngle(float const angle);
-
-  void setMaxAngle(uint8_t const id, float const angle);
+  void setMinAngle(uint16_t const min_angle);
+  void setMinAngle(uint8_t const id, uint16_t const min_angle);
+  void setMaxAngle(uint16_t const max_angle);
+  void setMaxAngle(uint8_t const id, uint16_t const max_angle);
 
   void setTime(uint8_t const id, uint16_t const time);
 
@@ -68,8 +65,6 @@ public:
 
   bool isEngaged(uint8_t const id);
 
-  void printTimestamps();
-
   void getInfo(Stream & stream, uint8_t const id);
 
   inline void onErrorCb(mbed::Callback<void()> onError) { _onError = onError; }
@@ -77,6 +72,7 @@ public:
   inline int getErrors() const { return _errors; }
 
   static const int BROADCAST = 0xFE;
+  static float constexpr MAX_ANGLE = 315.0f;
 
 private:
 
@@ -88,6 +84,7 @@ private:
   static int constexpr MIN_MOTOR_ID = 1;
   static int constexpr MAX_MOTOR_ID = 6;
 
+  inline bool isValidAngle(float const angle) { return ((angle >= 0.0f) && (angle <= MAX_ANGLE)); }
   inline bool isValidId(int const id) const { return ((id >= MIN_MOTOR_ID) && (id <= MAX_MOTOR_ID)); }
   inline int  idToArrayIndex(int const id) const { return (id - 1); }
 
@@ -101,10 +98,9 @@ private:
   int      readWordCmd     (uint8_t const id, uint8_t const address);
   int      readByteCmd     (uint8_t const id, uint8_t const address);
   void     action          (uint8_t const id);
-  void     writeSyncCmd    (uint8_t *id, uint8_t const num, uint8_t const address, uint8_t const len, uint8_t const * data);
 
-  inline uint16_t angleToPosition(float const angle) { return (angle*MAX_POSITION)/360.0; }
-  inline float    positionToAngle(uint16_t const position) { return (360.0*position)/MAX_POSITION; }
+  inline uint16_t angleToPosition(float const angle) { return (angle*MAX_POSITION)/MAX_ANGLE; }
+  inline float    positionToAngle(uint16_t const position) { return (MAX_ANGLE*position)/MAX_POSITION; }
 
 
   RS485Class& _RS485;
