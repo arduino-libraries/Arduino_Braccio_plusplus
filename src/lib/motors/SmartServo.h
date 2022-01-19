@@ -65,8 +65,6 @@ public:
 
   bool isEngaged(uint8_t const id);
 
-  void printTimestamps();
-
   void getInfo(Stream & stream, uint8_t const id);
 
   inline void onErrorCb(mbed::Callback<void()> onError) { _onError = onError; }
@@ -100,7 +98,6 @@ private:
   int      readWordCmd     (uint8_t const id, uint8_t const address);
   int      readByteCmd     (uint8_t const id, uint8_t const address);
   void     action          (uint8_t const id);
-  void     writeSyncCmd    (uint8_t *id, uint8_t const num, uint8_t const address, uint8_t const len, uint8_t const * data);
 
   inline uint16_t angleToPosition(float const angle) { return (angle*MAX_POSITION)/MAX_ANGLE; }
   inline float    positionToAngle(uint16_t const position) { return (MAX_ANGLE*position)/MAX_POSITION; }
