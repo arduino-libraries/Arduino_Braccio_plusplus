@@ -164,6 +164,12 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
   return true;
 }
 
+inline MotorsWrapper BraccioClass::move(int const id)
+{
+  MotorsWrapper wrapper(servos, id);
+  return wrapper;
+}
+
 void BraccioClass::connectJoystickTo(lv_obj_t* obj) {
   lv_group_add_obj(p_objGroup, obj);
   lv_indev_set_group(kb_indev, p_objGroup);

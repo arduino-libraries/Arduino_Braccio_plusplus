@@ -87,20 +87,10 @@ public:
   inline bool begin() { return begin(nullptr); }
          bool begin(voidFuncPtr customMenu);
 
-  // setters
-  MotorsWrapper move(int joint_index) {
-    MotorsWrapper wrapper(servos, joint_index);
-    return wrapper;
-  }
-  MotorsWrapper get(int joint_index) {
-    return move(joint_index);
-  }
-  void moveTo(int joint_index, int position) {
-    //servos.setPosition(joint_index, position, 100);
-  }
-  void moveTo(int joint_index, float angle) {
-    servos.setPosition(joint_index, angle, 100);
-  }
+
+         MotorsWrapper move(int const id);
+  inline MotorsWrapper get(int const id) { return move(id); }
+
   void moveTo(float a1, float a2, float a3, float a4, float a5, float a6) {
     servos.setPositionMode(PositionMode::SYNC);
     servos.setPosition(1, a1, runTime);
