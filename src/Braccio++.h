@@ -113,7 +113,7 @@ private:
   rtos::Thread _display_thd;
   void display_thread_func();
 
-  bool _ping_allowed;
+  bool _is_ping_allowed;
   bool _connected[8];
   rtos::Mutex _motors_connected_mtx;
   rtos::Thread _motors_connected_thd;

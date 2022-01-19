@@ -21,7 +21,7 @@ BraccioClass::BraccioClass()
 , expander{TCA6424A_ADDRESS_ADDR_HIGH}
 , bl{}
 , _display_thd{}
-, _ping_allowed{true}
+, _is_ping_allowed{true}
 , _connected{false}
 , _motors_connected_mtx{}
 , _motors_connected_thd{}
@@ -173,13 +173,13 @@ bool BraccioClass::begin(voidFuncPtr customMenu)
 void BraccioClass::pingOn()
 {
   mbed::ScopedLock<rtos::Mutex> lock(_motors_connected_mtx);
-  _ping_allowed = true;
+  _is_ping_allowed = true;
 }
 
 void BraccioClass::pingOff()
 {
   mbed::ScopedLock<rtos::Mutex> lock(_motors_connected_mtx);
-  _ping_allowed = false;
+  _is_ping_allowed = false;
 }
 
 bool BraccioClass::connected(int const id)
@@ -317,7 +317,7 @@ void BraccioClass::defaultMenu()
 bool BraccioClass::isPingAllowed()
 {
   mbed::ScopedLock<rtos::Mutex> lock(_motors_connected_mtx);
-  return _ping_allowed;
+  return _is_ping_allowed;
 }
 
 void BraccioClass::setMotorConnectionStatus(int const id, bool const is_connected)
