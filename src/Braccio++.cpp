@@ -164,6 +164,42 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
   return true;
 }
 
+MotorsWrapper BraccioClass::move(int const id)
+{
+  MotorsWrapper wrapper(servos, id);
+  return wrapper;
+}
+
+void BraccioClass::moveTo(float const a1, float const a2, float const a3, float const a4, float const a5, float const a6)
+{
+  servos.setPositionMode(PositionMode::SYNC);
+  servos.setPosition(1, a1, runTime);
+  servos.setPosition(2, a2, runTime);
+  servos.setPosition(3, a3, runTime);
+  servos.setPosition(4, a4, runTime);
+  servos.setPosition(5, a5, runTime);
+  servos.setPosition(6, a6, runTime);
+  servos.synchronize();
+  servos.setPositionMode(PositionMode::IMMEDIATE);
+}
+
+void BraccioClass::positions(float * buffer)
+{
+  for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++)
+    *buffer++ = servos.getPosition(id);
+}
+
+void BraccioClass::positions(float & a1, float & a2, float & a3, float & a4, float & a5, float & a6)
+{
+  // TODO: add check if motors are actually connected
+  a1 = servos.getPosition(1);
+  a2 = servos.getPosition(2);
+  a3 = servos.getPosition(3);
+  a4 = servos.getPosition(4);
+  a5 = servos.getPosition(5);
+  a6 = servos.getPosition(6);
+}
+
 void BraccioClass::connectJoystickTo(lv_obj_t* obj) {
   lv_group_add_obj(p_objGroup, obj);
   lv_indev_set_group(kb_indev, p_objGroup);
