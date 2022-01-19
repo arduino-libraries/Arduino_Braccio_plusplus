@@ -31,7 +31,7 @@ static void event_handler(lv_event_t * e)
       selected_motor = 6;
       Braccio.pingOff();
     } else {
-      Braccio.ping_allowed = true;
+      Braccio.pingOn();
       selected_motor = 0;
     }
   }
