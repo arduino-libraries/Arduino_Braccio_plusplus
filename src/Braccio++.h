@@ -110,8 +110,11 @@ private:
   TCA6424A expander;
   Backlight bl;
   rtos::Thread _display_thread;
+
   bool _ping_allowed;
   bool _connected[8];
+  rtos::Thread _motors_connected_thd;
+  void motors_connected_thread_func();
 
   speed_grade_t runTime; //ms
 
@@ -160,7 +163,6 @@ private:
 
   void pd_thread();
   void display_thread();
-  void motors_connected_thread();
 #endif
 
 };

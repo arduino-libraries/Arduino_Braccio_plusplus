@@ -23,6 +23,7 @@ BraccioClass::BraccioClass()
 , _display_thread{}
 , _ping_allowed{true}
 , _connected{false}
+, _motors_connected_thd{}
 , runTime{SLOW}
 , _customMenu{nullptr}
 {
@@ -163,10 +164,7 @@ bool BraccioClass::begin(voidFuncPtr customMenu)
   servos.begin();
   servos.setPositionMode(PositionMode::IMMEDIATE);
 
-#ifdef __MBED__
-  static rtos::Thread connected_th;
-  connected_th.start(mbed::callback(this, &BraccioClass::motors_connected_thread));
-#endif
+  _motors_connected_thd.start(mbed::callback(this, &BraccioClass::motors_connected_thread_func));
 
   return true;
 }
@@ -297,7 +295,7 @@ void BraccioClass::defaultMenu()
   lv_obj_set_pos(label1, 0, 0);
 }
 
-void BraccioClass::motors_connected_thread()
+void BraccioClass::motors_connected_thread_func()
 {
   for (;;)
   {
