@@ -50,13 +50,10 @@ public:
 
   void setStallProtectionTime(uint8_t const id, uint8_t const time);
 
-  void setMinAngle(float const angle);
-
-  void setMinAngle(uint8_t const id, float const angle);
-
-  void setMaxAngle(float const angle);
-
-  void setMaxAngle(uint8_t const id, float const angle);
+  void setMinAngle(uint16_t const min_angle);
+  void setMinAngle(uint8_t const id, uint16_t const min_angle);
+  void setMaxAngle(uint16_t const max_angle);
+  void setMaxAngle(uint8_t const id, uint16_t const max_angle);
 
   void setTime(uint8_t const id, uint16_t const time);
 

@@ -299,27 +299,31 @@ void  SmartServoClass::setStallProtectionTime(uint8_t const id, uint8_t const ti
   mutex.unlock();
 }
 
-void  SmartServoClass::setMinAngle(float const angle) {
+void SmartServoClass::setMinAngle(uint16_t const min_angle)
+{
   mutex.lock();
-  writeWordCmd(BROADCAST, REG(SmartServoRegister::MIN_ANGLE_LIMIT_H), angleToPosition(angle));
+  writeWordCmd(BROADCAST, REG(SmartServoRegister::MIN_ANGLE_LIMIT_H), min_angle);
   mutex.unlock();
 }
 
-void  SmartServoClass::setMinAngle(uint8_t const id, float const angle) {
+void SmartServoClass::setMinAngle(uint8_t const id, uint16_t const min_angle)
+{
   mutex.lock();
-  writeWordCmd(id, REG(SmartServoRegister::MIN_ANGLE_LIMIT_H), angleToPosition(angle));
+  writeWordCmd(id, REG(SmartServoRegister::MIN_ANGLE_LIMIT_H), min_angle);
   mutex.unlock();
 }
 
-void  SmartServoClass::setMaxAngle(float const angle) {
+void SmartServoClass::setMaxAngle(uint16_t const max_angle)
+{
   mutex.lock();
-  writeWordCmd(BROADCAST, REG(SmartServoRegister::MAX_ANGLE_LIMIT_H), angleToPosition(angle));
+  writeWordCmd(BROADCAST, REG(SmartServoRegister::MAX_ANGLE_LIMIT_H), max_angle);
   mutex.unlock();
 }
 
-void  SmartServoClass::setMaxAngle(uint8_t const id, float const angle) {
+void SmartServoClass::setMaxAngle(uint8_t const id, uint16_t const max_angle)
+{
   mutex.lock();
-  writeWordCmd(id, REG(SmartServoRegister::MAX_ANGLE_LIMIT_H), angleToPosition(angle));
+  writeWordCmd(id, REG(SmartServoRegister::MAX_ANGLE_LIMIT_H), max_angle);
   mutex.unlock();
 }
 
