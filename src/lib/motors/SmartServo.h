@@ -86,7 +86,7 @@ private:
   static int constexpr MAX_POSITION = 4000;
 
   inline bool isValidAngle(float const angle) { return ((angle >= 0.0f) && (angle <= MAX_ANGLE)); }
-  inline bool isValidId(int const id) const { return ((id >= MIN_MOTOR_ID) && (id <= MAX_MOTOR_ID)); }
+  inline bool isValidId(int const id) const { return ((id >= MIN_MOTOR_ID) && (id <= MAX_MOTOR_ID)) || (id == BROADCAST); }
 
   int      calcChecksum    ();
   void     sendPacket      ();
