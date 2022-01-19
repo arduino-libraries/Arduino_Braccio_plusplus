@@ -170,6 +170,11 @@ MotorsWrapper BraccioClass::move(int const id)
   return wrapper;
 }
 
+MotorsWrapper BraccioClass::get(int const id)
+{
+  return move(id);
+}
+
 void BraccioClass::moveTo(float const a1, float const a2, float const a3, float const a4, float const a5, float const a6)
 {
   servos.setPositionMode(PositionMode::SYNC);
