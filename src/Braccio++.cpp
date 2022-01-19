@@ -185,7 +185,7 @@ void BraccioClass::pingOff()
 bool BraccioClass::connected(int const id)
 {
   mbed::ScopedLock<rtos::Mutex> lock(_motors_connected_mtx);
-  return _is_motor_connected[id];
+  return _is_motor_connected[SmartServoClass::idToArrayIndex(id)];
 }
 
 MotorsWrapper BraccioClass::move(int const id)
@@ -323,7 +323,7 @@ bool BraccioClass::isPingAllowed()
 void BraccioClass::setMotorConnectionStatus(int const id, bool const is_connected)
 {
   mbed::ScopedLock<rtos::Mutex> lock(_motors_connected_mtx);
-  _is_motor_connected[id] = is_connected;
+  _is_motor_connected[SmartServoClass::idToArrayIndex(id)] = is_connected;
 }
 
 void BraccioClass::motorConnectedThreadFunc()
