@@ -80,10 +80,11 @@ public:
 
 private:
 
-  static int constexpr NUM_MOTORS = 6;
-  static int constexpr MAX_TX_PAYLOAD_LEN = (5*NUM_MOTORS+4);
-  static int constexpr MAX_RX_PAYLOAD_LEN = 10;
-  static int constexpr MAX_POSITION = 4000;
+  static int   constexpr NUM_MOTORS = 6;
+  static int   constexpr MAX_TX_PAYLOAD_LEN = (5*NUM_MOTORS+4);
+  static int   constexpr MAX_RX_PAYLOAD_LEN = 10;
+  static int   constexpr MAX_POSITION = 4000;
+  static float constexpr MAX_ANGLE = 315.0f;
 
   static int constexpr MIN_MOTOR_ID = 1;
   static int constexpr MAX_MOTOR_ID = 6;
@@ -103,8 +104,8 @@ private:
   void     action          (uint8_t const id);
   void     writeSyncCmd    (uint8_t *id, uint8_t const num, uint8_t const address, uint8_t const len, uint8_t const * data);
 
-  inline uint16_t angleToPosition(float const angle) { return (angle*MAX_POSITION)/360.0; }
-  inline float    positionToAngle(uint16_t const position) { return (360.0*position)/MAX_POSITION; }
+  inline uint16_t angleToPosition(float const angle) { return (angle*MAX_POSITION)/MAX_ANGLE; }
+  inline float    positionToAngle(uint16_t const position) { return (MAX_ANGLE*position)/MAX_POSITION; }
 
 
   RS485Class& _RS485;
