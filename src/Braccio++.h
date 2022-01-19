@@ -91,32 +91,10 @@ public:
          MotorsWrapper move(int const id);
   inline MotorsWrapper get(int const id) { return move(id); }
 
-  void moveTo(float a1, float a2, float a3, float a4, float a5, float a6) {
-    servos.setPositionMode(PositionMode::SYNC);
-    servos.setPosition(1, a1, runTime);
-    servos.setPosition(2, a2, runTime);
-    servos.setPosition(3, a3, runTime);
-    servos.setPosition(4, a4, runTime);
-    servos.setPosition(5, a5, runTime);
-    servos.setPosition(6, a6, runTime);
-    servos.synchronize();
-    servos.setPositionMode(PositionMode::IMMEDIATE);
-  }
-  // getters
-  void positions(float* buffer) {
-    for (int i = 1; i < 7; i++)  {
-      *buffer++ = servos.getPosition(i);
-    }
-  }
-  void positions(float& a1, float& a2, float& a3, float& a4, float& a5, float& a6) {
-    // TODO: add check if motors are actually connected
-    a1 = servos.getPosition(1);
-    a2 = servos.getPosition(2);
-    a3 = servos.getPosition(3);
-    a4 = servos.getPosition(4);
-    a5 = servos.getPosition(5);
-    a6 = servos.getPosition(6);
-  }
+  void moveTo(float const a1, float const a2, float const a3, float const a4, float const a5, float const a6);
+  void positions(float * buffer);
+  void positions(float & a1, float & a2, float & a3, float & a4, float & a5, float & a6);
+
   float position(int joint_index);
   bool connected(int joint_index) {
     return _connected[joint_index];
