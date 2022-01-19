@@ -180,7 +180,11 @@ int SmartServoClass::begin() {
   }
 }
 
-void SmartServoClass::setPosition(uint8_t const id, float const angle, uint16_t const speed) {
+void SmartServoClass::setPosition(uint8_t const id, float const angle, uint16_t const speed)
+{
+  if (!isValidAngle(angle))
+    return;
+
   mutex.lock();
   if (isValidId(id))
   {

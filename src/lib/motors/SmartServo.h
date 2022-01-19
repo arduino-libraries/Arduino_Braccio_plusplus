@@ -89,6 +89,7 @@ private:
   static int constexpr MIN_MOTOR_ID = 1;
   static int constexpr MAX_MOTOR_ID = 6;
 
+  inline bool isValidAngle(float const angle) { return ((angle >= 0.0f) && (angle <= MAX_ANGLE)); }
   inline bool isValidId(int const id) const { return ((id >= MIN_MOTOR_ID) && (id <= MAX_MOTOR_ID)); }
   inline int  idToArrayIndex(int const id) const { return (id - 1); }
 
