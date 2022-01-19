@@ -14,22 +14,22 @@ static void event_handler(lv_event_t * e)
     Serial.println(txt);
     if (strcmp(txt, "Motor 1") == 0) {
       selected_motor = 1;
-      Braccio.ping_allowed = false;
+      Braccio.pingOff();
     } else if (strcmp(txt, "Motor 2") == 0) {
       selected_motor = 2;
-      Braccio.ping_allowed = false;
+      Braccio.pingOff();
     } else if (strcmp(txt, "Motor 3") == 0) {
       selected_motor = 3;
-      Braccio.ping_allowed = false;
+      Braccio.pingOff();
     } else if (strcmp(txt, "Motor 4") == 0) {
       selected_motor = 4;
-      Braccio.ping_allowed = false;
+      Braccio.pingOff();
     } else if (strcmp(txt, "Motor 5") == 0) {
       selected_motor = 5;
-      Braccio.ping_allowed = false;
+      Braccio.pingOff();
     } else if (strcmp(txt, "Motor 6") == 0) {
       selected_motor = 6;
-      Braccio.ping_allowed = false;
+      Braccio.pingOff();
     } else {
       Braccio.ping_allowed = true;
       selected_motor = 0;

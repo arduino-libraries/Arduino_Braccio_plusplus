@@ -21,6 +21,8 @@ BraccioClass::BraccioClass()
 , expander{TCA6424A_ADDRESS_ADDR_HIGH}
 , bl{}
 , _display_thread{}
+, _ping_allowed{true}
+, _connected{false}
 , runTime{SLOW}
 , _customMenu{nullptr}
 {
@@ -290,21 +292,22 @@ void BraccioClass::defaultMenu()
   lv_obj_set_pos(label1, 0, 0);
 }
 
-void BraccioClass::motors_connected_thread() {
-  while (1) {
-    if (ping_allowed) {
-      for (int i = 1; i < 7; i++) {
-        _connected[i] = (servos.ping(i) == 0);
-        //Serial.print(String(i) + ": ");
-        //Serial.println(_connected[i]);
+void BraccioClass::motors_connected_thread()
+{
+  for (;;)
+  {
+    if (_ping_allowed)
+    {
+      for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
+        _connected[id] = (servos.ping(id) == 0);
       }
+
       i2c_mutex.lock();
-      for (int i = 1; i < 7; i++) {
-        if (_connected[i]) {
-          setGreen(i);
-        } else {
-          setRed(i);
-        }
+      for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
+        if (_connected[id])
+          setGreen(id);
+        else
+          setRed(id);
       }
       i2c_mutex.unlock();
     }

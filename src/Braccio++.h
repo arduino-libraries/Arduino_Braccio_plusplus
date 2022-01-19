@@ -47,6 +47,8 @@ public:
   inline bool begin() { return begin(nullptr); }
          bool begin(voidFuncPtr customMenu);
 
+  inline void pingOn()  { _ping_allowed = true;  }
+  inline void pingOff() { _ping_allowed = false; }
 
   MotorsWrapper move(int const id);
   MotorsWrapper get (int const id);
@@ -82,8 +84,6 @@ public:
 
   TFT_eSPI gfx = TFT_eSPI();
 
-  bool ping_allowed = true;
-
   static BraccioClass& get_default_instance() {
     static BraccioClass dev;
     return dev;
@@ -110,6 +110,8 @@ private:
   TCA6424A expander;
   Backlight bl;
   rtos::Thread _display_thread;
+  bool _ping_allowed;
+  bool _connected[8];
 
   speed_grade_t runTime; //ms
 
@@ -129,8 +131,6 @@ private:
   lv_group_t* p_objGroup;
   lv_indev_t *kb_indev;
   lv_style_t _lv_style;
-
-  bool _connected[8];
 
 #ifdef __MBED__
   rtos::EventFlags pd_events;
