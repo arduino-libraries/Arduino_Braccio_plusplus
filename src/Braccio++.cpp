@@ -165,7 +165,7 @@ bool BraccioClass::begin(voidFuncPtr customMenu)
   servos.begin();
   servos.setPositionMode(PositionMode::IMMEDIATE);
 
-  _motors_connected_thd.start(mbed::callback(this, &BraccioClass::motors_connected_thread_func));
+  _motors_connected_thd.start(mbed::callback(this, &BraccioClass::motorConnectedThreadFunc));
 
   return true;
 }
@@ -326,7 +326,7 @@ void BraccioClass::setMotorConnectionStatus(int const id, bool const is_connecte
   _connected[id] = is_connected;
 }
 
-void BraccioClass::motors_connected_thread_func()
+void BraccioClass::motorConnectedThreadFunc()
 {
   for (;;)
   {

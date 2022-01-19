@@ -119,7 +119,7 @@ private:
   rtos::Thread _motors_connected_thd;
   bool isPingAllowed();
   void setMotorConnectionStatus(int const id, bool const is_connected);
-  void motors_connected_thread_func();
+  void motorConnectedThreadFunc();
 
   speed_grade_t runTime; //ms
 
