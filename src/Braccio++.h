@@ -96,9 +96,7 @@ public:
   void positions(float & a1, float & a2, float & a3, float & a4, float & a5, float & a6);
 
 
-  bool connected(int joint_index) {
-    return _connected[joint_index];
-  }
+  bool connected(int const id) const { return _connected[id]; }
 
   void speed(speed_grade_t speed_grade) {
     runTime  = speed_grade;
