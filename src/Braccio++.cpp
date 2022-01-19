@@ -23,6 +23,7 @@ BraccioClass::BraccioClass()
 , _display_thd{}
 , _ping_allowed{true}
 , _connected{false}
+, _motors_connected_mtx{}
 , _motors_connected_thd{}
 , runTime{SLOW}
 , _customMenu{nullptr}
@@ -169,6 +170,24 @@ bool BraccioClass::begin(voidFuncPtr customMenu)
   return true;
 }
 
+void BraccioClass::pingOn()
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_motors_connected_mtx);
+  _ping_allowed = true;
+}
+
+void BraccioClass::pingOff()
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_motors_connected_mtx);
+  _ping_allowed = false;
+}
+
+bool BraccioClass::connected(int const id)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_motors_connected_mtx);
+  return _connected[id];
+}
+
 MotorsWrapper BraccioClass::move(int const id)
 {
   MotorsWrapper wrapper(servos, id);
@@ -295,19 +314,33 @@ void BraccioClass::defaultMenu()
   lv_obj_set_pos(label1, 0, 0);
 }
 
+bool BraccioClass::isPingAllowed()
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_motors_connected_mtx);
+  return _ping_allowed;
+}
+
+void BraccioClass::setMotorConnectionStatus(int const id, bool const is_connected)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_motors_connected_mtx);
+  _connected[id] = is_connected;
+}
+
 void BraccioClass::motors_connected_thread_func()
 {
   for (;;)
   {
-    if (_ping_allowed)
+    if (isPingAllowed())
     {
-      for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
-        _connected[id] = (servos.ping(id) == 0);
+      for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++)
+      {
+        bool const is_connected = (servos.ping(id) == 0);
+        setMotorConnectionStatus(id, is_connected);
       }
 
       i2c_mutex.lock();
       for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
-        if (_connected[id])
+        if (connected(id))
           setGreen(id);
         else
           setRed(id);

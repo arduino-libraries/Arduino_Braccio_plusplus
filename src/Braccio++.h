@@ -47,8 +47,11 @@ public:
   inline bool begin() { return begin(nullptr); }
          bool begin(voidFuncPtr customMenu);
 
-  inline void pingOn()  { _ping_allowed = true;  }
-  inline void pingOff() { _ping_allowed = false; }
+
+  void pingOn();
+  void pingOff();
+  bool connected(int const id);
+
 
   MotorsWrapper move(int const id);
   MotorsWrapper get (int const id);
@@ -57,8 +60,6 @@ public:
   void positions(float * buffer);
   void positions(float & a1, float & a2, float & a3, float & a4, float & a5, float & a6);
 
-
-  bool connected(int const id) const { return _connected[id]; }
 
   void speed(speed_grade_t speed_grade) {
     runTime  = speed_grade;
@@ -114,7 +115,10 @@ private:
 
   bool _ping_allowed;
   bool _connected[8];
+  rtos::Mutex _motors_connected_mtx;
   rtos::Thread _motors_connected_thd;
+  bool isPingAllowed();
+  void setMotorConnectionStatus(int const id, bool const is_connected);
   void motors_connected_thread_func();
 
   speed_grade_t runTime; //ms
