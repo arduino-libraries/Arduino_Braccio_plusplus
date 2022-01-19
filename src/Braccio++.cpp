@@ -29,8 +29,8 @@ BraccioClass::BraccioClass()
 
 }
 
-bool BraccioClass::begin(voidFuncPtr customMenu) {
-
+bool BraccioClass::begin(voidFuncPtr customMenu)
+{
   Wire.begin();
   Serial.begin(115200);
 
@@ -83,6 +83,11 @@ bool BraccioClass::begin(voidFuncPtr customMenu) {
   expander.setPinDirection(18, 0); // P22 = 8 * 2 + 2
   expander.writePin(18, 0); // reset LCD
   expander.writePin(18, 1); // LCD out of reset
+
+  /* Set all motor status LEDs to red. */
+  for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
+    setRed(id);
+  }
   i2c_mutex.unlock();
 
   pinMode(BTN_LEFT, INPUT_PULLUP);
