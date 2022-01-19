@@ -106,6 +106,7 @@ private:
   RS485Class& _RS485;
   int _errors;
   mbed::Callback<void()> _onError;
+  rtos::Mutex _mtx;
 
 
   struct __attribute__((packed)) {
@@ -121,8 +122,6 @@ private:
   uint16_t _targetPosition[NUM_MOTORS];
   uint16_t _targetSpeed[NUM_MOTORS];
   PositionMode _positionMode;
-
-  rtos::Mutex mutex;
 };
 
 #endif // _SMARTMOTOR_H_
