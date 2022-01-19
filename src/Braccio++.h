@@ -95,7 +95,7 @@ public:
   void positions(float * buffer);
   void positions(float & a1, float & a2, float & a3, float & a4, float & a5, float & a6);
 
-  float position(int joint_index);
+
   bool connected(int joint_index) {
     return _connected[joint_index];
   }
