@@ -1,5 +1,4 @@
 #include "Braccio++.h"
-//#include "menu.impl"
 
 #if LVGL_VERSION_MAJOR < 8 || (LVGL_VERSION_MAJOR == 8 && LVGL_VERSION_MINOR < 1)
 #error Please use lvgl >= 8.1
