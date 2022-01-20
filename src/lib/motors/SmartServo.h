@@ -26,7 +26,7 @@ public:
 
   inline void setPositionMode(PositionMode const mode) { _positionMode = mode; }
 
-  void setPosition(uint8_t const id, float const angle, uint16_t const speed);
+  void setPosition(uint8_t const id, float const angle);
 
   float getPosition(uint8_t const id);
 
@@ -120,7 +120,6 @@ private:
   uint8_t _rxBuf[MAX_RX_PAYLOAD_LEN];
   uint8_t _rxLen;
   uint16_t _targetPosition[NUM_MOTORS];
-  uint16_t _targetSpeed[NUM_MOTORS];
   PositionMode _positionMode;
 };
 
