@@ -188,13 +188,13 @@ bool BraccioClass::connected(int const id)
   return _is_motor_connected[SmartServoClass::idToArrayIndex(id)];
 }
 
-MotorsWrapper BraccioClass::move(int const id)
+Servo BraccioClass::move(int const id)
 {
-  MotorsWrapper wrapper(servos, id);
+  Servo wrapper(servos, id);
   return wrapper;
 }
 
-MotorsWrapper BraccioClass::get(int const id)
+Servo BraccioClass::get(int const id)
 {
   return move(id);
 }

@@ -36,7 +36,7 @@ enum speed_grade_t {
 #include <chrono>
 using namespace std::chrono;
 
-class MotorsWrapper;
+class Servo;
 
 class BraccioClass
 {
@@ -53,8 +53,8 @@ public:
   bool connected(int const id);
 
 
-  MotorsWrapper move(int const id);
-  MotorsWrapper get (int const id);
+  Servo move(int const id);
+  Servo get (int const id);
 
   void moveTo(float const a1, float const a2, float const a3, float const a4, float const a5, float const a6);
   void positions(float * buffer);
@@ -173,18 +173,18 @@ private:
 
 #define Braccio BraccioClass::get_default_instance()
 
-class MotorsWrapper {
+class Servo {
 public:
-  MotorsWrapper(SmartServoClass & servos, int idx) : _servos(servos), _idx(idx) {}
-  MotorsWrapper& to(float angle) {
+  Servo(SmartServoClass & servos, int idx) : _servos(servos), _idx(idx) {}
+  Servo& to(float angle) {
     _servos.setPosition(_idx, angle, _speed);
     return *this;
   }
-  MotorsWrapper& in(std::chrono::milliseconds len) {
+  Servo& in(std::chrono::milliseconds len) {
     _servos.setTime(_idx, len.count());
     return *this;
   }
-  MotorsWrapper& move() {
+  Servo& move() {
     return *this;
   }
   float position() {
