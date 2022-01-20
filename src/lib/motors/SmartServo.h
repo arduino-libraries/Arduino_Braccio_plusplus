@@ -21,7 +21,7 @@ public:
   
   SmartServoClass(RS485Class & RS485);
 
-  int begin();
+  void begin();
   void end();
 
   inline void setPositionMode(PositionMode const mode) { _positionMode = mode; }
@@ -86,7 +86,7 @@ private:
   static int constexpr MAX_POSITION = 4000;
 
   inline bool isValidAngle(float const angle) { return ((angle >= 0.0f) && (angle <= MAX_ANGLE)); }
-  inline bool isValidId(int const id) const { return ((id >= MIN_MOTOR_ID) && (id <= MAX_MOTOR_ID)); }
+  inline bool isValidId(int const id) const { return ((id >= MIN_MOTOR_ID) && (id <= MAX_MOTOR_ID)) || (id == BROADCAST); }
 
   int      calcChecksum    ();
   void     sendPacket      ();
@@ -106,6 +106,7 @@ private:
   RS485Class& _RS485;
   int _errors;
   mbed::Callback<void()> _onError;
+  rtos::Mutex _mtx;
 
 
   struct __attribute__((packed)) {
@@ -121,8 +122,6 @@ private:
   uint16_t _targetPosition[NUM_MOTORS];
   uint16_t _targetSpeed[NUM_MOTORS];
   PositionMode _positionMode;
-
-  rtos::Mutex mutex;
 };
 
 #endif // _SMARTMOTOR_H_

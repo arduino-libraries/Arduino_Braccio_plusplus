@@ -12,6 +12,7 @@ SmartServoClass::SmartServoClass(RS485Class & RS485)
 : _RS485{RS485}
 , _errors{0}
 , _onError{}
+, _mtx{}
 {
 
 }
@@ -129,8 +130,9 @@ int SmartServoClass::readByteCmd(uint8_t const id, uint8_t const address) {
  * PUBLIC MEMBER FUNCTIONS
  **************************************************************************************/
 
-int SmartServoClass::ping(uint8_t const id) {
-  mutex.lock();
+int SmartServoClass::ping(uint8_t const id)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeCmd(id, SmartServoOperation::PING);
   // TODO: check return
   receiveResponse(6);
@@ -139,11 +141,8 @@ int SmartServoClass::ping(uint8_t const id) {
     _rxBuf[1]==0xf5 &&
     _rxBuf[2]==id &&
     _rxBuf[3]==2) {
-
-    mutex.unlock();
     return _rxBuf[4];
   }
-  mutex.unlock();
   _errors++;
   if (_onError) _onError();
   return -1;
@@ -152,32 +151,28 @@ int SmartServoClass::ping(uint8_t const id) {
 /*
 // ATTENTION: RESET also changes the ID of the motor
 
-void SmartServoClass::reset(uint8_t const id) {
-  mutex.lock();
+void SmartServoClass::reset(uint8_t const id)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeCmd(id, SmartServoOperation::RESET);
-  mutex.unlock();
 }
 */
 
-void SmartServoClass::action(uint8_t const id) {
-  mutex.lock();
+void SmartServoClass::action(uint8_t const id)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeCmd(id, SmartServoOperation::ACTION);
-  mutex.unlock();
 }
 
-int SmartServoClass::begin() {
-  if (_RS485) {
-    _txPacket.header[0] = 0xff;
-    _txPacket.header[1] = 0xff;
-    _RS485.begin(115200, 0, 90);
-    _RS485.receive();
-    writeByteCmd(BROADCAST, REG(SmartServoRegister::SERVO_MOTOR_MODE), 1);
-    writeByteCmd(BROADCAST, REG(SmartServoRegister::TORQUE_SWITCH) ,1);
-    _positionMode = PositionMode::IMMEDIATE;
-    return 0;
-  } else {
-    return -1;
-  }
+void SmartServoClass::begin()
+{
+  _txPacket.header[0] = 0xff;
+  _txPacket.header[1] = 0xff;
+  _RS485.begin(115200, 0, 90);
+  _RS485.receive();
+  writeByteCmd(BROADCAST, REG(SmartServoRegister::SERVO_MOTOR_MODE), 1);
+  writeByteCmd(BROADCAST, REG(SmartServoRegister::TORQUE_SWITCH) ,1);
+  _positionMode = PositionMode::IMMEDIATE;
 }
 
 void SmartServoClass::setPosition(uint8_t const id, float const angle, uint16_t const speed)
@@ -185,35 +180,34 @@ void SmartServoClass::setPosition(uint8_t const id, float const angle, uint16_t 
   if (!isValidAngle(angle))
     return;
 
-  mutex.lock();
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   if (isValidId(id))
   {
-    _targetPosition[id-1] = angleToPosition(angle);
-    _targetSpeed[id-1] = speed;
+    _targetPosition[idToArrayIndex(id)] = angleToPosition(angle);
+    _targetSpeed[idToArrayIndex(id)] = speed;
     if (_positionMode==PositionMode::IMMEDIATE) {
       writeWordCmd(id, REG(SmartServoRegister::TARGET_POSITION_H), angleToPosition(angle));
     }
   }  
-  mutex.unlock();
 }
 
-float SmartServoClass::getPosition(uint8_t const id) {
-  mutex.lock();
+float SmartServoClass::getPosition(uint8_t const id)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   float ret = -1;
   if (isValidId(id))
-    ret = positionToAngle(readWordCmd(id, REG(SmartServoRegister::POSITION_H)));
-  mutex.unlock();
-  return ret;
+    return positionToAngle(readWordCmd(id, REG(SmartServoRegister::POSITION_H)));
 }
 
-void SmartServoClass::center(uint8_t const id, uint16_t const position) {
-  mutex.lock();
+void SmartServoClass::center(uint8_t const id, uint16_t const position)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeWordCmd(id, REG(SmartServoRegister::CENTER_POINT_ADJ_H), position);
-  mutex.unlock();
 }
 
-void SmartServoClass::synchronize() {
-  mutex.lock();
+void SmartServoClass::synchronize()
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   _txPacket.id = 0xFE;
   _txPacket.length = MAX_TX_PAYLOAD_LEN;
   _txPacket.instruction = CMD(SmartServoOperation::SYNC_WRITE);
@@ -229,117 +223,116 @@ void SmartServoClass::synchronize() {
     _txPacket.payload[index++] = _targetSpeed[idToArrayIndex(i)];
   }
   sendPacket();
-  mutex.unlock();
 }
 
-void  SmartServoClass::setTorque(bool const torque) {
-  mutex.lock();
+void SmartServoClass::setTorque(bool const torque)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeByteCmd(BROADCAST, REG(SmartServoRegister::TORQUE_SWITCH), torque ? 1 : 0);
-  mutex.unlock();
 }
 
-void  SmartServoClass::setTorque(uint8_t const id, bool const torque) {
-  mutex.lock();
+void SmartServoClass::setTorque(uint8_t const id, bool const torque)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeByteCmd(id, REG(SmartServoRegister::TORQUE_SWITCH), torque ? 1 : 0);
-  mutex.unlock();
 }
 
-void  SmartServoClass::setTime(uint8_t const id, uint16_t const time) {
-  mutex.lock();
+void SmartServoClass::setTime(uint8_t const id, uint16_t const time)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeWordCmd(id, REG(SmartServoRegister::RUN_TIME_H), time);
-  mutex.unlock();
 }
 
-void  SmartServoClass::setMaxTorque(uint16_t const torque) {
-  mutex.lock();
+void SmartServoClass::setMaxTorque(uint16_t const torque)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeWordCmd(BROADCAST, REG(SmartServoRegister::MAX_TORQUE_H), torque);
-  mutex.unlock();
 }
 
-void  SmartServoClass::setMaxTorque(uint8_t const id, uint16_t const torque) {
-  mutex.lock();
+void SmartServoClass::setMaxTorque(uint8_t const id, uint16_t const torque)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeWordCmd(id+1, REG(SmartServoRegister::MAX_TORQUE_H), torque);
-  mutex.unlock();
 }
 
-void  SmartServoClass::setID(uint8_t const id) {
-  mutex.lock();
+void SmartServoClass::setID(uint8_t const id)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeByteCmd(BROADCAST, REG(SmartServoRegister::ID), id);
-  mutex.unlock();
 }
 
-void  SmartServoClass::engage(uint8_t const id) {
-  mutex.lock();
+void SmartServoClass::engage(uint8_t const id)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeByteCmd(id, REG(SmartServoRegister::TORQUE_SWITCH), 0x1);
-  mutex.unlock();
 }
 
-void  SmartServoClass::disengage(uint8_t const id) {
-  mutex.lock();
+void SmartServoClass::disengage(uint8_t const id)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeByteCmd(id, REG(SmartServoRegister::TORQUE_SWITCH), 0);
-  mutex.unlock();
 }
 
-bool SmartServoClass::isEngaged(uint8_t const id) {
-  mutex.lock();
+bool SmartServoClass::isEngaged(uint8_t const id)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   int ret = readByteCmd(id, REG(SmartServoRegister::TORQUE_SWITCH));
-  mutex.unlock();
   return ret != 0;
 }
 
-void  SmartServoClass::setStallProtectionTime(uint8_t const time) {
-  mutex.lock();
+void SmartServoClass::setStallProtectionTime(uint8_t const time)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeByteCmd(BROADCAST, REG(SmartServoRegister::STALL_PROTECTION_TIME), time);
-  mutex.unlock();
 }
 
-void  SmartServoClass::setStallProtectionTime(uint8_t const id, uint8_t const time) {
-  mutex.lock();
+void SmartServoClass::setStallProtectionTime(uint8_t const id, uint8_t const time)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeByteCmd(id, REG(SmartServoRegister::STALL_PROTECTION_TIME), time);
-  mutex.unlock();
 }
 
 void SmartServoClass::setMinAngle(uint16_t const min_angle)
 {
-  mutex.lock();
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeWordCmd(BROADCAST, REG(SmartServoRegister::MIN_ANGLE_LIMIT_H), min_angle);
-  mutex.unlock();
 }
 
 void SmartServoClass::setMinAngle(uint8_t const id, uint16_t const min_angle)
 {
-  mutex.lock();
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeWordCmd(id, REG(SmartServoRegister::MIN_ANGLE_LIMIT_H), min_angle);
-  mutex.unlock();
 }
 
 void SmartServoClass::setMaxAngle(uint16_t const max_angle)
 {
-  mutex.lock();
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeWordCmd(BROADCAST, REG(SmartServoRegister::MAX_ANGLE_LIMIT_H), max_angle);
-  mutex.unlock();
 }
 
 void SmartServoClass::setMaxAngle(uint8_t const id, uint16_t const max_angle)
 {
-  mutex.lock();
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeWordCmd(id, REG(SmartServoRegister::MAX_ANGLE_LIMIT_H), max_angle);
-  mutex.unlock();
 }
 
-void  SmartServoClass::getInfo(Stream & stream, uint8_t const id) {
+void  SmartServoClass::getInfo(Stream & stream, uint8_t const id)
+{
   uint8_t regs[65];
   memset(regs, 0x55, sizeof(regs));
   int i = 0;
-  mutex.lock();
-  while (i < sizeof(regs)) {
-    if ((i > 29 && i < 40) || (i > 48 && i < 56)) {
-      i++;
-      continue;
+
+  {
+    mbed::ScopedLock<rtos::Mutex> lock(_mtx);
+    while (i < sizeof(regs)) {
+      if ((i > 29 && i < 40) || (i > 48 && i < 56)) {
+        i++;
+        continue;
+      }
+      regs[i++] = readByteCmd(id, i);
     }
-    regs[i++] = readByteCmd(id, i);
   }
-  mutex.unlock();
+
   stream.println("regs map:");
   for (i = 0; i < sizeof(regs); i++) {
     stream.println(String(i, HEX) + " : " + String(regs[i], HEX));
