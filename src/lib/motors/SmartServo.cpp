@@ -164,20 +164,15 @@ void SmartServoClass::action(uint8_t const id)
   writeCmd(id, SmartServoOperation::ACTION);
 }
 
-int SmartServoClass::begin()
+void SmartServoClass::begin()
 {
-  if (_RS485) {
-    _txPacket.header[0] = 0xff;
-    _txPacket.header[1] = 0xff;
-    _RS485.begin(115200, 0, 90);
-    _RS485.receive();
-    writeByteCmd(BROADCAST, REG(SmartServoRegister::SERVO_MOTOR_MODE), 1);
-    writeByteCmd(BROADCAST, REG(SmartServoRegister::TORQUE_SWITCH) ,1);
-    _positionMode = PositionMode::IMMEDIATE;
-    return 0;
-  } else {
-    return -1;
-  }
+  _txPacket.header[0] = 0xff;
+  _txPacket.header[1] = 0xff;
+  _RS485.begin(115200, 0, 90);
+  _RS485.receive();
+  writeByteCmd(BROADCAST, REG(SmartServoRegister::SERVO_MOTOR_MODE), 1);
+  writeByteCmd(BROADCAST, REG(SmartServoRegister::TORQUE_SWITCH) ,1);
+  _positionMode = PositionMode::IMMEDIATE;
 }
 
 void SmartServoClass::setPosition(uint8_t const id, float const angle, uint16_t const speed)
@@ -188,8 +183,8 @@ void SmartServoClass::setPosition(uint8_t const id, float const angle, uint16_t 
   mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   if (isValidId(id))
   {
-    _targetPosition[id-1] = angleToPosition(angle);
-    _targetSpeed[id-1] = speed;
+    _targetPosition[idToArrayIndex(id)] = angleToPosition(angle);
+    _targetSpeed[idToArrayIndex(id)] = speed;
     if (_positionMode==PositionMode::IMMEDIATE) {
       writeWordCmd(id, REG(SmartServoRegister::TARGET_POSITION_H), angleToPosition(angle));
     }

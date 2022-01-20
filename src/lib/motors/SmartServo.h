@@ -21,7 +21,7 @@ public:
   
   SmartServoClass(RS485Class & RS485);
 
-  int begin();
+  void begin();
   void end();
 
   inline void setPositionMode(PositionMode const mode) { _positionMode = mode; }
