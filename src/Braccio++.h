@@ -168,19 +168,19 @@ class Servo
 {
 public:
 
-  Servo(SmartServoClass & servos, int const idx) : _servos(servos), _idx(idx) { }
+  Servo(SmartServoClass & servos, int const id) : _servos(servos), _id(id) { }
 
-  inline void disengage() { _servos.disengage(_idx); }
-  inline void engage()    { _servos.engage(_idx); }
-  inline bool engaged()   { return _servos.isEngaged(_idx); }
+  inline void disengage() { _servos.disengage(_id); }
+  inline void engage()    { _servos.engage(_id); }
+  inline bool engaged()   { return _servos.isEngaged(_id); }
 
   inline Servo & move()                                    { return *this; }
-  inline Servo & to  (float const angle)                   { _servos.setPosition(_idx, angle, _speed); return *this; }
-  inline Servo & in  (std::chrono::milliseconds const len) { _servos.setTime(_idx, len.count()); return *this; }
+  inline Servo & to  (float const angle)                   { _servos.setPosition(_id, angle, _speed); return *this; }
+  inline Servo & in  (std::chrono::milliseconds const len) { _servos.setTime(_id, len.count()); return *this; }
 
-  inline float position()            { return _servos.getPosition(_idx); }
-  inline bool  connected()           { return Braccio.connected(_idx); }
-  inline void  info(Stream & stream) { _servos.getInfo(stream, _idx); }
+  inline float position()            { return _servos.getPosition(_id); }
+  inline bool  connected()           { return Braccio.connected(_id); }
+  inline void  info(Stream & stream) { _servos.getInfo(stream, _id); }
 
   operator bool() { return connected(); }
 
@@ -188,7 +188,7 @@ public:
 private:
 
   SmartServoClass & _servos;
-  int const _idx;
+  int const _id;
   int const _speed = 100;
 
 };
