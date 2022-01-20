@@ -60,18 +60,9 @@ public:
   void positions(float * buffer);
   void positions(float & a1, float & a2, float & a3, float & a4, float & a5, float & a6);
 
-
-  void speed(speed_grade_t speed_grade) {
-    runTime  = speed_grade;
-  }
-
-  void disengage(int id = SmartServoClass::BROADCAST) {
-    servos.disengage(id);
-  }
-
-  void engage(int id = SmartServoClass::BROADCAST) {
-    servos.engage(id);
-  }
+  inline void speed    (speed_grade_t const speed_grade)           { runTime  = speed_grade; }
+  inline void disengage(int const id = SmartServoClass::BROADCAST) { servos.disengage(id); }
+  inline void engage   (int const id = SmartServoClass::BROADCAST) { servos.engage(id); }
 
   int getKey();
   void connectJoystickTo(lv_obj_t* obj);
