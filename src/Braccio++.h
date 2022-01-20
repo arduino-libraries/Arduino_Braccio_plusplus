@@ -36,7 +36,7 @@ enum speed_grade_t {
 #include <chrono>
 using namespace std::chrono;
 
-class MotorsWrapper;
+class Servo;
 
 class BraccioClass
 {
@@ -53,25 +53,16 @@ public:
   bool connected(int const id);
 
 
-  MotorsWrapper move(int const id);
-  MotorsWrapper get (int const id);
+  Servo move(int const id);
+  Servo get (int const id);
 
   void moveTo(float const a1, float const a2, float const a3, float const a4, float const a5, float const a6);
   void positions(float * buffer);
   void positions(float & a1, float & a2, float & a3, float & a4, float & a5, float & a6);
 
-
-  void speed(speed_grade_t speed_grade) {
-    runTime  = speed_grade;
-  }
-
-  void disengage(int id = SmartServoClass::BROADCAST) {
-    servos.disengage(id);
-  }
-
-  void engage(int id = SmartServoClass::BROADCAST) {
-    servos.engage(id);
-  }
+  inline void speed    (speed_grade_t const speed_grade)           { runTime  = speed_grade; }
+  inline void disengage(int const id = SmartServoClass::BROADCAST) { servos.disengage(id); }
+  inline void engage   (int const id = SmartServoClass::BROADCAST) { servos.engage(id); }
 
   int getKey();
   void connectJoystickTo(lv_obj_t* obj);
@@ -173,46 +164,33 @@ private:
 
 #define Braccio BraccioClass::get_default_instance()
 
-class MotorsWrapper {
+class Servo
+{
 public:
-  MotorsWrapper(SmartServoClass & servos, int idx) : _servos(servos), _idx(idx) {}
-  MotorsWrapper& to(float angle) {
-    _servos.setPosition(_idx, angle, _speed);
-    return *this;
-  }
-  MotorsWrapper& in(std::chrono::milliseconds len) {
-    _servos.setTime(_idx, len.count());
-    return *this;
-  }
-  MotorsWrapper& move() {
-    return *this;
-  }
-  float position() {
-    return _servos.getPosition(_idx);
-  }
 
-  inline bool connected() { return Braccio.connected(_idx); }
+  Servo(SmartServoClass & servos, int const id) : _servos(servos), _id(id) { }
 
-  operator bool() {
-    return connected();
-  }
-  void info(Stream& stream) {
-    _servos.getInfo(stream, _idx);
-  }
-  void disengage() {
-    _servos.disengage(_idx);
-  }
-  void engage() {
-    _servos.engage(_idx);
-  }
-  bool engaged() {
-    return _servos.isEngaged(_idx);
-  }
+  inline void disengage() { _servos.disengage(_id); }
+  inline void engage()    { _servos.engage(_id); }
+  inline bool engaged()   { return _servos.isEngaged(_id); }
+
+  inline Servo & move()                                    { return *this; }
+  inline Servo & to  (float const angle)                   { _servos.setPosition(_id, angle, _speed); return *this; }
+  inline Servo & in  (std::chrono::milliseconds const len) { _servos.setTime(_id, len.count()); return *this; }
+
+  inline float position()            { return _servos.getPosition(_id); }
+  inline bool  connected()           { return Braccio.connected(_id); }
+  inline void  info(Stream & stream) { _servos.getInfo(stream, _id); }
+
+  operator bool() { return connected(); }
+
 
 private:
+
   SmartServoClass & _servos;
-  int _idx;
-  int _speed = 100;
+  int const _id;
+  int const _speed = 100;
+
 };
 
 struct __callback__container__ {
