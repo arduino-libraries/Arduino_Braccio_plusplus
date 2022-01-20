@@ -60,7 +60,9 @@ public:
   void positions(float * buffer);
   void positions(float & a1, float & a2, float & a3, float & a4, float & a5, float & a6);
 
-  inline void speed    (speed_grade_t const speed_grade)           { runTime  = speed_grade; }
+  inline void speed(speed_grade_t const speed_grade) { servos.setTime(SmartServoClass::BROADCAST, speed_grade); }
+  inline void speed(int const id, speed_grade_t const speed_grade) { servos.setTime(id, speed_grade); }
+
   inline void disengage(int const id = SmartServoClass::BROADCAST) { servos.disengage(id); }
   inline void engage   (int const id = SmartServoClass::BROADCAST) { servos.engage(id); }
 
