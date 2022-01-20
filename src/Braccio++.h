@@ -114,8 +114,6 @@ private:
   void setMotorConnectionStatus(int const id, bool const is_connected);
   void motorConnectedThreadFunc();
 
-  speed_grade_t runTime; //ms
-
   voidFuncPtr _customMenu;
 
   const int BTN_LEFT = 3;
@@ -177,7 +175,7 @@ public:
   inline bool engaged()   { return _servos.isEngaged(_id); }
 
   inline Servo & move()                                    { return *this; }
-  inline Servo & to  (float const angle)                   { _servos.setPosition(_id, angle, _speed); return *this; }
+  inline Servo & to  (float const angle)                   { _servos.setPosition(_id, angle); return *this; }
   inline Servo & in  (std::chrono::milliseconds const len) { _servos.setTime(_id, len.count()); return *this; }
 
   inline float position()            { return _servos.getPosition(_id); }
@@ -191,8 +189,6 @@ private:
 
   SmartServoClass & _servos;
   int const _id;
-  int const _speed = 100;
-
 };
 
 struct __callback__container__ {

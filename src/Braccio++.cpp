@@ -25,7 +25,6 @@ BraccioClass::BraccioClass()
 , _is_motor_connected{false}
 , _motors_connected_mtx{}
 , _motors_connected_thd{}
-, runTime{SLOW}
 , _customMenu{nullptr}
 {
 
@@ -163,6 +162,7 @@ bool BraccioClass::begin(voidFuncPtr customMenu)
   }
 
   servos.begin();
+  servos.setTime(SmartServoClass::BROADCAST, SLOW);
   servos.setPositionMode(PositionMode::IMMEDIATE);
 
   _motors_connected_thd.start(mbed::callback(this, &BraccioClass::motorConnectedThreadFunc));
@@ -202,12 +202,12 @@ Servo BraccioClass::get(int const id)
 void BraccioClass::moveTo(float const a1, float const a2, float const a3, float const a4, float const a5, float const a6)
 {
   servos.setPositionMode(PositionMode::SYNC);
-  servos.setPosition(1, a1, runTime);
-  servos.setPosition(2, a2, runTime);
-  servos.setPosition(3, a3, runTime);
-  servos.setPosition(4, a4, runTime);
-  servos.setPosition(5, a5, runTime);
-  servos.setPosition(6, a6, runTime);
+  servos.setPosition(1, a1);
+  servos.setPosition(2, a2);
+  servos.setPosition(3, a3);
+  servos.setPosition(4, a4);
+  servos.setPosition(5, a5);
+  servos.setPosition(6, a6);
   servos.synchronize();
   servos.setPositionMode(PositionMode::IMMEDIATE);
 }

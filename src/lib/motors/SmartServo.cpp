@@ -175,7 +175,7 @@ void SmartServoClass::begin()
   _positionMode = PositionMode::IMMEDIATE;
 }
 
-void SmartServoClass::setPosition(uint8_t const id, float const angle, uint16_t const speed)
+void SmartServoClass::setPosition(uint8_t const id, float const angle)
 {
   if (!isValidAngle(angle))
     return;
@@ -184,7 +184,6 @@ void SmartServoClass::setPosition(uint8_t const id, float const angle, uint16_t 
   if (isValidId(id))
   {
     _targetPosition[idToArrayIndex(id)] = angleToPosition(angle);
-    _targetSpeed[idToArrayIndex(id)] = speed;
     if (_positionMode==PositionMode::IMMEDIATE) {
       writeWordCmd(id, REG(SmartServoRegister::TARGET_POSITION_H), angleToPosition(angle));
     }
@@ -212,15 +211,13 @@ void SmartServoClass::synchronize()
   _txPacket.length = MAX_TX_PAYLOAD_LEN;
   _txPacket.instruction = CMD(SmartServoOperation::SYNC_WRITE);
   _txPacket.payload[0] = REG(SmartServoRegister::TARGET_POSITION_H);
-  _txPacket.payload[1] = 4;
+  _txPacket.payload[1] = 2;
   int index = 2;
   
   for (int i = MIN_MOTOR_ID; i <= MAX_MOTOR_ID; i++) {
     _txPacket.payload[index++] = i;
     _txPacket.payload[index++] = _targetPosition[idToArrayIndex(i)] >>8;
     _txPacket.payload[index++] = _targetPosition[idToArrayIndex(i)];
-    _txPacket.payload[index++] = _targetSpeed[idToArrayIndex(i)]>>8;
-    _txPacket.payload[index++] = _targetSpeed[idToArrayIndex(i)];
   }
   sendPacket();
 }
