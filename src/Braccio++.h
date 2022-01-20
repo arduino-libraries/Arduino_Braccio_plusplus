@@ -7,16 +7,7 @@
 #include "lib/display/Backlight.h"
 #include "lib/motors/SmartServo.h"
 #include "drivers/Ticker.h"
-/*
-#include "lib/PCINT/src/pcint.h"
-#include "lib/ArduinoMenu/src/menu.h"
-#include "lib/ArduinoMenu/src/menuIO/TFT_eSPIOut.h"
-#include "lib/ArduinoMenu/src/menuIO/interruptPins.h"
-#include "lib/ArduinoMenu/src/menuIO/keyIn.h"
-#include "lib/ArduinoMenu/src/menuIO/chainStream.h"
-#include "lib/ArduinoMenu/src/menuIO/serialOut.h"
-#include "lib/ArduinoMenu/src/menuIO/serialIn.h"
-*/
+
 #include "lib/TFT_eSPI/TFT_eSPI.h" // Hardware-specific library
 #include <lvgl.h>
 
