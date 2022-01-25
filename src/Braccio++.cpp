@@ -21,15 +21,16 @@ extern "C" {
 using namespace std::chrono_literals;
 
 BraccioClass::BraccioClass()
-: serial485{Serial1, 0, 7, 8} /* TX, DE, RE */
+: _i2c_mtx{}
+, serial485{Serial1, 0, 7, 8} /* TX, DE, RE */
 , servos{serial485}
 , PD_UFP{PD_LOG_LEVEL_VERBOSE}
-, _expander{TCA6424A_ADDRESS_ADDR_HIGH, i2c_mutex}
+, _expander{TCA6424A_ADDRESS_ADDR_HIGH, _i2c_mtx}
 , _is_ping_allowed{true}
 , _is_motor_connected{false}
 , _motors_connected_mtx{}
 , _motors_connected_thd{}
-, _bl{i2c_mutex}
+, _bl{_i2c_mtx}
 , _gfx{}
 , _lvgl_disp_drv{}
 , _lvgl_indev_drv{}
@@ -50,12 +51,10 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
 
   pinMode(PIN_FUSB302_INT, INPUT_PULLUP);
 
-#ifdef __MBED__
   static rtos::Thread th(osPriorityHigh);
   th.start(mbed::callback(this, &BraccioClass::pd_thread));
   attachInterrupt(PIN_FUSB302_INT, mbed::callback(this, &BraccioClass::unlock_pd_semaphore_irq), FALLING);
   pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 10ms);
-#endif
 
   PD_UFP.init_PPS(PPS_V(7.2), PPS_A(2.0));
 
@@ -119,11 +118,11 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   {
     if (!PD_UFP.is_PPS_ready())
     {
-      i2c_mutex.lock();
+      _i2c_mtx.lock();
       PD_UFP.print_status(Serial);
       PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
       delay(10);
-      i2c_mutex.unlock();
+      _i2c_mtx.unlock();
     }
   };
 
@@ -243,13 +242,13 @@ void BraccioClass::pd_thread() {
       pd_timer.detach();
       pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 50ms);
     }
-    i2c_mutex.lock();
+    _i2c_mtx.lock();
     if (millis() - last_time_ask_pps > 5000) {
       PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
       last_time_ask_pps = millis();
     }
     PD_UFP.run();
-    i2c_mutex.unlock();
+    _i2c_mtx.unlock();
     if (PD_UFP.is_power_ready() && PD_UFP.is_PPS_ready()) {
 
     }

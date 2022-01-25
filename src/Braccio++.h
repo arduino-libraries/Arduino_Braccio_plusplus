@@ -73,6 +73,7 @@ protected:
 
 private:
 
+  rtos::Mutex _i2c_mtx;
   RS485Class serial485;
   SmartServoClass servos;
   PD_UFP_log_c PD_UFP;
@@ -113,9 +114,8 @@ private:
   void lvgl_pleaseConnectPower();
   void lvgl_defaultMenu();
 
-#ifdef __MBED__
+
   rtos::EventFlags pd_events;
-  rtos::Mutex i2c_mutex;
   mbed::Ticker pd_timer;
 
   unsigned int start_pd_burst = 0xFFFFFFFF;
@@ -140,8 +140,6 @@ private:
   }
 
   void pd_thread();
-#endif
-
 };
 
 #define Braccio BraccioClass::get_default_instance()
