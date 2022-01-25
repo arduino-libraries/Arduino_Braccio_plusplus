@@ -78,11 +78,6 @@ protected:
   // io_expander APIs
   void digitalWrite(int pin, uint8_t value);
 
-  // default display APIs
-  void lvgl_splashScreen(unsigned long const duration_ms, std::function<void()> check_power_func);
-  void lvgl_pleaseConnectPower();
-  void lvgl_defaultMenu();
-
   void setID(int id) {
     servos.setID(id);
   }
@@ -122,6 +117,9 @@ private:
   lv_style_t _lv_style;
   rtos::Thread _display_thd;
   void display_thread_func();
+  void lvgl_splashScreen(unsigned long const duration_ms, std::function<void()> check_power_func);
+  void lvgl_pleaseConnectPower();
+  void lvgl_defaultMenu();
 
 #ifdef __MBED__
   rtos::EventFlags pd_events;
