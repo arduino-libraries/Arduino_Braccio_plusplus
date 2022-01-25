@@ -21,15 +21,16 @@ extern "C" {
 using namespace std::chrono_literals;
 
 BraccioClass::BraccioClass()
-: serial485{Serial1, 0, 7, 8} /* TX, DE, RE */
+: _i2c_mtx{}
+, serial485{Serial1, 0, 7, 8} /* TX, DE, RE */
 , servos{serial485}
 , PD_UFP{PD_LOG_LEVEL_VERBOSE}
-, _expander{TCA6424A_ADDRESS_ADDR_HIGH, i2c_mutex}
+, _expander{TCA6424A_ADDRESS_ADDR_HIGH, _i2c_mtx}
 , _is_ping_allowed{true}
 , _is_motor_connected{false}
 , _motors_connected_mtx{}
 , _motors_connected_thd{}
-, _bl{i2c_mutex}
+, _bl{_i2c_mtx}
 , _gfx{}
 , _lvgl_disp_drv{}
 , _lvgl_indev_drv{}
@@ -44,17 +45,16 @@ BraccioClass::BraccioClass()
 
 bool BraccioClass::begin(voidFuncPtr custom_menu)
 {
+  SPI.begin();
   Wire.begin();
   Serial.begin(115200);
 
   pinMode(PIN_FUSB302_INT, INPUT_PULLUP);
 
-#ifdef __MBED__
   static rtos::Thread th(osPriorityHigh);
   th.start(mbed::callback(this, &BraccioClass::pd_thread));
   attachInterrupt(PIN_FUSB302_INT, mbed::callback(this, &BraccioClass::unlock_pd_semaphore_irq), FALLING);
   pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 10ms);
-#endif
 
   PD_UFP.init_PPS(PPS_V(7.2), PPS_A(2.0));
 
@@ -71,34 +71,8 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
     return false;
   _bl.turnOn();
 
-  SPI.begin();
-
-  int ret = _expander.testConnection();
-
-  if (ret == false) {
-    return ret;
-  }
-
-  for (int i = 0; i < 14; i++) {
-    _expander.setPinDirection(i, 0);
-  }
-
-  // Set SLEW to low
-  _expander.setPinDirection(21, 0); // P25 = 8 * 2 + 5
-  _expander.writePin(21, 0);
-
-  // Set TERM to HIGH (default)
-  _expander.setPinDirection(19, 0); // P23 = 8 * 2 + 3
-  _expander.writePin(19, 1);
-
-  _expander.setPinDirection(18, 0); // P22 = 8 * 2 + 2
-  _expander.writePin(18, 0); // reset LCD
-  _expander.writePin(18, 1); // LCD out of reset
-
-  /* Set all motor status LEDs to red. */
-  for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
-    setRed(id);
-  }
+  if (!expander_init())
+    return false;
 
   pinMode(BTN_LEFT, INPUT_PULLUP);
   pinMode(BTN_RIGHT, INPUT_PULLUP);
@@ -144,11 +118,11 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   {
     if (!PD_UFP.is_PPS_ready())
     {
-      i2c_mutex.lock();
+      _i2c_mtx.lock();
       PD_UFP.print_status(Serial);
       PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
       delay(10);
-      i2c_mutex.unlock();
+      _i2c_mtx.unlock();
     }
   };
 
@@ -268,13 +242,13 @@ void BraccioClass::pd_thread() {
       pd_timer.detach();
       pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 50ms);
     }
-    i2c_mutex.lock();
+    _i2c_mtx.lock();
     if (millis() - last_time_ask_pps > 5000) {
       PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
       last_time_ask_pps = millis();
     }
     PD_UFP.run();
-    i2c_mutex.unlock();
+    _i2c_mtx.unlock();
     if (PD_UFP.is_power_ready() && PD_UFP.is_PPS_ready()) {
 
     }
@@ -333,6 +307,41 @@ void BraccioClass::lvgl_defaultMenu()
   lv_label_set_long_mode(label1, LV_LABEL_LONG_SCROLL);
   lv_obj_set_align(label1, LV_ALIGN_CENTER);
   lv_obj_set_pos(label1, 0, 0);
+}
+
+bool BraccioClass::expander_init()
+{
+  static uint16_t constexpr EXPANDER_RS485_SLEW_PIN   = 21; /* P25 = 8 * 2 + 5 = 21 */
+  static uint16_t constexpr EXPANDER_RS485_TERM_PIN   = 19; /* P23 = 8 * 2 + 3 = 19 */
+  static uint16_t constexpr EXPANDER_RS485_RST_DP_PIN = 18; /* P22 = 8 * 2 + 2 = 18 */
+
+  if (!_expander.testConnection())
+    return false;
+
+  /* Init IO expander outputs of RGB LEDs */
+  for (int i = 0; i < 14; i++) {
+    _expander.setPinDirection(i, 0);
+  }
+
+  /* Set SLEW to low */
+  _expander.setPinDirection(EXPANDER_RS485_SLEW_PIN, 0);
+  _expander.writePin(EXPANDER_RS485_SLEW_PIN, 0);
+
+  /* Set TERM to HIGH (default) */
+  _expander.setPinDirection(EXPANDER_RS485_TERM_PIN, 0);
+  _expander.writePin(EXPANDER_RS485_TERM_PIN, 1);
+
+  /* Reset GLCD */
+  _expander.setPinDirection(EXPANDER_RS485_RST_DP_PIN, 0); // P22 = 8 * 2 + 2
+  _expander.writePin(EXPANDER_RS485_RST_DP_PIN, 0); // reset LCD
+  _expander.writePin(EXPANDER_RS485_RST_DP_PIN, 1); // LCD out of reset
+
+  /* Set all motor status LEDs to red. */
+  for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
+    setRed(id);
+  }
+
+  return true;
 }
 
 bool BraccioClass::isPingAllowed()
