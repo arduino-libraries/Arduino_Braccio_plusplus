@@ -6,10 +6,17 @@
 
 #include "mbed.h"
 
-void my_print( const char * dsc )
+#if LV_USE_LOG
+void lvgl_my_print(const char * dsc)
 {
-    Serial.println(dsc);
+  Serial.println(dsc);
 }
+#endif /* #if LV_USE_LOG */
+
+extern "C" {
+  void braccio_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
+  void braccio_read_keypad(lv_indev_drv_t * indev, lv_indev_data_t * data);
+};
 
 using namespace std::chrono_literals;
 
@@ -17,20 +24,25 @@ BraccioClass::BraccioClass()
 : serial485{Serial1, 0, 7, 8} /* TX, DE, RE */
 , servos{serial485}
 , PD_UFP{PD_LOG_LEVEL_VERBOSE}
-, expander{TCA6424A_ADDRESS_ADDR_HIGH}
-, bl{}
-, _display_thd{}
+, _expander{TCA6424A_ADDRESS_ADDR_HIGH}
 , _is_ping_allowed{true}
 , _is_motor_connected{false}
 , _motors_connected_mtx{}
 , _motors_connected_thd{}
-, _customMenu{nullptr}
+, _bl{}
 , _gfx{}
+, _lvgl_disp_drv{}
+, _lvgl_indev_drv{}
+, _lvgl_disp_buf{}
+, _lvgl_draw_buf{}
+, _lvgl_p_obj_group{nullptr}
+, _lvgl_kb_indev{nullptr}
+, _display_thd{}
 {
 
 }
 
-bool BraccioClass::begin(voidFuncPtr customMenu)
+bool BraccioClass::begin(voidFuncPtr custom_menu)
 {
   Wire.begin();
   Serial.begin(115200);
@@ -57,33 +69,33 @@ bool BraccioClass::begin(voidFuncPtr customMenu)
   SPI.begin();
 
   i2c_mutex.lock();
-  bl.begin();
-  if (bl.getChipID() != 0xCE) {
+  _bl.begin();
+  if (_bl.getChipID() != 0xCE) {
     return false;
   }
-  bl.setColor(red);
+  _bl.setColor(red);
 
-  int ret = expander.testConnection();
+  int ret = _expander.testConnection();
 
   if (ret == false) {
     return ret;
   }
 
   for (int i = 0; i < 14; i++) {
-    expander.setPinDirection(i, 0);
+    _expander.setPinDirection(i, 0);
   }
 
   // Set SLEW to low
-  expander.setPinDirection(21, 0); // P25 = 8 * 2 + 5
-  expander.writePin(21, 0);
+  _expander.setPinDirection(21, 0); // P25 = 8 * 2 + 5
+  _expander.writePin(21, 0);
 
   // Set TERM to HIGH (default)
-  expander.setPinDirection(19, 0); // P23 = 8 * 2 + 3
-  expander.writePin(19, 1);
+  _expander.setPinDirection(19, 0); // P23 = 8 * 2 + 3
+  _expander.writePin(19, 1);
 
-  expander.setPinDirection(18, 0); // P22 = 8 * 2 + 2
-  expander.writePin(18, 0); // reset LCD
-  expander.writePin(18, 1); // LCD out of reset
+  _expander.setPinDirection(18, 0); // P22 = 8 * 2 + 2
+  _expander.writePin(18, 0); // reset LCD
+  _expander.writePin(18, 1); // LCD out of reset
 
   /* Set all motor status LEDs to red. */
   for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
@@ -99,25 +111,25 @@ bool BraccioClass::begin(voidFuncPtr customMenu)
   pinMode(BTN_ENTER, INPUT_PULLUP);
 
 #if LV_USE_LOG
-  lv_log_register_print_cb( my_print );
+  lv_log_register_print_cb(lvgl_my_print);
 #endif
 
   lv_init();
 
-  lv_disp_draw_buf_init(&disp_buf, buf, NULL, 240 * 240 / 10);
+  lv_disp_draw_buf_init(&_lvgl_disp_buf, _lvgl_draw_buf, NULL, LVGL_DRAW_BUFFER_SIZE);
 
   /*Initialize the display*/
-  lv_disp_drv_init(&disp_drv);
-  disp_drv.hor_res = 240;
-  disp_drv.ver_res = 240;
-  disp_drv.flush_cb = braccio_disp_flush;
-  disp_drv.draw_buf = &disp_buf;
-  lv_disp_drv_register(&disp_drv);
+  lv_disp_drv_init(&_lvgl_disp_drv);
+  _lvgl_disp_drv.hor_res = 240;
+  _lvgl_disp_drv.ver_res = 240;
+  _lvgl_disp_drv.flush_cb = braccio_disp_flush;
+  _lvgl_disp_drv.draw_buf = &_lvgl_disp_buf;
+  lv_disp_drv_register(&_lvgl_disp_drv);
 
-  lv_indev_drv_init(&indev_drv);
-  indev_drv.type = LV_INDEV_TYPE_KEYPAD;
-  indev_drv.read_cb = read_keypad;
-  kb_indev = lv_indev_drv_register(&indev_drv);
+  lv_indev_drv_init(&_lvgl_indev_drv);
+  _lvgl_indev_drv.type = LV_INDEV_TYPE_KEYPAD;
+  _lvgl_indev_drv.read_cb = braccio_read_keypad;
+  _lvgl_kb_indev = lv_indev_drv_register(&_lvgl_indev_drv);
 
   lv_style_init(&_lv_style);
 
@@ -126,8 +138,8 @@ bool BraccioClass::begin(voidFuncPtr customMenu)
   _gfx.fillScreen(TFT_WHITE);
   _gfx.setAddrWindow(0, 0, 240, 240);
 
-  p_objGroup = lv_group_create();
-  lv_group_set_default(p_objGroup);
+  _lvgl_p_obj_group = lv_group_create();
+  lv_group_set_default(_lvgl_p_obj_group);
 
   _display_thd.start(mbed::callback(this, &BraccioClass::display_thread_func));
 
@@ -154,11 +166,10 @@ bool BraccioClass::begin(voidFuncPtr customMenu)
     check_power_func();
   lv_obj_clean(lv_scr_act());
 
-  if (customMenu) {
-    customMenu();
-  } else {
-    defaultMenu();
-  }
+  if (custom_menu)
+    custom_menu();
+  else
+    lvgl_defaultMenu();
 
   servos.begin();
   servos.setTime(SmartServoClass::BROADCAST, SLOW);
@@ -228,9 +239,10 @@ void BraccioClass::positions(float & a1, float & a2, float & a3, float & a4, flo
   a6 = servos.getPosition(6);
 }
 
-void BraccioClass::connectJoystickTo(lv_obj_t* obj) {
-  lv_group_add_obj(p_objGroup, obj);
-  lv_indev_set_group(kb_indev, p_objGroup);
+void BraccioClass::connectJoystickTo(lv_obj_t* obj)
+{
+  lv_group_add_obj(_lvgl_p_obj_group, obj);
+  lv_indev_set_group(_lvgl_kb_indev, _lvgl_p_obj_group);
 }
 
 void BraccioClass::lvgl_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
@@ -282,10 +294,10 @@ void BraccioClass::display_thread_func()
   }
 }
 
-#include <extra/libs/gif/lv_gif.h>
-
 void BraccioClass::lvgl_splashScreen(unsigned long const duration_ms, std::function<void()> check_power_func)
 {
+  extern const lv_img_dsc_t img_bulb_gif;
+
   LV_IMG_DECLARE(img_bulb_gif);
   lv_obj_t* img = lv_gif_create(lv_scr_act());
   lv_gif_set_src(img, &img_bulb_gif);
@@ -314,7 +326,7 @@ void BraccioClass::lvgl_pleaseConnectPower()
   lv_obj_set_pos(label1, 0, 0);
 }
 
-void BraccioClass::defaultMenu()
+void BraccioClass::lvgl_defaultMenu()
 {
   // TODO: create a meaningful default menu
   lv_style_set_text_font(&_lv_style, &lv_font_montserrat_32);
@@ -392,7 +404,7 @@ extern "C" void braccio_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, l
 }
 
 /* Reading input device (simulated encoder here) */
-extern "C" void read_keypad(lv_indev_drv_t * drv, lv_indev_data_t* data)
+extern "C" void braccio_read_keypad(lv_indev_drv_t * drv, lv_indev_data_t* data)
 {
     static uint32_t last_key = 0;
 
