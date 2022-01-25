@@ -155,8 +155,9 @@ enum RGBColors {
 
 class Backlight
 {
-public: 
-  Backlight() {};
+public:
+
+  Backlight() { }
 
   void begin();
   void end();
@@ -164,12 +165,13 @@ public:
   void setColor(uint8_t blue, uint8_t green, uint8_t red);
   uint8_t getChipID();
 
+
 private:
+
   void init();
   void reset();
   void powerDown();
   void powerUp();
-  void ledBlink(RGBColors color, uint32_t duration);
   void writeByte(uint8_t address, uint8_t subAddress, uint8_t data);
   uint8_t readByte(uint8_t address, uint8_t subAddress);
 

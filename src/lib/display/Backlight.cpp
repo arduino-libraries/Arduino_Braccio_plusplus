@@ -134,13 +134,6 @@ void Backlight::init()// configure rgb led function
   writeByte(IS31FL3194_ADDRESS, 0x32, 0xFF); // Max power on led R (OUT 3)
 }
 
-void Backlight::ledBlink(RGBColors color, uint32_t duration)
-{
-  setColor(color);
-  delay(duration);
-  setColor(off);
-}
-
 void Backlight::writeByte(uint8_t address, uint8_t subAddress, uint8_t data)
 {
   Wire.beginTransmission(address);
