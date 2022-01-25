@@ -803,12 +803,12 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 ***************************************************************************************/
 // Load the Touch extension
 #ifdef TOUCH_CS
-  #include "Extensions/Touch.h"        // Loaded if TOUCH_CS is defined by user
+//  #include "Extensions/Touch.h"        // Loaded if TOUCH_CS is defined by user
 #endif
 
 // Load the Anti-aliased font extension
 #ifdef SMOOTH_FONT
-  #include "Extensions/Smooth_font.h"  // Loaded if SMOOTH_FONT is defined by user
+//  #include "Extensions/Smooth_font.h"  // Loaded if SMOOTH_FONT is defined by user
 #endif
 
 }; // End of class TFT_eSPI
@@ -817,9 +817,9 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
 **                         Section 10: Additional extension classes
 ***************************************************************************************/
 // Load the Button Class
-#include "Extensions/Button.h"
+//#include "Extensions/Button.h"
 
 // Load the Sprite Class
-#include "Extensions/Sprite.h"
+//#include "Extensions/Sprite.h"
 
 #endif // ends #ifndef _TFT_eSPIH_

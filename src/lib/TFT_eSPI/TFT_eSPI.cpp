@@ -4970,14 +4970,14 @@ void TFT_eSPI::getSetup(setup_t &tft_settings)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 #ifdef TOUCH_CS
-  #include "Extensions/Touch.cppx"
-  #include "Extensions/Button.cppx"
+//  #include "Extensions/Touch.cppx"
+//  #include "Extensions/Button.cppx"
 #endif
 
-#include "Extensions/Sprite.cppx"
+//#include "Extensions/Sprite.cppx"
 
 #ifdef SMOOTH_FONT
-  #include "Extensions/Smooth_font.cppx"
+//  #include "Extensions/Smooth_font.cppx"
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////
