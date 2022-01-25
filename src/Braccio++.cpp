@@ -29,7 +29,7 @@ BraccioClass::BraccioClass()
 , _is_motor_connected{false}
 , _motors_connected_mtx{}
 , _motors_connected_thd{}
-, _bl{}
+, _bl{i2c_mutex}
 , _gfx{}
 , _lvgl_disp_drv{}
 , _lvgl_indev_drv{}
@@ -66,15 +66,13 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
 
   pinMode(1, INPUT_PULLUP);
 
-  SPI.begin();
-
-  i2c_mutex.lock();
   _bl.begin();
-  if (_bl.getChipID() != 0xCE) {
+  if (_bl.getChipID() != 0xCE)
     return false;
-  }
   _bl.on();
 
+  SPI.begin();
+  i2c_mutex.lock();
   int ret = _expander.testConnection();
 
   if (ret == false) {

@@ -15,9 +15,17 @@
  * INCLUDE
  **************************************************************************************/
 
-#include <Arduino.h>
-#include <Wire.h>
 #include "Backlight.h"
+
+/**************************************************************************************
+ * CTOR/DTOR
+ **************************************************************************************/
+
+Backlight::Backlight(rtos::Mutex & wire_mtx)
+: _wire_mtx{wire_mtx}
+{
+
+}
 
 /**************************************************************************************
  * PUBLIC MEMBER FUNCTIONS
@@ -96,6 +104,8 @@ void Backlight::setColor(uint8_t blue, uint8_t green, uint8_t red)
 
 void Backlight::writeByte(uint8_t address, uint8_t subAddress, uint8_t data)
 {
+  mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
+
   Wire.beginTransmission(address);
   Wire.write(subAddress);
   Wire.write(data);
@@ -104,6 +114,8 @@ void Backlight::writeByte(uint8_t address, uint8_t subAddress, uint8_t data)
 
 uint8_t Backlight::readByte(uint8_t address, uint8_t subAddress)
 {
+  mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
+
   char response = 0xFF;
   Wire.beginTransmission(address);
   Wire.write(subAddress);

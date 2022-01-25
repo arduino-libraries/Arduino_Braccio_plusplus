@@ -5,6 +5,8 @@
  * INCLUDE
  **************************************************************************************/
 
+#include <Arduino.h>
+
 #include <Wire.h>
 
 /**************************************************************************************
@@ -143,7 +145,8 @@ class Backlight
 {
 public:
 
-  Backlight() { }
+  Backlight(rtos::Mutex & wire_mtx);
+
 
   void begin();
   void end();
@@ -155,6 +158,8 @@ public:
 
 
 private:
+
+  rtos::Mutex & _wire_mtx;
 
   void init();
   void reset();
