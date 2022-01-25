@@ -35,7 +35,9 @@ THE SOFTWARE.
 /** Default constructor, uses default I2C address.
  * @see TCA6424A_DEFAULT_ADDRESS
  */
-TCA6424A::TCA6424A() {
+TCA6424A::TCA6424A(rtos::Mutex & wire_mtx)
+: _wire_mtx{wire_mtx}
+{
     devAddr = TCA6424A_DEFAULT_ADDRESS;
 }
 
@@ -45,8 +47,11 @@ TCA6424A::TCA6424A() {
  * @see TCA6424A_ADDRESS_ADDR_LOW
  * @see TCA6424A_ADDRESS_ADDR_HIGH
  */
-TCA6424A::TCA6424A(uint8_t address) {
-    devAddr = address;
+TCA6424A::TCA6424A(uint8_t address, rtos::Mutex & wire_mtx)
+: devAddr{address}
+, _wire_mtx{wire_mtx}
+{
+
 }
 
 /** Power on and prepare for general usage.
@@ -62,6 +67,7 @@ void TCA6424A::initialize() {
  * @return True if connection is valid, false otherwise
  */
 bool TCA6424A::testConnection() {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     return I2Cdev::readBytes(devAddr, TCA6424A_RA_INPUT0, 3, buffer) == 3;
 }
 
@@ -71,6 +77,7 @@ bool TCA6424A::testConnection() {
  * @return Pin logic level (0 or 1)
  */
 bool TCA6424A::readPin(uint16_t pin) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::readBit(devAddr, TCA6424A_RA_INPUT0 + (pin / 8), pin % 8, buffer);
     return buffer[0];
 }
@@ -79,6 +86,7 @@ bool TCA6424A::readPin(uint16_t pin) {
  * @return 8 pins' logic levels (0 or 1 for each pin)
  */
 uint8_t TCA6424A::readBank(uint8_t bank) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::readByte(devAddr, TCA6424A_RA_INPUT0 + bank, buffer);
     return buffer[0];
 }
@@ -87,6 +95,7 @@ uint8_t TCA6424A::readBank(uint8_t bank) {
  * @param banks Container for all bank's pin values (P00-P27)
  */
 void TCA6424A::readAll(uint8_t *banks) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::readBytes(devAddr, TCA6424A_RA_INPUT0, 3, banks);
 }
 /** Get all pin logic levels from all banks.
@@ -96,6 +105,7 @@ void TCA6424A::readAll(uint8_t *banks) {
  * @param bank2 Container for Bank 2's pin values (P20-P27)
  */
 void TCA6424A::readAll(uint8_t *bank0, uint8_t *bank1, uint8_t *bank2) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::readBytes(devAddr, TCA6424A_RA_INPUT0, 3, buffer);
     *bank0 = buffer[0];
     *bank1 = buffer[1];
@@ -110,6 +120,7 @@ void TCA6424A::readAll(uint8_t *bank0, uint8_t *bank1, uint8_t *bank2) {
  * @return Pin output setting (0 or 1)
  */
 bool TCA6424A::getPinOutputLevel(uint16_t pin) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::readBit(devAddr, TCA6424A_RA_OUTPUT0 + (pin / 8), pin % 8, buffer);
     return buffer[0];
 }
@@ -120,6 +131,7 @@ bool TCA6424A::getPinOutputLevel(uint16_t pin) {
  * @return 8 pins' output settings (0 or 1 for each pin)
  */
 uint8_t TCA6424A::getBankOutputLevel(uint8_t bank) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::readByte(devAddr, TCA6424A_RA_OUTPUT0 + bank, buffer);
     return buffer[0];
 }
@@ -128,6 +140,7 @@ uint8_t TCA6424A::getBankOutputLevel(uint8_t bank) {
  * @param banks Container for all bank's pin values (P00-P27)
  */
 void TCA6424A::getAllOutputLevel(uint8_t *banks) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::readBytes(devAddr, TCA6424A_RA_OUTPUT0, 3, banks);
 }
 /** Get all pin output settings from all banks.
@@ -139,6 +152,7 @@ void TCA6424A::getAllOutputLevel(uint8_t *banks) {
  * @param bank2 Container for Bank 2's pin values (P20-P27)
  */
 void TCA6424A::getAllOutputLevel(uint8_t *bank0, uint8_t *bank1, uint8_t *bank2) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::readBytes(devAddr, TCA6424A_RA_OUTPUT0, 3, buffer);
     *bank0 = buffer[0];
     *bank1 = buffer[1];
@@ -149,6 +163,7 @@ void TCA6424A::getAllOutputLevel(uint8_t *bank0, uint8_t *bank1, uint8_t *bank2)
  * @param value New pin output logic level (0 or 1)
  */
 void TCA6424A::writePin(uint16_t pin, bool value) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::writeBit(devAddr, TCA6424A_RA_OUTPUT0 + (pin / 8), pin % 8, value);
 }
 /** Set all OUTPUT pins' logic levels in one bank.
@@ -156,12 +171,14 @@ void TCA6424A::writePin(uint16_t pin, bool value) {
  * @param value New pins' output logic level (0 or 1 for each pin)
  */
 void TCA6424A::writeBank(uint8_t bank, uint8_t value) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::writeByte(devAddr, TCA6424A_RA_OUTPUT0 + bank, value);
 }
 /** Set all OUTPUT pins' logic levels in all banks.
  * @param banks All pins' new logic values (P00-P27) in 3-byte array
  */
 void TCA6424A::writeAll(uint8_t *banks) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::writeBytes(devAddr, TCA6424A_RA_OUTPUT0 | TCA6424A_AUTO_INCREMENT, 3, banks);
 }
 /** Set all OUTPUT pins' logic levels in all banks.
@@ -170,6 +187,7 @@ void TCA6424A::writeAll(uint8_t *banks) {
  * @param bank2 Bank 2's new logic values (P20-P27)
  */
 void TCA6424A::writeAll(uint8_t bank0, uint8_t bank1, uint8_t bank2) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     buffer[0] = bank0;
     buffer[1] = bank1;
     buffer[2] = bank2;
@@ -182,6 +200,7 @@ void TCA6424A::writeAll(uint8_t bank0, uint8_t bank1, uint8_t bank2) {
  * @return Pin polarity setting (0 or 1)
  */
 bool TCA6424A::getPinPolarity(uint16_t pin) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::readBit(devAddr, TCA6424A_RA_POLARITY0 + (pin / 8), pin % 8, buffer);
     return buffer[0];
 }
@@ -190,6 +209,7 @@ bool TCA6424A::getPinPolarity(uint16_t pin) {
  * @return 8 pins' polarity settings (0 or 1 for each pin)
  */
 uint8_t TCA6424A::getBankPolarity(uint8_t bank) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::readByte(devAddr, TCA6424A_RA_POLARITY0 + bank, buffer);
     return buffer[0];
 }
@@ -198,6 +218,7 @@ uint8_t TCA6424A::getBankPolarity(uint8_t bank) {
  * @param banks Container for all bank's pin values (P00-P27)
  */
 void TCA6424A::getAllPolarity(uint8_t *banks) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::readBytes(devAddr, TCA6424A_RA_POLARITY0, 3, banks);
 }
 /** Get all pin polarity (normal/inverted) settings from all banks.
@@ -207,6 +228,7 @@ void TCA6424A::getAllPolarity(uint8_t *banks) {
  * @param bank2 Container for Bank 2's pin values (P20-P27)
  */
 void TCA6424A::getAllPolarity(uint8_t *bank0, uint8_t *bank1, uint8_t *bank2) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::readBytes(devAddr, TCA6424A_RA_POLARITY0, 3, buffer);
     *bank0 = buffer[0];
     *bank1 = buffer[1];
@@ -217,6 +239,7 @@ void TCA6424A::getAllPolarity(uint8_t *bank0, uint8_t *bank1, uint8_t *bank2) {
  * @param polarity New pin polarity setting (0 or 1)
  */
 void TCA6424A::setPinPolarity(uint16_t pin, bool polarity) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::writeBit(devAddr, TCA6424A_RA_POLARITY0 + (pin / 8), pin % 8, polarity);
 }
 /** Set all pin polarity (normal/inverted) settings in one bank.
@@ -224,12 +247,14 @@ void TCA6424A::setPinPolarity(uint16_t pin, bool polarity) {
  * @return New pins' polarity settings (0 or 1 for each pin)
  */
 void TCA6424A::setBankPolarity(uint8_t bank, uint8_t polarity) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::writeByte(devAddr, TCA6424A_RA_POLARITY0 + bank, polarity);
 }
 /** Set all pin polarity (normal/inverted) settings in all banks.
  * @param banks All pins' new logic values (P00-P27) in 3-byte array
  */
 void TCA6424A::setAllPolarity(uint8_t *banks) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::writeBytes(devAddr, TCA6424A_RA_POLARITY0 | TCA6424A_AUTO_INCREMENT, 3, banks);
 }
 /** Set all pin polarity (normal/inverted) settings in all banks.
@@ -238,6 +263,7 @@ void TCA6424A::setAllPolarity(uint8_t *banks) {
  * @param bank2 Bank 2's new polarity values (P20-P27)
  */
 void TCA6424A::setAllPolarity(uint8_t bank0, uint8_t bank1, uint8_t bank2) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     buffer[0] = bank0;
     buffer[1] = bank1;
     buffer[2] = bank2;
@@ -250,6 +276,7 @@ void TCA6424A::setAllPolarity(uint8_t bank0, uint8_t bank1, uint8_t bank2) {
  * @return Pin direction setting (0 or 1)
  */
 bool TCA6424A::getPinDirection(uint16_t pin) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::readBit(devAddr, TCA6424A_RA_CONFIG0 + (pin / 8), pin % 8, buffer);
     return buffer[0];
 }
@@ -258,6 +285,7 @@ bool TCA6424A::getPinDirection(uint16_t pin) {
  * @return 8 pins' direction settings (0 or 1 for each pin)
  */
 uint8_t TCA6424A::getBankDirection(uint8_t bank) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::readByte(devAddr, TCA6424A_RA_CONFIG0 + bank, buffer);
     return buffer[0];
 }
@@ -266,6 +294,7 @@ uint8_t TCA6424A::getBankDirection(uint8_t bank) {
  * @param banks Container for all bank's pin values (P00-P27)
  */
 void TCA6424A::getAllDirection(uint8_t *banks) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::readBytes(devAddr, TCA6424A_RA_CONFIG0, 3, banks);
 }
 /** Get all pin direction (I/O) settings from all banks.
@@ -275,6 +304,7 @@ void TCA6424A::getAllDirection(uint8_t *banks) {
  * @param bank2 Container for Bank 2's pin values (P20-P27)
  */
 void TCA6424A::getAllDirection(uint8_t *bank0, uint8_t *bank1, uint8_t *bank2) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::readBytes(devAddr, TCA6424A_RA_CONFIG0, 3, buffer);
     *bank0 = buffer[0];
     *bank1 = buffer[1];
@@ -285,6 +315,7 @@ void TCA6424A::getAllDirection(uint8_t *bank0, uint8_t *bank1, uint8_t *bank2) {
  * @param direction Pin direction setting (0 or 1)
  */
 void TCA6424A::setPinDirection(uint16_t pin, bool direction) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::writeBit(devAddr, TCA6424A_RA_CONFIG0 + (pin / 8), pin % 8, direction);
 }
 /** Set all pin direction (I/O) settings in one bank.
@@ -292,12 +323,14 @@ void TCA6424A::setPinDirection(uint16_t pin, bool direction) {
  * @param direction New pins' direction settings (0 or 1 for each pin)
  */
 void TCA6424A::setBankDirection(uint8_t bank, uint8_t direction) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::writeByte(devAddr, TCA6424A_RA_CONFIG0 + bank, direction);
 }
 /** Set all pin direction (I/O) settings in all banks.
  * @param banks All pins' new direction values (P00-P27) in 3-byte array
  */
 void TCA6424A::setAllDirection(uint8_t *banks) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     I2Cdev::writeBytes(devAddr, TCA6424A_RA_CONFIG0 | TCA6424A_AUTO_INCREMENT, 3, banks);
 }
 /** Set all pin direction (I/O) settings in all banks.
@@ -306,6 +339,7 @@ void TCA6424A::setAllDirection(uint8_t *banks) {
  * @param bank2 Bank 2's new direction values (P20-P27)
  */
 void TCA6424A::setAllDirection(uint8_t bank0, uint8_t bank1, uint8_t bank2) {
+    mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
     buffer[0] = bank0;
     buffer[1] = bank1;
     buffer[2] = bank2;

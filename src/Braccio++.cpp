@@ -24,7 +24,7 @@ BraccioClass::BraccioClass()
 : serial485{Serial1, 0, 7, 8} /* TX, DE, RE */
 , servos{serial485}
 , PD_UFP{PD_LOG_LEVEL_VERBOSE}
-, _expander{TCA6424A_ADDRESS_ADDR_HIGH}
+, _expander{TCA6424A_ADDRESS_ADDR_HIGH, i2c_mutex}
 , _is_ping_allowed{true}
 , _is_motor_connected{false}
 , _motors_connected_mtx{}
@@ -72,7 +72,7 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   _bl.turnOn();
 
   SPI.begin();
-  i2c_mutex.lock();
+
   int ret = _expander.testConnection();
 
   if (ret == false) {
@@ -99,7 +99,6 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
     setRed(id);
   }
-  i2c_mutex.unlock();
 
   pinMode(BTN_LEFT, INPUT_PULLUP);
   pinMode(BTN_RIGHT, INPUT_PULLUP);
@@ -360,14 +359,12 @@ void BraccioClass::motorConnectedThreadFunc()
         setMotorConnectionStatus(id, is_connected);
       }
 
-      i2c_mutex.lock();
       for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
         if (connected(id))
           setGreen(id);
         else
           setRed(id);
       }
-      i2c_mutex.unlock();
     }
     delay(1000);
   }
