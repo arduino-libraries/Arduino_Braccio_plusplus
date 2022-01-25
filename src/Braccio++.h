@@ -71,9 +71,7 @@ public:
 
 protected:
 
-  void setID(int id) {
-    servos.setID(id);
-  }
+  inline void setID(int const id) { servos.setID(id); }
 
 private:
 
