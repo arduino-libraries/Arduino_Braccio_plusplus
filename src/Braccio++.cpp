@@ -25,6 +25,7 @@ BraccioClass::BraccioClass()
 , _motors_connected_mtx{}
 , _motors_connected_thd{}
 , _customMenu{nullptr}
+, _gfx{}
 {
 
 }
@@ -120,10 +121,10 @@ bool BraccioClass::begin(voidFuncPtr customMenu)
 
   lv_style_init(&_lv_style);
 
-  gfx.init();
-  gfx.setRotation(4);
-  gfx.fillScreen(TFT_WHITE);
-  gfx.setAddrWindow(0, 0, 240, 240);
+  _gfx.init();
+  _gfx.setRotation(4);
+  _gfx.fillScreen(TFT_WHITE);
+  _gfx.setAddrWindow(0, 0, 240, 240);
 
   p_objGroup = lv_group_create();
   lv_group_set_default(p_objGroup);
@@ -230,6 +231,19 @@ void BraccioClass::positions(float & a1, float & a2, float & a3, float & a4, flo
 void BraccioClass::connectJoystickTo(lv_obj_t* obj) {
   lv_group_add_obj(p_objGroup, obj);
   lv_indev_set_group(kb_indev, p_objGroup);
+}
+
+void BraccioClass::lvgl_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
+{
+  uint32_t w = (area->x2 - area->x1 + 1);
+  uint32_t h = (area->y2 - area->y1 + 1);
+
+  _gfx.startWrite();
+  _gfx.setAddrWindow(area->x1, area->y1, w, h);
+  _gfx.pushColors(&color_p->full, w * h, true);
+  _gfx.endWrite();
+
+  lv_disp_flush_ready(disp);
 }
 
 void BraccioClass::pd_thread() {
@@ -374,15 +388,7 @@ int BraccioClass::getKey() {
 /* Display flushing */
 extern "C" void braccio_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
 {
-  uint32_t w = (area->x2 - area->x1 + 1);
-  uint32_t h = (area->y2 - area->y1 + 1);
-
-  Braccio.gfx.startWrite();
-  Braccio.gfx.setAddrWindow(area->x1, area->y1, w, h);
-  Braccio.gfx.pushColors(&color_p->full, w * h, true);
-  Braccio.gfx.endWrite();
-
-  lv_disp_flush_ready(disp);
+  Braccio.lvgl_disp_flush(disp, area, color_p);
 }
 
 /* Reading input device (simulated encoder here) */

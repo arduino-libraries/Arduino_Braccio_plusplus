@@ -67,12 +67,12 @@ public:
   inline bool isJoystickPressed_DOWN()   { return (digitalRead(BTN_DOWN) == LOW); }
   inline bool isButtonPressed_ENTER()    { return (digitalRead(BTN_ENTER) == LOW); }
 
-  TFT_eSPI gfx = TFT_eSPI();
-
   static BraccioClass& get_default_instance() {
     static BraccioClass dev;
     return dev;
   }
+
+  void lvgl_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
 
 protected:
   // ioexpander APIs
@@ -114,6 +114,7 @@ private:
   const int BTN_SEL = A0;
   const int BTN_ENTER = A1;
 
+  TFT_eSPI _gfx;
   lv_disp_drv_t disp_drv;
   lv_indev_drv_t indev_drv;
   lv_disp_draw_buf_t disp_buf;
