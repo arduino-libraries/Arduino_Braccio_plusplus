@@ -90,8 +90,8 @@ THE SOFTWARE.
 
 class TCA6424A {
     public:
-        TCA6424A();
-        TCA6424A(uint8_t address);
+        TCA6424A(rtos::Mutex & wire_mtx);
+        TCA6424A(uint8_t address, rtos::Mutex & wire_mtx);
         
         void initialize();
         bool testConnection();
@@ -133,6 +133,7 @@ class TCA6424A {
         void setAllDirection(uint8_t bank0, uint8_t bank1, uint8_t bank2);
 
     private:
+        rtos::Mutex & _wire_mtx;
         uint8_t devAddr;
         uint8_t buffer[3];
 };
