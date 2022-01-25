@@ -77,6 +77,7 @@ private:
   SmartServoClass servos;
   PD_UFP_log_c PD_UFP;
   TCA6424A _expander;
+  bool expander_init();
 
   bool _is_ping_allowed;
   bool _is_motor_connected[SmartServoClass::NUM_MOTORS];

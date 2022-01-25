@@ -72,30 +72,8 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
     return false;
   _bl.turnOn();
 
-
-  if (!_expander.testConnection())
+  if (!expander_init())
     return false;
-
-  for (int i = 0; i < 14; i++) {
-    _expander.setPinDirection(i, 0);
-  }
-
-  // Set SLEW to low
-  _expander.setPinDirection(21, 0); // P25 = 8 * 2 + 5
-  _expander.writePin(21, 0);
-
-  // Set TERM to HIGH (default)
-  _expander.setPinDirection(19, 0); // P23 = 8 * 2 + 3
-  _expander.writePin(19, 1);
-
-  _expander.setPinDirection(18, 0); // P22 = 8 * 2 + 2
-  _expander.writePin(18, 0); // reset LCD
-  _expander.writePin(18, 1); // LCD out of reset
-
-  /* Set all motor status LEDs to red. */
-  for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
-    setRed(id);
-  }
 
   pinMode(BTN_LEFT, INPUT_PULLUP);
   pinMode(BTN_RIGHT, INPUT_PULLUP);
@@ -330,6 +308,37 @@ void BraccioClass::lvgl_defaultMenu()
   lv_label_set_long_mode(label1, LV_LABEL_LONG_SCROLL);
   lv_obj_set_align(label1, LV_ALIGN_CENTER);
   lv_obj_set_pos(label1, 0, 0);
+}
+
+bool BraccioClass::expander_init()
+{
+  if (!_expander.testConnection())
+    return false;
+
+  /* Init IO expander outputs of RGB LEDs */
+  for (int i = 0; i < 14; i++) {
+    _expander.setPinDirection(i, 0);
+  }
+
+  /* Set SLEW to low */
+  _expander.setPinDirection(21, 0); // P25 = 8 * 2 + 5
+  _expander.writePin(21, 0);
+
+  /* Set TERM to HIGH (default) */
+  _expander.setPinDirection(19, 0); // P23 = 8 * 2 + 3
+  _expander.writePin(19, 1);
+
+  /* Reset GLCD */
+  _expander.setPinDirection(18, 0); // P22 = 8 * 2 + 2
+  _expander.writePin(18, 0); // reset LCD
+  _expander.writePin(18, 1); // LCD out of reset
+
+  /* Set all motor status LEDs to red. */
+  for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
+    setRed(id);
+  }
+
+  return true;
 }
 
 bool BraccioClass::isPingAllowed()
