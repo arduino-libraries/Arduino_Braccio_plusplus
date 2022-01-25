@@ -36,7 +36,7 @@ public:
   BraccioClass();
 
   inline bool begin() { return begin(nullptr); }
-         bool begin(voidFuncPtr customMenu);
+         bool begin(voidFuncPtr custom_menu);
 
 
   void pingOn();
@@ -75,7 +75,7 @@ public:
   void lvgl_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
 
 protected:
-  // ioexpander APIs
+  // io_expander APIs
   void digitalWrite(int pin, uint8_t value);
 
   // default display APIs
@@ -92,10 +92,7 @@ private:
   RS485Class serial485;
   SmartServoClass servos;
   PD_UFP_log_c PD_UFP;
-  TCA6424A expander;
-  Backlight bl;
-  rtos::Thread _display_thd;
-  void display_thread_func();
+  TCA6424A _expander;
 
   bool _is_ping_allowed;
   bool _is_motor_connected[SmartServoClass::NUM_MOTORS];
@@ -105,7 +102,6 @@ private:
   void setMotorConnectionStatus(int const id, bool const is_connected);
   void motorConnectedThreadFunc();
 
-  voidFuncPtr _customMenu;
 
   const int BTN_LEFT = 3;
   const int BTN_RIGHT = 4;
@@ -114,14 +110,18 @@ private:
   const int BTN_SEL = A0;
   const int BTN_ENTER = A1;
 
+
+  Backlight _bl;
   TFT_eSPI _gfx;
-  lv_disp_drv_t disp_drv;
-  lv_indev_drv_t indev_drv;
-  lv_disp_draw_buf_t disp_buf;
-  lv_color_t buf[240 * 240 / 10];
-  lv_group_t* p_objGroup;
-  lv_indev_t *kb_indev;
+  lv_disp_drv_t _lvgl_disp_drv;
+  lv_indev_drv_t _lvgl_indev_drv;
+  lv_disp_draw_buf_t _lvgl_disp_buf;
+  lv_color_t _lvgl_draw_buf[240 * 240 / 10];
+  lv_group_t * _lvgl_p_obj_group;
+  lv_indev_t * _lvgl_kb_indev;
   lv_style_t _lv_style;
+  rtos::Thread _display_thd;
+  void display_thread_func();
 
 #ifdef __MBED__
   rtos::EventFlags pd_events;
@@ -140,13 +140,13 @@ private:
   }
 
   void setGreen(int i) {
-    expander.writePin(i * 2 - 1, 0);
-    expander.writePin(i * 2 - 2, 1);
+    _expander.writePin(i * 2 - 1, 0);
+    _expander.writePin(i * 2 - 2, 1);
   }
 
   void setRed(int i) {
-    expander.writePin(i * 2 - 1, 1);
-    expander.writePin(i * 2 - 2, 0);
+    _expander.writePin(i * 2 - 1, 1);
+    _expander.writePin(i * 2 - 2, 0);
   }
 
   void pd_thread();
