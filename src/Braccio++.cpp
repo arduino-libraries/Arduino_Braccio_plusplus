@@ -44,6 +44,7 @@ BraccioClass::BraccioClass()
 
 bool BraccioClass::begin(voidFuncPtr custom_menu)
 {
+  SPI.begin();
   Wire.begin();
   Serial.begin(115200);
 
@@ -71,7 +72,6 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
     return false;
   _bl.turnOn();
 
-  SPI.begin();
 
   if (!_expander.testConnection())
     return false;
