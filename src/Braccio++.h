@@ -70,8 +70,6 @@ public:
   void lvgl_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
 
 protected:
-  // io_expander APIs
-  void digitalWrite(int pin, uint8_t value);
 
   void setID(int id) {
     servos.setID(id);
