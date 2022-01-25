@@ -162,7 +162,7 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   if (custom_menu)
     custom_menu();
   else
-    defaultMenu();
+    lvgl_defaultMenu();
 
   servos.begin();
   servos.setTime(SmartServoClass::BROADCAST, SLOW);
@@ -319,7 +319,7 @@ void BraccioClass::lvgl_pleaseConnectPower()
   lv_obj_set_pos(label1, 0, 0);
 }
 
-void BraccioClass::defaultMenu()
+void BraccioClass::lvgl_defaultMenu()
 {
   // TODO: create a meaningful default menu
   lv_style_set_text_font(&_lv_style, &lv_font_montserrat_32);
