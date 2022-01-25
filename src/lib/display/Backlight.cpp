@@ -11,9 +11,17 @@
  
   */
 
+/**************************************************************************************
+ * INCLUDE
+ **************************************************************************************/
+
 #include <Arduino.h>
 #include <Wire.h>
 #include "Backlight.h"
+
+/**************************************************************************************
+ * PUBLIC MEMBER FUNCTIONS
+ **************************************************************************************/
 
 void Backlight::begin()
 {
@@ -84,6 +92,10 @@ void Backlight::setColor(uint8_t blue, uint8_t green, uint8_t red)
   writeByte(IS31FL3194_ADDRESS, IS31FL3194_COLOR_UPDATE, 0xC5); // write to color update register for changes to take effect
 
 }
+
+/**************************************************************************************
+ * PRIVATE MEMBER FUNCTIONS
+ **************************************************************************************/
 
 // Read the Chip ID register, this is a good test of communication
 uint8_t Backlight::getChipID() 
