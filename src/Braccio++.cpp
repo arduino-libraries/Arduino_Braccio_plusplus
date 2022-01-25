@@ -296,6 +296,8 @@ void BraccioClass::display_thread_func()
 
 void BraccioClass::lvgl_splashScreen(unsigned long const duration_ms, std::function<void()> check_power_func)
 {
+  extern const lv_img_dsc_t img_bulb_gif;
+
   LV_IMG_DECLARE(img_bulb_gif);
   lv_obj_t* img = lv_gif_create(lv_scr_act());
   lv_gif_set_src(img, &img_bulb_gif);

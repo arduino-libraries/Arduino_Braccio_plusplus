@@ -11,8 +11,6 @@
 #include "lib/TFT_eSPI/TFT_eSPI.h" // Hardware-specific library
 #include <lvgl.h>
 
-extern const lv_img_dsc_t img_bulb_gif;
-
 enum speed_grade_t {
   FAST = 10,
   MEDIUM = 100,
