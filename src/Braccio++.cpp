@@ -69,7 +69,7 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   _bl.begin();
   if (_bl.getChipID() != 0xCE)
     return false;
-  _bl.on();
+  _bl.turnOn();
 
   SPI.begin();
   i2c_mutex.lock();

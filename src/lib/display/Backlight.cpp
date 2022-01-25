@@ -43,12 +43,12 @@ void Backlight::end()
   powerDown();
 }
 
-void Backlight::on()
+void Backlight::turnOn()
 {
   setColor(0xFF, 0xFF, 0xFF);
 }
 
-void Backlight::off()
+void Backlight::turnOff()
 {
   setColor(0, 0, 0);
 }

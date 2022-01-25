@@ -151,8 +151,8 @@ public:
   void begin();
   void end();
 
-  void on();
-  void off();
+  void turnOn();
+  void turnOff();
 
   uint8_t getChipID();
 
