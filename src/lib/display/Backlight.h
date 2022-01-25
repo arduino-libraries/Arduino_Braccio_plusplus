@@ -1,6 +1,18 @@
 #ifndef RGBled_h
 #define RGBled_h
 
+/**************************************************************************************
+ * INCLUDE
+ **************************************************************************************/
+
+#include <Arduino.h>
+
+#include <Wire.h>
+
+/**************************************************************************************
+ * DEFINE
+ **************************************************************************************/
+
 // Regsiter Map
 // http://www.issi.com/WW/pdf/IS31FL3194.pdf
 #define IS31FL3194_PRODUCT_ID           0x00  // should return 0xCE
@@ -125,54 +137,37 @@
 // light intensity (fraction of current max)
 #define Imax_frac  0x80 // Imax_frac/256 * Imax = current
 
-enum RGBColors {
-  off = 0,
-  red = 1,
-  green = 2,
-  blue = 3,
-  yellow = 4,
-  magenta = 5,
-  cyan = 6
-};
-
-/*
-// allowed colors
-#define off     0
-#define red     1
-#define green   2
-#define blue    3
-#define yellow  4
-#define magenta 5
-#define cyan    6
-*/
-
-#include "Wire.h"
+/**************************************************************************************
+ * CLASS DECLARATION
+ **************************************************************************************/
 
 class Backlight
 {
-public: 
-  Backlight() {};
+public:
+
+  Backlight(rtos::Mutex & wire_mtx);
+
 
   void begin();
   void end();
-  void setColor(RGBColors color);
-  void setColor(uint8_t blue, uint8_t green, uint8_t red);
+
+  void turnOn();
+  void turnOff();
+
   uint8_t getChipID();
 
+
 private:
+
+  rtos::Mutex & _wire_mtx;
+
   void init();
   void reset();
   void powerDown();
   void powerUp();
-  void ledBlink(RGBColors color, uint32_t duration);
-  void I2Cscan();
+  void setColor(uint8_t blue, uint8_t green, uint8_t red);
   void writeByte(uint8_t address, uint8_t subAddress, uint8_t data);
   uint8_t readByte(uint8_t address, uint8_t subAddress);
-
-  uint8_t _blue;
-  uint8_t _green;
-  uint8_t _red;
-
 };
 
 #endif

@@ -11,9 +11,25 @@
  
   */
 
-#include <Arduino.h>
-#include <Wire.h>
+/**************************************************************************************
+ * INCLUDE
+ **************************************************************************************/
+
 #include "Backlight.h"
+
+/**************************************************************************************
+ * CTOR/DTOR
+ **************************************************************************************/
+
+Backlight::Backlight(rtos::Mutex & wire_mtx)
+: _wire_mtx{wire_mtx}
+{
+
+}
+
+/**************************************************************************************
+ * PUBLIC MEMBER FUNCTIONS
+ **************************************************************************************/
 
 void Backlight::begin()
 {
@@ -27,62 +43,14 @@ void Backlight::end()
   powerDown();
 }
 
-void Backlight::setColor(RGBColors color)
+void Backlight::turnOn()
 {
-  if(color == off) {
-  _blue = 0x00;
-  _green = 0x00;
-  _red = 0x00;
-  }
-
-  if(color == green) {
-  _blue = 0x00;
-  _green = 0xFF;
-  _red = 0x00;
-  }
-
-  if(color == blue) {
-  _blue = 0xFF;
-  _green = 0x00;
-  _red = 0x00;
-  }
-
-  if(color == red) {
-  _blue = 0x00;
-  _green = 0x00;
-  _red = 0xFF;
-  }
-
-  if(color == cyan) {
-  _blue = 0x20;
-  _green = 0x20;
-  _red = 0x00;
-  }
-
-  if(color == magenta) {
-  _blue = 0x20;
-  _green = 0x00;
-  _red = 0x20;
-  }
-
-  if(color == yellow) {
-  _blue = 0x00;
-  _green = 0x20;
-  _red = 0x20;
-  }
-
-  setColor(_blue, _green, _red);
-
+  setColor(0xFF, 0xFF, 0xFF);
 }
 
-void Backlight::setColor(uint8_t blue, uint8_t green, uint8_t red)
+void Backlight::turnOff()
 {
-  // set rgb led current
-  writeByte(IS31FL3194_ADDRESS, IS31FL3194_OUT1, blue); //maximum current
-  writeByte(IS31FL3194_ADDRESS, IS31FL3194_OUT2, green);
-  writeByte(IS31FL3194_ADDRESS, IS31FL3194_OUT3, red);
-  writeByte(IS31FL3194_ADDRESS, IS31FL3194_COLOR_UPDATE, 0xC5); // write to color update register for changes to take effect
-
+  setColor(0, 0, 0);
 }
 
 // Read the Chip ID register, this is a good test of communication
@@ -92,6 +60,9 @@ uint8_t Backlight::getChipID()
   return c;
 }
 
+/**************************************************************************************
+ * PRIVATE MEMBER FUNCTIONS
+ **************************************************************************************/
 
 void Backlight::reset()
 {
@@ -122,15 +93,19 @@ void Backlight::init()// configure rgb led function
   writeByte(IS31FL3194_ADDRESS, 0x32, 0xFF); // Max power on led R (OUT 3)
 }
 
-void Backlight::ledBlink(RGBColors color, uint32_t duration)
+void Backlight::setColor(uint8_t blue, uint8_t green, uint8_t red)
 {
-  setColor(color);
-  delay(duration);
-  setColor(off);
+  // set rgb led current
+  writeByte(IS31FL3194_ADDRESS, IS31FL3194_OUT1, blue); //maximum current
+  writeByte(IS31FL3194_ADDRESS, IS31FL3194_OUT2, green);
+  writeByte(IS31FL3194_ADDRESS, IS31FL3194_OUT3, red);
+  writeByte(IS31FL3194_ADDRESS, IS31FL3194_COLOR_UPDATE, 0xC5); // write to color update register for changes to take effect
 }
 
 void Backlight::writeByte(uint8_t address, uint8_t subAddress, uint8_t data)
 {
+  mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
+
   Wire.beginTransmission(address);
   Wire.write(subAddress);
   Wire.write(data);
@@ -139,6 +114,8 @@ void Backlight::writeByte(uint8_t address, uint8_t subAddress, uint8_t data)
 
 uint8_t Backlight::readByte(uint8_t address, uint8_t subAddress)
 {
+  mbed::ScopedLock<rtos::Mutex> lock(_wire_mtx);
+
   char response = 0xFF;
   Wire.beginTransmission(address);
   Wire.write(subAddress);
