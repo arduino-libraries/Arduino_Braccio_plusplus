@@ -124,7 +124,6 @@ bool BraccioClass::begin(voidFuncPtr customMenu)
   gfx.setRotation(4);
   gfx.fillScreen(TFT_WHITE);
   gfx.setAddrWindow(0, 0, 240, 240);
-  gfx.setFreeFont(&FreeSans18pt7b);
 
   p_objGroup = lv_group_create();
   lv_group_set_default(p_objGroup);
