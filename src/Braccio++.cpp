@@ -11,6 +11,11 @@ void my_print( const char * dsc )
     Serial.println(dsc);
 }
 
+extern "C" {
+  void braccio_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
+  void braccio_read_keypad(lv_indev_drv_t * indev, lv_indev_data_t * data);
+};
+
 using namespace std::chrono_literals;
 
 BraccioClass::BraccioClass()
@@ -121,7 +126,7 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
 
   lv_indev_drv_init(&_lvgl_indev_drv);
   _lvgl_indev_drv.type = LV_INDEV_TYPE_KEYPAD;
-  _lvgl_indev_drv.read_cb = read_keypad;
+  _lvgl_indev_drv.read_cb = braccio_read_keypad;
   _lvgl_kb_indev = lv_indev_drv_register(&_lvgl_indev_drv);
 
   lv_style_init(&_lv_style);
@@ -397,7 +402,7 @@ extern "C" void braccio_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, l
 }
 
 /* Reading input device (simulated encoder here) */
-extern "C" void read_keypad(lv_indev_drv_t * drv, lv_indev_data_t* data)
+extern "C" void braccio_read_keypad(lv_indev_drv_t * drv, lv_indev_data_t* data)
 {
     static uint32_t last_key = 0;
 

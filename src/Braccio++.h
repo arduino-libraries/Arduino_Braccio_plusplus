@@ -13,11 +13,6 @@
 
 extern const lv_img_dsc_t img_bulb_gif;
 
-extern "C" {
-  void braccio_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
-  void read_keypad(lv_indev_drv_t * indev, lv_indev_data_t * data);
-};
-
 enum speed_grade_t {
   FAST = 10,
   MEDIUM = 100,
