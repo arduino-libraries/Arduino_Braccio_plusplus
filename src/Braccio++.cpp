@@ -73,11 +73,8 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
 
   SPI.begin();
 
-  int ret = _expander.testConnection();
-
-  if (ret == false) {
-    return ret;
-  }
+  if (!_expander.testConnection())
+    return false;
 
   for (int i = 0; i < 14; i++) {
     _expander.setPinDirection(i, 0);
