@@ -170,7 +170,6 @@ private:
   void powerDown();
   void powerUp();
   void ledBlink(RGBColors color, uint32_t duration);
-  void I2Cscan();
   void writeByte(uint8_t address, uint8_t subAddress, uint8_t data);
   uint8_t readByte(uint8_t address, uint8_t subAddress);
 
