@@ -6,10 +6,12 @@
 
 #include "mbed.h"
 
-void my_print( const char * dsc )
+#if LV_USE_LOG
+void lvgl_my_print(const char * dsc)
 {
-    Serial.println(dsc);
+  Serial.println(dsc);
 }
+#endif /* #if LV_USE_LOG */
 
 extern "C" {
   void braccio_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
@@ -109,7 +111,7 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   pinMode(BTN_ENTER, INPUT_PULLUP);
 
 #if LV_USE_LOG
-  lv_log_register_print_cb( my_print );
+  lv_log_register_print_cb(lvgl_my_print);
 #endif
 
   lv_init();
