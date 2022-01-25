@@ -87,12 +87,13 @@ private:
   void motorConnectedThreadFunc();
 
 
-  const int BTN_LEFT = 3;
-  const int BTN_RIGHT = 4;
-  const int BTN_UP = 5;
-  const int BTN_DOWN = 2;
-  const int BTN_SEL = A0;
-  const int BTN_ENTER = A1;
+  static int constexpr BTN_LEFT  = 3;
+  static int constexpr BTN_RIGHT = 4;
+  static int constexpr BTN_UP    = 5;
+  static int constexpr BTN_DOWN  = 2;
+  static int constexpr BTN_SEL   = A0;
+  static int constexpr BTN_ENTER = A1;
+
 
   static size_t constexpr LVGL_DRAW_BUFFER_SIZE = 240 * 240 / 10;
 
