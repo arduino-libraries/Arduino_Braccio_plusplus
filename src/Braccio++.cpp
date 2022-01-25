@@ -312,6 +312,10 @@ void BraccioClass::lvgl_defaultMenu()
 
 bool BraccioClass::expander_init()
 {
+  static uint16_t constexpr EXPANDER_RS485_SLEW_PIN   = 21; /* P25 = 8 * 2 + 5 = 21 */
+  static uint16_t constexpr EXPANDER_RS485_TERM_PIN   = 19; /* P23 = 8 * 2 + 3 = 19 */
+  static uint16_t constexpr EXPANDER_RS485_RST_DP_PIN = 18; /* P22 = 8 * 2 + 2 = 18 */
+
   if (!_expander.testConnection())
     return false;
 
@@ -321,17 +325,17 @@ bool BraccioClass::expander_init()
   }
 
   /* Set SLEW to low */
-  _expander.setPinDirection(21, 0); // P25 = 8 * 2 + 5
-  _expander.writePin(21, 0);
+  _expander.setPinDirection(EXPANDER_RS485_SLEW_PIN, 0);
+  _expander.writePin(EXPANDER_RS485_SLEW_PIN, 0);
 
   /* Set TERM to HIGH (default) */
-  _expander.setPinDirection(19, 0); // P23 = 8 * 2 + 3
-  _expander.writePin(19, 1);
+  _expander.setPinDirection(EXPANDER_RS485_TERM_PIN, 0);
+  _expander.writePin(EXPANDER_RS485_TERM_PIN, 1);
 
   /* Reset GLCD */
-  _expander.setPinDirection(18, 0); // P22 = 8 * 2 + 2
-  _expander.writePin(18, 0); // reset LCD
-  _expander.writePin(18, 1); // LCD out of reset
+  _expander.setPinDirection(EXPANDER_RS485_RST_DP_PIN, 0); // P22 = 8 * 2 + 2
+  _expander.writePin(EXPANDER_RS485_RST_DP_PIN, 0); // reset LCD
+  _expander.writePin(EXPANDER_RS485_RST_DP_PIN, 1); // LCD out of reset
 
   /* Set all motor status LEDs to red. */
   for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
