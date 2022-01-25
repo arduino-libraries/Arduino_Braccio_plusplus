@@ -116,7 +116,7 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
 
   lv_init();
 
-  lv_disp_draw_buf_init(&_lvgl_disp_buf, _lvgl_draw_buf, NULL, 240 * 240 / 10);
+  lv_disp_draw_buf_init(&_lvgl_disp_buf, _lvgl_draw_buf, NULL, LVGL_DRAW_BUFFER_SIZE);
 
   /*Initialize the display*/
   lv_disp_drv_init(&_lvgl_disp_drv);

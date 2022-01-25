@@ -96,13 +96,14 @@ private:
   const int BTN_SEL = A0;
   const int BTN_ENTER = A1;
 
+  static size_t constexpr LVGL_DRAW_BUFFER_SIZE = 240 * 240 / 10;
 
   Backlight _bl;
   TFT_eSPI _gfx;
   lv_disp_drv_t _lvgl_disp_drv;
   lv_indev_drv_t _lvgl_indev_drv;
   lv_disp_draw_buf_t _lvgl_disp_buf;
-  lv_color_t _lvgl_draw_buf[240 * 240 / 10];
+  lv_color_t _lvgl_draw_buf[LVGL_DRAW_BUFFER_SIZE];
   lv_group_t * _lvgl_p_obj_group;
   lv_indev_t * _lvgl_kb_indev;
   lv_style_t _lv_style;
