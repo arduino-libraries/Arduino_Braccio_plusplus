@@ -73,7 +73,7 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   if (_bl.getChipID() != 0xCE) {
     return false;
   }
-  _bl.setColor(red);
+  _bl.on();
 
   int ret = _expander.testConnection();
 

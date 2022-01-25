@@ -136,20 +136,6 @@
 #define Imax_frac  0x80 // Imax_frac/256 * Imax = current
 
 /**************************************************************************************
- * TYPEDEF
- **************************************************************************************/
-
-enum RGBColors {
-  off = 0,
-  red = 1,
-  green = 2,
-  blue = 3,
-  yellow = 4,
-  magenta = 5,
-  cyan = 6
-};
-
-/**************************************************************************************
  * CLASS DECLARATION
  **************************************************************************************/
 
@@ -161,8 +147,10 @@ public:
 
   void begin();
   void end();
-  void setColor(RGBColors color);
-  void setColor(uint8_t blue, uint8_t green, uint8_t red);
+
+  void on();
+  void off();
+
   uint8_t getChipID();
 
 
@@ -172,13 +160,9 @@ private:
   void reset();
   void powerDown();
   void powerUp();
+  void setColor(uint8_t blue, uint8_t green, uint8_t red);
   void writeByte(uint8_t address, uint8_t subAddress, uint8_t data);
   uint8_t readByte(uint8_t address, uint8_t subAddress);
-
-  uint8_t _blue;
-  uint8_t _green;
-  uint8_t _red;
-
 };
 
 #endif
