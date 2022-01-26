@@ -82,18 +82,13 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   }
 */
 
+  button_init();
   pinMode(1, INPUT_PULLUP);
 
-  if (!backlight_init())
-    return false;
-
-  if (!expander_init())
-    return false;
-
-  button_init();
-
+  if (!expander_init()) return false;
 
   display_init();
+  if (!backlight_init()) return false;
   lvgl_init();
   _display_thd.start(mbed::callback(this, &BraccioClass::display_thread_func));
 
