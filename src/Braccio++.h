@@ -89,6 +89,8 @@ protected:
 
 private:
 
+  void button_init();
+
   rtos::Mutex _i2c_mtx;
   RS485Class serial485;
   SmartServoClass servos;

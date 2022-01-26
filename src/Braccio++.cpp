@@ -90,12 +90,7 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   if (!expander_init())
     return false;
 
-  pinMode(BTN_LEFT, INPUT_PULLUP);
-  pinMode(BTN_RIGHT, INPUT_PULLUP);
-  pinMode(BTN_UP, INPUT_PULLUP);
-  pinMode(BTN_DOWN, INPUT_PULLUP);
-  pinMode(BTN_SEL, INPUT_PULLUP);
-  pinMode(BTN_ENTER, INPUT_PULLUP);
+  button_init();
 
 #if LV_USE_LOG
   lv_log_register_print_cb(lvgl_my_print);
@@ -270,6 +265,16 @@ void BraccioClass::lvgl_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, l
 /**************************************************************************************
  * PRIVATE MEMBER FUNCTIONS
  **************************************************************************************/
+
+void BraccioClass::button_init()
+{
+  pinMode(BTN_LEFT,  INPUT_PULLUP);
+  pinMode(BTN_RIGHT, INPUT_PULLUP);
+  pinMode(BTN_UP,    INPUT_PULLUP);
+  pinMode(BTN_DOWN,  INPUT_PULLUP);
+  pinMode(BTN_SEL,   INPUT_PULLUP);
+  pinMode(BTN_ENTER, INPUT_PULLUP);
+}
 
 bool BraccioClass::expander_init()
 {
