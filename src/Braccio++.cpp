@@ -92,35 +92,11 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
 
   button_init();
 
+
   display_init();
-
-#if LV_USE_LOG
-  lv_log_register_print_cb(lvgl_my_print);
-#endif
-
-  lv_init();
-
-  lv_disp_draw_buf_init(&_lvgl_disp_buf, _lvgl_draw_buf, NULL, LVGL_DRAW_BUFFER_SIZE);
-
-  /*Initialize the display*/
-  lv_disp_drv_init(&_lvgl_disp_drv);
-  _lvgl_disp_drv.hor_res = 240;
-  _lvgl_disp_drv.ver_res = 240;
-  _lvgl_disp_drv.flush_cb = braccio_disp_flush;
-  _lvgl_disp_drv.draw_buf = &_lvgl_disp_buf;
-  lv_disp_drv_register(&_lvgl_disp_drv);
-
-  lv_indev_drv_init(&_lvgl_indev_drv);
-  _lvgl_indev_drv.type = LV_INDEV_TYPE_KEYPAD;
-  _lvgl_indev_drv.read_cb = braccio_read_keypad;
-  _lvgl_kb_indev = lv_indev_drv_register(&_lvgl_indev_drv);
-
-  lv_style_init(&_lv_style);
-
-  _lvgl_p_obj_group = lv_group_create();
-  lv_group_set_default(_lvgl_p_obj_group);
-
+  lvgl_init();
   _display_thd.start(mbed::callback(this, &BraccioClass::display_thread_func));
+
 
   auto check_power_func = [this]()
   {
@@ -359,6 +335,34 @@ void BraccioClass::display_init()
   _gfx.setRotation(4);
   _gfx.fillScreen(TFT_WHITE);
   _gfx.setAddrWindow(0, 0, 240, 240);
+}
+
+void BraccioClass::lvgl_init()
+{
+  lv_init();
+
+#if LV_USE_LOG
+  lv_log_register_print_cb(lvgl_my_print);
+#endif
+
+  lv_disp_draw_buf_init(&_lvgl_disp_buf, _lvgl_draw_buf, NULL, LVGL_DRAW_BUFFER_SIZE);
+
+  lv_disp_drv_init(&_lvgl_disp_drv);
+  _lvgl_disp_drv.hor_res = 240;
+  _lvgl_disp_drv.ver_res = 240;
+  _lvgl_disp_drv.flush_cb = braccio_disp_flush;
+  _lvgl_disp_drv.draw_buf = &_lvgl_disp_buf;
+  lv_disp_drv_register(&_lvgl_disp_drv);
+
+  lv_indev_drv_init(&_lvgl_indev_drv);
+  _lvgl_indev_drv.type = LV_INDEV_TYPE_KEYPAD;
+  _lvgl_indev_drv.read_cb = braccio_read_keypad;
+  _lvgl_kb_indev = lv_indev_drv_register(&_lvgl_indev_drv);
+
+  lv_style_init(&_lv_style);
+
+  _lvgl_p_obj_group = lv_group_create();
+  lv_group_set_default(_lvgl_p_obj_group);
 }
 
 void BraccioClass::display_thread_func()
