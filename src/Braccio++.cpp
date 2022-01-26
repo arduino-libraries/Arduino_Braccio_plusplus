@@ -236,7 +236,7 @@ void BraccioClass::lvgl_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, l
 
 void BraccioClass::unlock_pd_semaphore_irq()
 {
- start_pd_burst = millis();
+ _start_pd_burst = millis();
  _pd_events.set(2);
 }
 
@@ -442,11 +442,11 @@ void BraccioClass::lvgl_defaultMenu()
 }
 
 void BraccioClass::pd_thread() {
-  start_pd_burst = millis();
+  _start_pd_burst = millis();
   size_t last_time_ask_pps = 0;
   while (1) {
     auto ret = _pd_events.wait_any(0xFF);
-    if ((ret & 1) && (millis() - start_pd_burst > 1000)) {
+    if ((ret & 1) && (millis() - _start_pd_burst > 1000)) {
       _pd_timer.detach();
       _pd_timer.attach(braccio_unlock_pd_semaphore, 5s);
     }

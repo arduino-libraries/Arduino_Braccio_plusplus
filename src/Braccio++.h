@@ -144,7 +144,7 @@ private:
   rtos::EventFlags _pd_events;
   mbed::Ticker _pd_timer;
 
-  unsigned int start_pd_burst = 0xFFFFFFFF;
+  unsigned int _start_pd_burst = 0xFFFFFFFF;
   void pd_thread();
 };
 
