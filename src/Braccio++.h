@@ -15,6 +15,9 @@
 #include "lib/TFT_eSPI/TFT_eSPI.h" // Hardware-specific library
 #include <lvgl.h>
 
+#include <chrono>
+using namespace std::chrono;
+
 /**************************************************************************************
  * TYPEDEF
  **************************************************************************************/
@@ -24,9 +27,6 @@ enum speed_grade_t {
   MEDIUM = 100,
   SLOW = 1000,
 };
-
-#include <chrono>
-using namespace std::chrono;
 
 /**************************************************************************************
  * FORWARD DECLARATION
