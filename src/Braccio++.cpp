@@ -11,17 +11,15 @@
 #include "mbed.h"
 
 /**************************************************************************************
- * FUNCTION DEFINITION
+ * FUNCTION DECLARATION
  **************************************************************************************/
 
 #if LV_USE_LOG
-void lvgl_my_print(const char * dsc)
-{
-  Serial.println(dsc);
-}
+void lvgl_my_print(const char * dsc);
 #endif /* #if LV_USE_LOG */
 
-extern "C" {
+extern "C"
+{
   void braccio_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
   void braccio_read_keypad(lv_indev_drv_t * indev, lv_indev_data_t * data);
 };
@@ -424,6 +422,17 @@ void BraccioClass::pd_thread() {
     }
   }
 }
+
+/**************************************************************************************
+ * FUNCTION DEFINITION
+ **************************************************************************************/
+
+#if LV_USE_LOG
+void lvgl_my_print(const char * dsc)
+{
+  Serial.println(dsc);
+}
+#endif /* #if LV_USE_LOG */
 
 /* Display flushing */
 extern "C" void braccio_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
