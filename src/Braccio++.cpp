@@ -36,9 +36,9 @@ using namespace std::chrono_literals;
 
 BraccioClass::BraccioClass()
 : _i2c_mtx{}
-, serial485{Serial1, 0, 7, 8} /* TX, DE, RE */
-, servos{serial485}
-, PD_UFP{PD_LOG_LEVEL_VERBOSE}
+, _serial485{Serial1, 0, 7, 8} /* TX, DE, RE */
+, _servos{_serial485}
+, _PD_UFP{PD_LOG_LEVEL_VERBOSE}
 , _expander{TCA6424A_ADDRESS_ADDR_HIGH, _i2c_mtx}
 , _is_ping_allowed{true}
 , _is_motor_connected{false}
@@ -75,13 +75,13 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   static rtos::Thread th(osPriorityHigh);
   th.start(mbed::callback(this, &BraccioClass::pd_thread));
   attachInterrupt(PIN_FUSB302_INT, mbed::callback(this, &BraccioClass::unlock_pd_semaphore_irq), FALLING);
-  pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 10ms);
+  _pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 10ms);
 
-  PD_UFP.init_PPS(PPS_V(7.2), PPS_A(2.0));
+  _PD_UFP.init_PPS(PPS_V(7.2), PPS_A(2.0));
 
 /*
   while (millis() < 200) {
-    PD_UFP.run();
+    _PD_UFP.run();
   }
 */
 
@@ -97,11 +97,11 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
 
   auto check_power_func = [this]()
   {
-    if (!PD_UFP.is_PPS_ready())
+    if (!_PD_UFP.is_PPS_ready())
     {
       _i2c_mtx.lock();
-      PD_UFP.print_status(Serial);
-      PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
+      _PD_UFP.print_status(Serial);
+      _PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
       delay(10);
       _i2c_mtx.unlock();
     }
@@ -110,11 +110,11 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   lvgl_splashScreen(2000, check_power_func);
   lv_obj_clean(lv_scr_act());
 
-  if (!PD_UFP.is_PPS_ready())
+  if (!_PD_UFP.is_PPS_ready())
     lvgl_pleaseConnectPower();
 
   /* Loop forever, if no power is attached. */
-  while(!PD_UFP.is_PPS_ready())
+  while(!_PD_UFP.is_PPS_ready())
     check_power_func();
   lv_obj_clean(lv_scr_act());
 
@@ -123,9 +123,9 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   else
     lvgl_defaultMenu();
 
-  servos.begin();
-  servos.setTime(SmartServoClass::BROADCAST, SLOW);
-  servos.setPositionMode(PositionMode::IMMEDIATE);
+  _servos.begin();
+  _servos.setTime(SmartServoClass::BROADCAST, SLOW);
+  _servos.setPositionMode(PositionMode::IMMEDIATE);
 
   _motors_connected_thd.start(mbed::callback(this, &BraccioClass::motorConnectedThreadFunc));
 
@@ -152,7 +152,7 @@ bool BraccioClass::connected(int const id)
 
 Servo BraccioClass::move(int const id)
 {
-  Servo wrapper(servos, id);
+  Servo wrapper(_servos, id);
   return wrapper;
 }
 
@@ -163,32 +163,32 @@ Servo BraccioClass::get(int const id)
 
 void BraccioClass::moveTo(float const a1, float const a2, float const a3, float const a4, float const a5, float const a6)
 {
-  servos.setPositionMode(PositionMode::SYNC);
-  servos.setPosition(1, a1);
-  servos.setPosition(2, a2);
-  servos.setPosition(3, a3);
-  servos.setPosition(4, a4);
-  servos.setPosition(5, a5);
-  servos.setPosition(6, a6);
-  servos.synchronize();
-  servos.setPositionMode(PositionMode::IMMEDIATE);
+  _servos.setPositionMode(PositionMode::SYNC);
+  _servos.setPosition(1, a1);
+  _servos.setPosition(2, a2);
+  _servos.setPosition(3, a3);
+  _servos.setPosition(4, a4);
+  _servos.setPosition(5, a5);
+  _servos.setPosition(6, a6);
+  _servos.synchronize();
+  _servos.setPositionMode(PositionMode::IMMEDIATE);
 }
 
 void BraccioClass::positions(float * buffer)
 {
   for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++)
-    *buffer++ = servos.getPosition(id);
+    *buffer++ = _servos.getPosition(id);
 }
 
 void BraccioClass::positions(float & a1, float & a2, float & a3, float & a4, float & a5, float & a6)
 {
   // TODO: add check if motors are actually connected
-  a1 = servos.getPosition(1);
-  a2 = servos.getPosition(2);
-  a3 = servos.getPosition(3);
-  a4 = servos.getPosition(4);
-  a5 = servos.getPosition(5);
-  a6 = servos.getPosition(6);
+  a1 = _servos.getPosition(1);
+  a2 = _servos.getPosition(2);
+  a3 = _servos.getPosition(3);
+  a4 = _servos.getPosition(4);
+  a5 = _servos.getPosition(5);
+  a6 = _servos.getPosition(6);
 }
 
 int BraccioClass::getKey() {
@@ -313,7 +313,7 @@ void BraccioClass::motorConnectedThreadFunc()
     {
       for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++)
       {
-        bool const is_connected = (servos.ping(id) == 0);
+        bool const is_connected = (_servos.ping(id) == 0);
         setMotorConnectionStatus(id, is_connected);
       }
 
@@ -432,23 +432,23 @@ void BraccioClass::pd_thread() {
   start_pd_burst = millis();
   size_t last_time_ask_pps = 0;
   while (1) {
-    auto ret = pd_events.wait_any(0xFF);
+    auto ret = _pd_events.wait_any(0xFF);
     if ((ret & 1) && (millis() - start_pd_burst > 1000)) {
-      pd_timer.detach();
-      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 5s);
+      _pd_timer.detach();
+      _pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 5s);
     }
     if (ret & 2) {
-      pd_timer.detach();
-      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 50ms);
+      _pd_timer.detach();
+      _pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 50ms);
     }
     _i2c_mtx.lock();
     if (millis() - last_time_ask_pps > 5000) {
-      PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
+      _PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
       last_time_ask_pps = millis();
     }
-    PD_UFP.run();
+    _PD_UFP.run();
     _i2c_mtx.unlock();
-    if (PD_UFP.is_power_ready() && PD_UFP.is_PPS_ready()) {
+    if (_PD_UFP.is_power_ready() && _PD_UFP.is_PPS_ready()) {
 
     }
   }

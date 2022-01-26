@@ -60,11 +60,11 @@ public:
   void positions(float * buffer);
   void positions(float & a1, float & a2, float & a3, float & a4, float & a5, float & a6);
 
-  inline void speed(speed_grade_t const speed_grade) { servos.setTime(SmartServoClass::BROADCAST, speed_grade); }
-  inline void speed(int const id, speed_grade_t const speed_grade) { servos.setTime(id, speed_grade); }
+  inline void speed(speed_grade_t const speed_grade) { _servos.setTime(SmartServoClass::BROADCAST, speed_grade); }
+  inline void speed(int const id, speed_grade_t const speed_grade) { _servos.setTime(id, speed_grade); }
 
-  inline void disengage(int const id = SmartServoClass::BROADCAST) { servos.disengage(id); }
-  inline void engage   (int const id = SmartServoClass::BROADCAST) { servos.engage(id); }
+  inline void disengage(int const id = SmartServoClass::BROADCAST) { _servos.disengage(id); }
+  inline void engage   (int const id = SmartServoClass::BROADCAST) { _servos.engage(id); }
 
   int getKey();
   void connectJoystickTo(lv_obj_t* obj);
@@ -85,16 +85,16 @@ public:
 
 protected:
 
-  inline void setID(int const id) { servos.setID(id); }
+  inline void setID(int const id) { _servos.setID(id); }
 
 private:
 
   void button_init();
 
   rtos::Mutex _i2c_mtx;
-  RS485Class serial485;
-  SmartServoClass servos;
-  PD_UFP_log_c PD_UFP;
+  RS485Class _serial485;
+  SmartServoClass _servos;
+  PD_UFP_log_c _PD_UFP;
   TCA6424A _expander;
   bool expander_init();
   void expander_setGreen(int const i);
@@ -138,18 +138,18 @@ private:
   void lvgl_defaultMenu();
 
 
-  rtos::EventFlags pd_events;
-  mbed::Ticker pd_timer;
+  rtos::EventFlags _pd_events;
+  mbed::Ticker _pd_timer;
 
   unsigned int start_pd_burst = 0xFFFFFFFF;
 
   void unlock_pd_semaphore_irq() {
     start_pd_burst = millis();
-    pd_events.set(2);
+    _pd_events.set(2);
   }
 
   void unlock_pd_semaphore() {
-    pd_events.set(1);
+    _pd_events.set(1);
   }
 
   void pd_thread();
