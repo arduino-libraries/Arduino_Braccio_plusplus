@@ -63,11 +63,14 @@ BraccioClass::BraccioClass()
 
 bool BraccioClass::begin(voidFuncPtr custom_menu)
 {
+  static int constexpr RS485_RX_PIN = 1;
+
   SPI.begin();
   Wire.begin();
   Serial.begin(115200);
 
   pinMode(PIN_FUSB302_INT, INPUT_PULLUP);
+  pinMode(RS485_RX_PIN, INPUT_PULLUP);
 
   static rtos::Thread th(osPriorityHigh);
   th.start(mbed::callback(this, &BraccioClass::pd_thread));
@@ -83,7 +86,6 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
 */
 
   button_init();
-  pinMode(1, INPUT_PULLUP);
 
   if (!expander_init()) return false;
 
