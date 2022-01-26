@@ -55,6 +55,9 @@ BraccioClass::BraccioClass()
 , _lvgl_p_obj_group{nullptr}
 , _lvgl_kb_indev{nullptr}
 , _display_thd{}
+, _pd_events{}
+, _pd_timer{}
+, _start_pd_burst{0xFFFFFFFF}
 {
 
 }
