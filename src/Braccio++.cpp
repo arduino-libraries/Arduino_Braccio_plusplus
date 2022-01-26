@@ -84,10 +84,8 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
 
   pinMode(1, INPUT_PULLUP);
 
-  _bl.begin();
-  if (_bl.getChipID() != 0xCE)
+  if (!backlight_init())
     return false;
-  _bl.turnOn();
 
   if (!expander_init())
     return false;
@@ -341,6 +339,18 @@ void BraccioClass::motorConnectedThreadFunc()
     }
     delay(1000);
   }
+}
+
+bool BraccioClass::backlight_init()
+{
+  _bl.begin();
+
+  if (_bl.getChipID() != 0xCE)
+    return false;
+
+  _bl.turnOn();
+
+  return true;
 }
 
 void BraccioClass::display_thread_func()
