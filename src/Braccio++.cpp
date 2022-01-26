@@ -230,6 +230,28 @@ void BraccioClass::positions(float & a1, float & a2, float & a3, float & a4, flo
   a6 = servos.getPosition(6);
 }
 
+int BraccioClass::getKey() {
+  if (isJoystickPressed_LEFT()) {
+    return 1;
+  }
+  if (isJoystickPressed_RIGHT()) {
+    return 2;
+  }
+  if (isJoystickPressed_SELECT()) {
+    return 3;
+  }
+  if (isJoystickPressed_UP()) {
+    return 4;
+  }
+  if (isJoystickPressed_DOWN()) {
+    return 5;
+  }
+  if (isButtonPressed_ENTER()) {
+    return 6;
+  }
+  return 0;
+}
+
 void BraccioClass::connectJoystickTo(lv_obj_t* obj)
 {
   lv_group_add_obj(_lvgl_p_obj_group, obj);
@@ -252,86 +274,6 @@ void BraccioClass::lvgl_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, l
 /**************************************************************************************
  * PRIVATE MEMBER FUNCTIONS
  **************************************************************************************/
-
-void BraccioClass::pd_thread() {
-  start_pd_burst = millis();
-  size_t last_time_ask_pps = 0;
-  while (1) {
-    auto ret = pd_events.wait_any(0xFF);
-    if ((ret & 1) && (millis() - start_pd_burst > 1000)) {
-      pd_timer.detach();
-      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 5s);
-    }
-    if (ret & 2) {
-      pd_timer.detach();
-      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 50ms);
-    }
-    _i2c_mtx.lock();
-    if (millis() - last_time_ask_pps > 5000) {
-      PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
-      last_time_ask_pps = millis();
-    }
-    PD_UFP.run();
-    _i2c_mtx.unlock();
-    if (PD_UFP.is_power_ready() && PD_UFP.is_PPS_ready()) {
-
-    }
-  }
-}
-
-void BraccioClass::display_thread_func()
-{
-  for(;;)
-  {
-    lv_task_handler();
-    lv_tick_inc(LV_DISP_DEF_REFR_PERIOD);
-    delay(LV_DISP_DEF_REFR_PERIOD);
-  }
-}
-
-void BraccioClass::lvgl_splashScreen(unsigned long const duration_ms, std::function<void()> check_power_func)
-{
-  extern const lv_img_dsc_t img_bulb_gif;
-
-  LV_IMG_DECLARE(img_bulb_gif);
-  lv_obj_t* img = lv_gif_create(lv_scr_act());
-  lv_gif_set_src(img, &img_bulb_gif);
-  lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
-
-  /* Wait until the splash screen duration is over.
-   * Meanwhile use the wait time for checking the
-   * power.
-   */
-  for (unsigned long const start = millis(); millis() - start < duration_ms;)
-  {
-    check_power_func();
-  }
-
-  lv_obj_del(img);
-}
-
-void BraccioClass::lvgl_pleaseConnectPower()
-{
-  lv_style_set_text_font(&_lv_style, &lv_font_montserrat_32);
-  lv_obj_t * label1 = lv_label_create(lv_scr_act());
-  lv_obj_add_style(label1, &_lv_style, 0);
-  lv_label_set_text(label1, "Please\nconnect\npower.");
-  lv_label_set_long_mode(label1, LV_LABEL_LONG_SCROLL);
-  lv_obj_set_align(label1, LV_ALIGN_CENTER);
-  lv_obj_set_pos(label1, 0, 0);
-}
-
-void BraccioClass::lvgl_defaultMenu()
-{
-  // TODO: create a meaningful default menu
-  lv_style_set_text_font(&_lv_style, &lv_font_montserrat_32);
-  lv_obj_t * label1 = lv_label_create(lv_scr_act());
-  lv_obj_add_style(label1, &_lv_style, 0);
-  lv_label_set_text(label1, "Braccio++");
-  lv_label_set_long_mode(label1, LV_LABEL_LONG_SCROLL);
-  lv_obj_set_align(label1, LV_ALIGN_CENTER);
-  lv_obj_set_pos(label1, 0, 0);
-}
 
 bool BraccioClass::expander_init()
 {
@@ -403,26 +345,84 @@ void BraccioClass::motorConnectedThreadFunc()
   }
 }
 
-int BraccioClass::getKey() {
-  if (isJoystickPressed_LEFT()) {
-    return 1;
+void BraccioClass::display_thread_func()
+{
+  for(;;)
+  {
+    lv_task_handler();
+    lv_tick_inc(LV_DISP_DEF_REFR_PERIOD);
+    delay(LV_DISP_DEF_REFR_PERIOD);
   }
-  if (isJoystickPressed_RIGHT()) {
-    return 2;
+}
+
+void BraccioClass::lvgl_splashScreen(unsigned long const duration_ms, std::function<void()> check_power_func)
+{
+  extern const lv_img_dsc_t img_bulb_gif;
+
+  LV_IMG_DECLARE(img_bulb_gif);
+  lv_obj_t* img = lv_gif_create(lv_scr_act());
+  lv_gif_set_src(img, &img_bulb_gif);
+  lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
+
+  /* Wait until the splash screen duration is over.
+   * Meanwhile use the wait time for checking the
+   * power.
+   */
+  for (unsigned long const start = millis(); millis() - start < duration_ms;)
+  {
+    check_power_func();
   }
-  if (isJoystickPressed_SELECT()) {
-    return 3;
+
+  lv_obj_del(img);
+}
+
+void BraccioClass::lvgl_pleaseConnectPower()
+{
+  lv_style_set_text_font(&_lv_style, &lv_font_montserrat_32);
+  lv_obj_t * label1 = lv_label_create(lv_scr_act());
+  lv_obj_add_style(label1, &_lv_style, 0);
+  lv_label_set_text(label1, "Please\nconnect\npower.");
+  lv_label_set_long_mode(label1, LV_LABEL_LONG_SCROLL);
+  lv_obj_set_align(label1, LV_ALIGN_CENTER);
+  lv_obj_set_pos(label1, 0, 0);
+}
+
+void BraccioClass::lvgl_defaultMenu()
+{
+  // TODO: create a meaningful default menu
+  lv_style_set_text_font(&_lv_style, &lv_font_montserrat_32);
+  lv_obj_t * label1 = lv_label_create(lv_scr_act());
+  lv_obj_add_style(label1, &_lv_style, 0);
+  lv_label_set_text(label1, "Braccio++");
+  lv_label_set_long_mode(label1, LV_LABEL_LONG_SCROLL);
+  lv_obj_set_align(label1, LV_ALIGN_CENTER);
+  lv_obj_set_pos(label1, 0, 0);
+}
+
+void BraccioClass::pd_thread() {
+  start_pd_burst = millis();
+  size_t last_time_ask_pps = 0;
+  while (1) {
+    auto ret = pd_events.wait_any(0xFF);
+    if ((ret & 1) && (millis() - start_pd_burst > 1000)) {
+      pd_timer.detach();
+      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 5s);
+    }
+    if (ret & 2) {
+      pd_timer.detach();
+      pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 50ms);
+    }
+    _i2c_mtx.lock();
+    if (millis() - last_time_ask_pps > 5000) {
+      PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
+      last_time_ask_pps = millis();
+    }
+    PD_UFP.run();
+    _i2c_mtx.unlock();
+    if (PD_UFP.is_power_ready() && PD_UFP.is_PPS_ready()) {
+
+    }
   }
-  if (isJoystickPressed_UP()) {
-    return 4;
-  }
-  if (isJoystickPressed_DOWN()) {
-    return 5;
-  }
-  if (isButtonPressed_ENTER()) {
-    return 6;
-  }
-  return 0;
 }
 
 /* Display flushing */
