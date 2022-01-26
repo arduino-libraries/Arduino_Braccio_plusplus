@@ -81,6 +81,7 @@ public:
     return dev;
   }
 
+  /* Those functions MUST NOT be used by the user. */
   void lvgl_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
   void unlock_pd_semaphore_irq();
   void unlock_pd_semaphore();
