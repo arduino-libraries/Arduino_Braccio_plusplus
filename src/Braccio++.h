@@ -82,6 +82,13 @@ public:
   }
 
   void lvgl_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
+  void unlock_pd_semaphore_irq() {
+    start_pd_burst = millis();
+    _pd_events.set(2);
+  }
+  void unlock_pd_semaphore() {
+    _pd_events.set(1);
+  }
 
 protected:
 
@@ -142,16 +149,6 @@ private:
   mbed::Ticker _pd_timer;
 
   unsigned int start_pd_burst = 0xFFFFFFFF;
-
-  void unlock_pd_semaphore_irq() {
-    start_pd_burst = millis();
-    _pd_events.set(2);
-  }
-
-  void unlock_pd_semaphore() {
-    _pd_events.set(1);
-  }
-
   void pd_thread();
 };
 
@@ -183,19 +180,5 @@ private:
   SmartServoClass & _servos;
   int const _id;
 };
-
-struct __callback__container__ {
-  mbed::Callback<void()> fn;
-};
-
-inline void attachInterrupt(pin_size_t interruptNum, mbed::Callback<void()> func, PinStatus mode) {
-  struct __callback__container__* a = new __callback__container__();
-  a->fn = func;
-  auto callback = [](void* a) -> void {
-    ((__callback__container__*)a)->fn();
-  };
-
-  attachInterruptParam(interruptNum, callback, mode, (void*)a);
-}
 
 #endif //__BRACCIO_PLUSPLUS_H__

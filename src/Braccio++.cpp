@@ -22,6 +22,8 @@ extern "C"
 {
   void braccio_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
   void braccio_read_keypad(lv_indev_drv_t * indev, lv_indev_data_t * data);
+  void braccio_unlock_pd_semaphore_irq();
+  void braccio_unlock_pd_semaphore();
 };
 
 /**************************************************************************************
@@ -74,8 +76,8 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
 
   static rtos::Thread th(osPriorityHigh);
   th.start(mbed::callback(this, &BraccioClass::pd_thread));
-  attachInterrupt(PIN_FUSB302_INT, mbed::callback(this, &BraccioClass::unlock_pd_semaphore_irq), FALLING);
-  _pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 10ms);
+  attachInterrupt(PIN_FUSB302_INT, braccio_unlock_pd_semaphore_irq, FALLING);
+  _pd_timer.attach(braccio_unlock_pd_semaphore, 10ms);
 
   _PD_UFP.init_PPS(PPS_V(7.2), PPS_A(2.0));
 
@@ -435,11 +437,11 @@ void BraccioClass::pd_thread() {
     auto ret = _pd_events.wait_any(0xFF);
     if ((ret & 1) && (millis() - start_pd_burst > 1000)) {
       _pd_timer.detach();
-      _pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 5s);
+      _pd_timer.attach(braccio_unlock_pd_semaphore, 5s);
     }
     if (ret & 2) {
       _pd_timer.detach();
-      _pd_timer.attach(mbed::callback(this, &BraccioClass::unlock_pd_semaphore), 50ms);
+      _pd_timer.attach(braccio_unlock_pd_semaphore, 50ms);
     }
     _i2c_mtx.lock();
     if (millis() - last_time_ask_pps > 5000) {
@@ -509,4 +511,14 @@ extern "C" void braccio_read_keypad(lv_indev_drv_t * drv, lv_indev_data_t* data)
     }
 
     data->key = last_key;
+}
+
+void braccio_unlock_pd_semaphore_irq()
+{
+  Braccio.unlock_pd_semaphore_irq();
+}
+
+void braccio_unlock_pd_semaphore()
+{
+  Braccio.unlock_pd_semaphore();
 }
