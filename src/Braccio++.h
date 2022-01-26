@@ -82,13 +82,8 @@ public:
   }
 
   void lvgl_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
-  void unlock_pd_semaphore_irq() {
-    start_pd_burst = millis();
-    _pd_events.set(2);
-  }
-  void unlock_pd_semaphore() {
-    _pd_events.set(1);
-  }
+  void unlock_pd_semaphore_irq();
+  void unlock_pd_semaphore();
 
 protected:
 
