@@ -1,6 +1,10 @@
 #ifndef __BRACCIO_PLUSPLUS_H__
 #define __BRACCIO_PLUSPLUS_H__
 
+/**************************************************************************************
+ * INCLUDE
+ **************************************************************************************/
+
 #include "Arduino.h"
 #include "lib/powerdelivery/PD_UFP.h"
 #include "lib/ioexpander/TCA6424A.h"
@@ -11,16 +15,28 @@
 #include "lib/TFT_eSPI/TFT_eSPI.h" // Hardware-specific library
 #include <lvgl.h>
 
+#include <chrono>
+using namespace std::chrono;
+
+/**************************************************************************************
+ * TYPEDEF
+ **************************************************************************************/
+
 enum speed_grade_t {
   FAST = 10,
   MEDIUM = 100,
   SLOW = 1000,
 };
 
-#include <chrono>
-using namespace std::chrono;
+/**************************************************************************************
+ * FORWARD DECLARATION
+ **************************************************************************************/
 
 class Servo;
+
+/**************************************************************************************
+ * CLASS DECLARATION
+ **************************************************************************************/
 
 class BraccioClass
 {
@@ -44,11 +60,11 @@ public:
   void positions(float * buffer);
   void positions(float & a1, float & a2, float & a3, float & a4, float & a5, float & a6);
 
-  inline void speed(speed_grade_t const speed_grade) { servos.setTime(SmartServoClass::BROADCAST, speed_grade); }
-  inline void speed(int const id, speed_grade_t const speed_grade) { servos.setTime(id, speed_grade); }
+  inline void speed(speed_grade_t const speed_grade) { _servos.setTime(SmartServoClass::BROADCAST, speed_grade); }
+  inline void speed(int const id, speed_grade_t const speed_grade) { _servos.setTime(id, speed_grade); }
 
-  inline void disengage(int const id = SmartServoClass::BROADCAST) { servos.disengage(id); }
-  inline void engage   (int const id = SmartServoClass::BROADCAST) { servos.engage(id); }
+  inline void disengage(int const id = SmartServoClass::BROADCAST) { _servos.disengage(id); }
+  inline void engage   (int const id = SmartServoClass::BROADCAST) { _servos.engage(id); }
 
   int getKey();
   void connectJoystickTo(lv_obj_t* obj);
@@ -65,20 +81,27 @@ public:
     return dev;
   }
 
+  /* Those functions MUST NOT be used by the user. */
   void lvgl_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
+  void unlock_pd_semaphore_irq();
+  void unlock_pd_semaphore();
 
 protected:
 
-  inline void setID(int const id) { servos.setID(id); }
+  inline void setID(int const id) { _servos.setID(id); }
 
 private:
 
+  void button_init();
+
   rtos::Mutex _i2c_mtx;
-  RS485Class serial485;
-  SmartServoClass servos;
-  PD_UFP_log_c PD_UFP;
+  RS485Class _serial485;
+  SmartServoClass _servos;
+  PD_UFP_log_c _PD_UFP;
   TCA6424A _expander;
   bool expander_init();
+  void expander_setGreen(int const i);
+  void expander_setRed(int const i);
 
   bool _is_ping_allowed;
   bool _is_motor_connected[SmartServoClass::NUM_MOTORS];
@@ -109,37 +132,20 @@ private:
   lv_indev_t * _lvgl_kb_indev;
   lv_style_t _lv_style;
   rtos::Thread _display_thd;
+  bool backlight_init();
+  void display_init();
+  void lvgl_init();
   void display_thread_func();
   void lvgl_splashScreen(unsigned long const duration_ms, std::function<void()> check_power_func);
   void lvgl_pleaseConnectPower();
   void lvgl_defaultMenu();
 
 
-  rtos::EventFlags pd_events;
-  mbed::Ticker pd_timer;
-
-  unsigned int start_pd_burst = 0xFFFFFFFF;
-
-  void unlock_pd_semaphore_irq() {
-    start_pd_burst = millis();
-    pd_events.set(2);
-  }
-
-  void unlock_pd_semaphore() {
-    pd_events.set(1);
-  }
-
-  void setGreen(int i) {
-    _expander.writePin(i * 2 - 1, 0);
-    _expander.writePin(i * 2 - 2, 1);
-  }
-
-  void setRed(int i) {
-    _expander.writePin(i * 2 - 1, 1);
-    _expander.writePin(i * 2 - 2, 0);
-  }
-
-  void pd_thread();
+  rtos::EventFlags _pd_events;
+  mbed::Ticker _pd_timer;
+  unsigned int _start_pd_burst;
+  rtos::Thread _pd_thd;
+  void pd_thread_func();
 };
 
 #define Braccio BraccioClass::get_default_instance()
@@ -170,19 +176,5 @@ private:
   SmartServoClass & _servos;
   int const _id;
 };
-
-struct __callback__container__ {
-  mbed::Callback<void()> fn;
-};
-
-inline void attachInterrupt(pin_size_t interruptNum, mbed::Callback<void()> func, PinStatus mode) {
-  struct __callback__container__* a = new __callback__container__();
-  a->fn = func;
-  auto callback = [](void* a) -> void {
-    ((__callback__container__*)a)->fn();
-  };
-
-  attachInterruptParam(interruptNum, callback, mode, (void*)a);
-}
 
 #endif //__BRACCIO_PLUSPLUS_H__
