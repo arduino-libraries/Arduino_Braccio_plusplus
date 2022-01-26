@@ -58,6 +58,7 @@ BraccioClass::BraccioClass()
 , _pd_events{}
 , _pd_timer{}
 , _start_pd_burst{0xFFFFFFFF}
+, _pd_thd{osPriorityHigh}
 {
 
 }
@@ -77,18 +78,10 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   pinMode(PIN_FUSB302_INT, INPUT_PULLUP);
   pinMode(RS485_RX_PIN, INPUT_PULLUP);
 
-  static rtos::Thread th(osPriorityHigh);
-  th.start(mbed::callback(this, &BraccioClass::pd_thread));
+  _pd_thd.start(mbed::callback(this, &BraccioClass::pd_thread_func));
   attachInterrupt(PIN_FUSB302_INT, braccio_unlock_pd_semaphore_irq, FALLING);
   _pd_timer.attach(braccio_unlock_pd_semaphore, 10ms);
-
   _PD_UFP.init_PPS(PPS_V(7.2), PPS_A(2.0));
-
-/*
-  while (millis() < 200) {
-    _PD_UFP.run();
-  }
-*/
 
   button_init();
 
@@ -444,10 +437,13 @@ void BraccioClass::lvgl_defaultMenu()
   lv_obj_set_pos(label1, 0, 0);
 }
 
-void BraccioClass::pd_thread() {
+void BraccioClass::pd_thread_func()
+{
   _start_pd_burst = millis();
   size_t last_time_ask_pps = 0;
-  while (1) {
+
+  for(;;)
+  {
     auto ret = _pd_events.wait_any(0xFF);
     if ((ret & 1) && (millis() - _start_pd_burst > 1000)) {
       _pd_timer.detach();

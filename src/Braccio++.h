@@ -144,7 +144,8 @@ private:
   rtos::EventFlags _pd_events;
   mbed::Ticker _pd_timer;
   unsigned int _start_pd_burst;
-  void pd_thread();
+  rtos::Thread _pd_thd;
+  void pd_thread_func();
 };
 
 #define Braccio BraccioClass::get_default_instance()
