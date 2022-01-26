@@ -92,6 +92,8 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
 
   button_init();
 
+  display_init();
+
 #if LV_USE_LOG
   lv_log_register_print_cb(lvgl_my_print);
 #endif
@@ -114,11 +116,6 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   _lvgl_kb_indev = lv_indev_drv_register(&_lvgl_indev_drv);
 
   lv_style_init(&_lv_style);
-
-  _gfx.init();
-  _gfx.setRotation(4);
-  _gfx.fillScreen(TFT_WHITE);
-  _gfx.setAddrWindow(0, 0, 240, 240);
 
   _lvgl_p_obj_group = lv_group_create();
   lv_group_set_default(_lvgl_p_obj_group);
@@ -349,13 +346,19 @@ void BraccioClass::motorConnectedThreadFunc()
 bool BraccioClass::backlight_init()
 {
   _bl.begin();
-
   if (_bl.getChipID() != 0xCE)
     return false;
 
   _bl.turnOn();
-
   return true;
+}
+
+void BraccioClass::display_init()
+{
+  _gfx.init();
+  _gfx.setRotation(4);
+  _gfx.fillScreen(TFT_WHITE);
+  _gfx.setAddrWindow(0, 0, 240, 240);
 }
 
 void BraccioClass::display_thread_func()
