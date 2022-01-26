@@ -97,6 +97,8 @@ private:
   PD_UFP_log_c PD_UFP;
   TCA6424A _expander;
   bool expander_init();
+  void expander_setGreen(int const i);
+  void expander_setRed(int const i);
 
   bool _is_ping_allowed;
   bool _is_motor_connected[SmartServoClass::NUM_MOTORS];
@@ -148,16 +150,6 @@ private:
 
   void unlock_pd_semaphore() {
     pd_events.set(1);
-  }
-
-  void setGreen(int i) {
-    _expander.writePin(i * 2 - 1, 0);
-    _expander.writePin(i * 2 - 2, 1);
-  }
-
-  void setRed(int i) {
-    _expander.writePin(i * 2 - 1, 1);
-    _expander.writePin(i * 2 - 2, 0);
   }
 
   void pd_thread();

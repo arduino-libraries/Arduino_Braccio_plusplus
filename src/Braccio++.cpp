@@ -273,10 +273,22 @@ bool BraccioClass::expander_init()
 
   /* Set all motor status LEDs to red. */
   for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
-    setRed(id);
+    expander_setRed(id);
   }
 
   return true;
+}
+
+void BraccioClass::expander_setGreen(int const i)
+{
+  _expander.writePin(i * 2 - 1, 0);
+  _expander.writePin(i * 2 - 2, 1);
+}
+
+void BraccioClass::expander_setRed(int const i)
+{
+  _expander.writePin(i * 2 - 1, 1);
+  _expander.writePin(i * 2 - 2, 0);
 }
 
 bool BraccioClass::isPingAllowed()
@@ -305,9 +317,9 @@ void BraccioClass::motorConnectedThreadFunc()
 
       for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
         if (connected(id))
-          setGreen(id);
+          expander_setGreen(id);
         else
-          setRed(id);
+          expander_setRed(id);
       }
     }
     delay(1000);
