@@ -15,7 +15,6 @@
  * 
  */
  
-#include <string.h>
 #include "FUSB302_UFP.h"
 
 /* Switches0 : 02h */
@@ -248,7 +247,7 @@ enum FUSB302_state_t {
 
 static inline FUSB302_ret_t reg_read(FUSB302_dev_t *dev, uint8_t address, uint8_t *data, uint8_t count)
 {
-    FUSB302_ret_t ret = dev->i2c_read(dev->i2c_address, address, data, count);
+    FUSB302_ret_t ret = dev->i2c_read(*(dev->wire_mtx), dev->i2c_address, address, data, count);
     if (ret != FUSB302_SUCCESS) {
         dev->err_msg = FUSB302_ERR_MSG("Fail to read register");
     }
@@ -257,7 +256,7 @@ static inline FUSB302_ret_t reg_read(FUSB302_dev_t *dev, uint8_t address, uint8_
 
 static inline FUSB302_ret_t reg_write(FUSB302_dev_t *dev, uint8_t address, uint8_t *data, uint8_t count)
 {
-    FUSB302_ret_t ret = dev->i2c_write(dev->i2c_address, address, data, count);
+    FUSB302_ret_t ret = dev->i2c_write(*(dev->wire_mtx), dev->i2c_address, address, data, count);
     if (ret != FUSB302_SUCCESS) {
         dev->err_msg = FUSB302_ERR_MSG("Fail to write register");
     }

@@ -18,7 +18,8 @@
 #ifndef FUSB302_UFP_H
 #define FUSB302_UFP_H
 
-#include <stdint.h>
+#include <Arduino.h>
+#include <mbed.h>
 
 enum {
     FUSB302_SUCCESS             = 0,
@@ -39,8 +40,9 @@ typedef uint8_t FUSB302_event_t;
 typedef struct {
     /* setup by user */
     uint8_t i2c_address;
-    FUSB302_ret_t (*i2c_read)(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, uint8_t count);
-    FUSB302_ret_t (*i2c_write)(uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, uint8_t count);
+    rtos::Mutex * wire_mtx;
+    FUSB302_ret_t (*i2c_read)(rtos::Mutex & wire_mtx, uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, uint8_t count);
+    FUSB302_ret_t (*i2c_write)(rtos::Mutex & wire_mtx, uint8_t dev_addr, uint8_t reg_addr, uint8_t *data, uint8_t count);
     FUSB302_ret_t (*delay_ms)(uint32_t t);
 
     /* used by this library */
