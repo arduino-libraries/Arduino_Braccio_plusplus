@@ -101,7 +101,7 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   _pd_thd.start(mbed::callback(this, &BraccioClass::pd_thread_func));
   attachInterrupt(PIN_FUSB302_INT, braccio_unlock_pd_semaphore_irq, FALLING);
   _pd_timer.attach(braccio_unlock_pd_semaphore, 10ms);
-  _PD_UFP.init_PPS(PPS_V(7.2), PPS_A(2.0));
+  _PD_UFP.init_PPS(_i2c_mtx, PPS_V(7.2), PPS_A(2.0));
 
   button_init();
 
@@ -117,11 +117,9 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   {
     if (!_PD_UFP.is_PPS_ready())
     {
-      _i2c_mtx.lock();
       _PD_UFP.print_status(Serial);
       _PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
       delay(10);
-      _i2c_mtx.unlock();
     }
   };
 
@@ -473,13 +471,11 @@ void BraccioClass::pd_thread_func()
       _pd_timer.detach();
       _pd_timer.attach(braccio_unlock_pd_semaphore, 50ms);
     }
-    _i2c_mtx.lock();
     if (millis() - last_time_ask_pps > 5000) {
       _PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
       last_time_ask_pps = millis();
     }
     _PD_UFP.run();
-    _i2c_mtx.unlock();
     if (_PD_UFP.is_power_ready() && _PD_UFP.is_PPS_ready()) {
 
     }
