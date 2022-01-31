@@ -103,8 +103,8 @@ public:
 
   /* Those functions MUST NOT be used by the user. */
   void lvgl_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
-  void unlock_pd_semaphore_irq();
-  void unlock_pd_semaphore();
+  void onPowerIrqEvent();
+  void onPowerTimerEvent();
 
 protected:
 
@@ -156,14 +156,15 @@ private:
   void display_init();
   void lvgl_init();
   void display_thread_func();
-  void lvgl_splashScreen(unsigned long const duration_ms, std::function<void()> check_power_func);
+  void lvgl_splashScreen(unsigned long const duration_ms);
   void lvgl_pleaseConnectPower();
   void lvgl_defaultMenu();
 
 
+  static uint32_t constexpr PD_IRQ_EVENT_FLAG   = 1;
+  static uint32_t constexpr PD_TIMER_EVENT_FLAG = 2;
   rtos::EventFlags _pd_events;
   mbed::Ticker _pd_timer;
-  unsigned int _start_pd_burst;
   rtos::Thread _pd_thd;
   void pd_thread_func();
 };
