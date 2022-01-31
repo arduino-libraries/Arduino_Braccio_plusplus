@@ -42,8 +42,8 @@ extern "C"
 {
   void braccio_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p);
   void braccio_read_keypad(lv_indev_drv_t * indev, lv_indev_data_t * data);
-  void braccio_unlock_pd_semaphore_irq();
-  void braccio_unlock_pd_semaphore();
+  void braccio_onPowerIrqEvent();
+  void braccio_onPowerTimerEvent();
 };
 
 /**************************************************************************************
@@ -77,7 +77,6 @@ BraccioClass::BraccioClass()
 , _display_thd{}
 , _pd_events{}
 , _pd_timer{}
-, _start_pd_burst{0xFFFFFFFF}
 , _pd_thd{osPriorityHigh}
 {
 
@@ -96,12 +95,13 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   Serial.begin(115200);
 
   pinMode(PIN_FUSB302_INT, INPUT_PULLUP);
+  attachInterrupt(PIN_FUSB302_INT, braccio_onPowerIrqEvent, FALLING);
   pinMode(RS485_RX_PIN, INPUT_PULLUP);
 
-  _pd_thd.start(mbed::callback(this, &BraccioClass::pd_thread_func));
-  attachInterrupt(PIN_FUSB302_INT, braccio_unlock_pd_semaphore_irq, FALLING);
-  _pd_timer.attach(braccio_unlock_pd_semaphore, 10ms);
   _PD_UFP.init_PPS(_i2c_mtx, PPS_V(7.2), PPS_A(2.0));
+  _pd_timer.attach(braccio_onPowerTimerEvent, 10ms);
+  braccio_onPowerIrqEvent(); /* Start power burst. */
+  _pd_thd.start(mbed::callback(this, &BraccioClass::pd_thread_func));
 
   button_init();
 
@@ -112,26 +112,14 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
   lvgl_init();
   _display_thd.start(mbed::callback(this, &BraccioClass::display_thread_func));
 
-
-  auto check_power_func = [this]()
-  {
-    if (!_PD_UFP.is_PPS_ready())
-    {
-      _PD_UFP.print_status(Serial);
-      _PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
-      delay(10);
-    }
-  };
-
-  lvgl_splashScreen(2000, check_power_func);
+  lvgl_splashScreen(2000);
   lv_obj_clean(lv_scr_act());
 
   if (!_PD_UFP.is_PPS_ready())
     lvgl_pleaseConnectPower();
 
   /* Loop forever, if no power is attached. */
-  while(!_PD_UFP.is_PPS_ready())
-    check_power_func();
+  while(!_PD_UFP.is_PPS_ready()) { delay(10); }
   lv_obj_clean(lv_scr_act());
 
   if (custom_menu)
@@ -248,15 +236,14 @@ void BraccioClass::lvgl_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, l
   lv_disp_flush_ready(disp);
 }
 
-void BraccioClass::unlock_pd_semaphore_irq()
+void BraccioClass::onPowerIrqEvent()
 {
- _start_pd_burst = millis();
- _pd_events.set(2);
+ _pd_events.set(PD_IRQ_EVENT_FLAG);
 }
 
-void BraccioClass::unlock_pd_semaphore()
+void BraccioClass::onPowerTimerEvent()
 {
-  _pd_events.set(1);
+  _pd_events.set(PD_TIMER_EVENT_FLAG);
 }
 
 /**************************************************************************************
@@ -411,7 +398,7 @@ void BraccioClass::display_thread_func()
   }
 }
 
-void BraccioClass::lvgl_splashScreen(unsigned long const duration_ms, std::function<void()> check_power_func)
+void BraccioClass::lvgl_splashScreen(unsigned long const duration_ms)
 {
   extern const lv_img_dsc_t img_bulb_gif;
 
@@ -420,14 +407,8 @@ void BraccioClass::lvgl_splashScreen(unsigned long const duration_ms, std::funct
   lv_gif_set_src(img, &img_bulb_gif);
   lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
 
-  /* Wait until the splash screen duration is over.
-   * Meanwhile use the wait time for checking the
-   * power.
-   */
-  for (unsigned long const start = millis(); millis() - start < duration_ms;)
-  {
-    check_power_func();
-  }
+  /* Wait until the splash screen duration is over. */
+  for (unsigned long const start = millis(); millis() - start < duration_ms; delay(10)) { }
 
   lv_obj_del(img);
 }
@@ -457,27 +438,40 @@ void BraccioClass::lvgl_defaultMenu()
 
 void BraccioClass::pd_thread_func()
 {
-  _start_pd_burst = millis();
   size_t last_time_ask_pps = 0;
+  unsigned long start_pd_burst = 0;
+  static unsigned long const START_PD_BURST_TIMEOUT_ms = 1000;
 
   for(;;)
   {
-    auto ret = _pd_events.wait_any(0xFF);
-    if ((ret & 1) && (millis() - _start_pd_burst > 1000)) {
-      _pd_timer.detach();
-      _pd_timer.attach(braccio_unlock_pd_semaphore, 5s);
-    }
-    if (ret & 2) {
-      _pd_timer.detach();
-      _pd_timer.attach(braccio_unlock_pd_semaphore, 50ms);
-    }
-    if (millis() - last_time_ask_pps > 5000) {
+    /* Wait for either a timer or a IRQ event. */
+    uint32_t const flags = _pd_events.wait_any(0xFF);
+
+    /* The actual calls to the PD library. */
+    if ((millis() - last_time_ask_pps) > 5000)
+    {
+      start_pd_burst = millis();
       _PD_UFP.set_PPS(PPS_V(7.2), PPS_A(2.0));
       last_time_ask_pps = millis();
     }
     _PD_UFP.run();
-    if (_PD_UFP.is_power_ready() && _PD_UFP.is_PPS_ready()) {
+    _PD_UFP.print_status(Serial);
 
+    /* Set up the next time this loop is called. */
+    if (flags & PD_IRQ_EVENT_FLAG)
+    {
+      start_pd_burst = millis();
+      _pd_timer.detach();
+      _pd_timer.attach(braccio_onPowerTimerEvent, 10ms);
+    }
+
+    if (flags & PD_TIMER_EVENT_FLAG)
+    {
+      _pd_timer.detach();
+      if ((millis() - start_pd_burst) < START_PD_BURST_TIMEOUT_ms)
+        _pd_timer.attach(braccio_onPowerTimerEvent, 10ms);
+      else
+        _pd_timer.attach(braccio_onPowerTimerEvent, 1000ms);
     }
   }
 }
@@ -539,12 +533,12 @@ extern "C" void braccio_read_keypad(lv_indev_drv_t * drv, lv_indev_data_t* data)
     data->key = last_key;
 }
 
-void braccio_unlock_pd_semaphore_irq()
+void braccio_onPowerIrqEvent()
 {
-  Braccio.unlock_pd_semaphore_irq();
+  Braccio.onPowerIrqEvent();
 }
 
-void braccio_unlock_pd_semaphore()
+void braccio_onPowerTimerEvent()
 {
-  Braccio.unlock_pd_semaphore();
+  Braccio.onPowerTimerEvent();
 }
