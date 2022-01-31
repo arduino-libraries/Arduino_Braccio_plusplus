@@ -1,0 +1,6 @@
+{
+  "cpu": {
+    "fqbn": "arduino:mbed_nano:nanorp2040connect",
+    "port": ""
+  }
+}
