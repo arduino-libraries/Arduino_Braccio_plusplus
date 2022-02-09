@@ -140,6 +140,15 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
 
   _motors_connected_thd.start(mbed::callback(this, &BraccioClass::motorConnectedThreadFunc));
 
+  /* Wait for all motors to be actually connected. */
+  for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++)
+  {
+    auto const start = millis();
+    auto isTimeout = [start]() -> bool { return ((millis() - start) > 5000); };
+    for(; !isTimeout() && !connected(id); delay(100)) { }
+    if (isTimeout()) return false;
+  }
+
   return true;
 }
 
