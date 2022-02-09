@@ -31,6 +31,12 @@
 #include "mbed.h"
 
 /**************************************************************************************
+ * DEFINES
+ **************************************************************************************/
+
+#define BRACCIO_POWER_DEBUG_ENABLE
+
+/**************************************************************************************
  * FUNCTION DECLARATION
  **************************************************************************************/
 
@@ -455,7 +461,9 @@ void BraccioClass::pd_thread_func()
       last_time_ask_pps = millis();
     }
     _PD_UFP.run();
+#ifdef BRACCIO_POWER_DEBUG_ENABLE
     _PD_UFP.print_status(Serial);
+#endif
 
     /* Set up the next time this loop is called. */
     if (flags & PD_IRQ_EVENT_FLAG)
