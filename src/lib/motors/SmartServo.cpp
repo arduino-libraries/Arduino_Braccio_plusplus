@@ -193,6 +193,9 @@ void SmartServoClass::begin()
   writeByteCmd(BROADCAST, REG(SmartServoRegister::SERVO_MOTOR_MODE), 1);
   writeByteCmd(BROADCAST, REG(SmartServoRegister::TORQUE_SWITCH) ,1);
   _positionMode = PositionMode::IMMEDIATE;
+
+  for (int i = MIN_MOTOR_ID; i <= MAX_MOTOR_ID; i++)
+    _targetSpeed[idToArrayIndex(i)] = 1000;
 }
 
 void SmartServoClass::setPosition(uint8_t const id, float const angle)
@@ -231,13 +234,15 @@ void SmartServoClass::synchronize()
   _txPacket.length = MAX_TX_PAYLOAD_LEN;
   _txPacket.instruction = CMD(SmartServoOperation::SYNC_WRITE);
   _txPacket.payload[0] = REG(SmartServoRegister::TARGET_POSITION_H);
-  _txPacket.payload[1] = 2;
+  _txPacket.payload[1] = 4;
   int index = 2;
   
   for (int i = MIN_MOTOR_ID; i <= MAX_MOTOR_ID; i++) {
     _txPacket.payload[index++] = i;
-    _txPacket.payload[index++] = _targetPosition[idToArrayIndex(i)] >>8;
+    _txPacket.payload[index++] = _targetPosition[idToArrayIndex(i)]>>8;
     _txPacket.payload[index++] = _targetPosition[idToArrayIndex(i)];
+    _txPacket.payload[index++] = _targetSpeed[idToArrayIndex(i)]>>8;
+    _txPacket.payload[index++] = _targetSpeed[idToArrayIndex(i)];
   }
   sendPacket();
 }
@@ -254,9 +259,18 @@ void SmartServoClass::setTorque(uint8_t const id, bool const torque)
   writeByteCmd(id, REG(SmartServoRegister::TORQUE_SWITCH), torque ? 1 : 0);
 }
 
+void SmartServoClass::setTime(uint16_t const time)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
+  for (int i = MIN_MOTOR_ID; i <= MAX_MOTOR_ID; i++)
+    _targetSpeed[idToArrayIndex(i)] = time;
+  writeWordCmd(BROADCAST, REG(SmartServoRegister::RUN_TIME_H), time);
+}
+
 void SmartServoClass::setTime(uint8_t const id, uint16_t const time)
 {
   mbed::ScopedLock<rtos::Mutex> lock(_mtx);
+  if ((id >= MIN_MOTOR_ID) && (id <= MAX_MOTOR_ID)) _targetSpeed[idToArrayIndex(id)] = time;
   writeWordCmd(id, REG(SmartServoRegister::RUN_TIME_H), time);
 }
 

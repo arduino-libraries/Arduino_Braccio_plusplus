@@ -80,7 +80,7 @@ public:
   void positions(float * buffer);
   void positions(float & a1, float & a2, float & a3, float & a4, float & a5, float & a6);
 
-  inline void speed(speed_grade_t const speed_grade) { _servos.setTime(SmartServoClass::BROADCAST, speed_grade); }
+  inline void speed(speed_grade_t const speed_grade) { _servos.setTime(speed_grade); }
   inline void speed(int const id, speed_grade_t const speed_grade) { _servos.setTime(id, speed_grade); }
 
   inline void disengage(int const id = SmartServoClass::BROADCAST) { _servos.disengage(id); }

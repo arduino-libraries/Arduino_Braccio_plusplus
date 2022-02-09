@@ -75,6 +75,7 @@ public:
   void setMaxAngle(uint16_t const max_angle);
   void setMaxAngle(uint8_t const id, uint16_t const max_angle);
 
+  void setTime(uint16_t const time);
   void setTime(uint8_t const id, uint16_t const time);
 
   void center(uint8_t const id, uint16_t const position);
@@ -97,7 +98,7 @@ public:
   static int   constexpr NUM_MOTORS = 6;
   static float constexpr MAX_ANGLE = 315.0f;
 
-  static int idToArrayIndex(int const id) { return (id - 1); }
+  static size_t idToArrayIndex(size_t const id) { return (id - 1); }
 
 private:
 
@@ -140,6 +141,8 @@ private:
   uint8_t _rxBuf[MAX_RX_PAYLOAD_LEN];
   uint8_t _rxLen;
   uint16_t _targetPosition[NUM_MOTORS];
+  uint16_t _targetSpeed[NUM_MOTORS];
+
   PositionMode _positionMode;
 };
 
