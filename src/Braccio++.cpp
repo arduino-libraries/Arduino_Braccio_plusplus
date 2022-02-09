@@ -34,7 +34,8 @@
  * DEFINES
  **************************************************************************************/
 
-#define BRACCIO_POWER_DEBUG_ENABLE
+/* Uncommenting this line enables debug output of the USB Power Delivery library. */
+//#define BRACCIO_POWER_DEBUG_ENABLE
 
 /**************************************************************************************
  * FUNCTION DECLARATION
