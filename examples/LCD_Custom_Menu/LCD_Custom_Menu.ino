@@ -38,10 +38,18 @@ void customMenu(){
  * SETUP/LOOP
  **************************************************************************************/
 
-void setup() {
-  Braccio.begin(customMenu);
+void setup()
+{
+  Serial.begin(115200);
+  for (auto const start = millis(); !Serial && ((millis() - start) < 5000); delay(10)) { }
+
+  if (!Braccio.begin(customMenu)) {
+    if (Serial) Serial.println("Braccio.begin() failed.");
+    for(;;) { }
+  }
 }
 
-void loop() {
+void loop()
+{
   
 }

@@ -83,12 +83,19 @@ void customMenu() {
  * SETUP/LOOP
  **************************************************************************************/
 
-void setup() {
-  Braccio.begin(customMenu);
+void setup()
+{
   Serial.begin(115200);
+  for (auto const start = millis(); !Serial && ((millis() - start) < 5000); delay(10)) { }
+
+  if (!Braccio.begin(customMenu)) {
+    if (Serial) Serial.println("Braccio.begin() failed.");
+    for(;;) { }
+  }
 }
 
-void loop() {
+void loop()
+{
   for (float angle = 0.0; angle <= 180.0; angle+=10.0){
     Braccio.move(selected_motor).to(angle);
     delay(500);
