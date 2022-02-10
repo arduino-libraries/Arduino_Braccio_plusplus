@@ -135,7 +135,7 @@ bool BraccioClass::begin(voidFuncPtr custom_menu)
     lvgl_defaultMenu();
 
   _servos.begin();
-  _servos.setTime(SmartServoClass::BROADCAST, SLOW);
+  _servos.setTime(SLOW);
   _servos.setPositionMode(PositionMode::IMMEDIATE);
 
   _motors_connected_thd.start(mbed::callback(this, &BraccioClass::motorConnectedThreadFunc));
