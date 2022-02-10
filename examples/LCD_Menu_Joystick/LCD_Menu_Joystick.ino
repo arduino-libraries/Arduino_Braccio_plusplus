@@ -1,7 +1,34 @@
+/*
+ * @brief This sketch demonstrates how to build a very simple
+ * and basic custom menu interacting with the Braccio++ carriers
+ * joystick.
+ */
+
+/**************************************************************************************
+ * INCLUDE
+ **************************************************************************************/
+
 #include <Braccio++.h>
+
+/**************************************************************************************
+ * DEFINE
+ **************************************************************************************/
 
 #define MARGIN_LEFT   0
 #define MARGIN_TOP    0
+
+/**************************************************************************************
+ * CONSTANT
+ **************************************************************************************/
+
+static const char * btnm_map[] = {"Option 1", "Option 2", "\n",
+                                  "Option 3", "Option 4", "\n",
+                                  "Option 5", "Option 6", "\n", "\0"
+                                 };
+
+/**************************************************************************************
+ * FUNCTIONS
+ **************************************************************************************/
 
 static void event_handler(lv_event_t * e){
   lv_event_code_t code = lv_event_get_code(e);
@@ -14,11 +41,6 @@ static void event_handler(lv_event_t * e){
     Serial.println(String(txt) + " was pressed.");
   }
 }
-
-static const char * btnm_map[] = {"Option 1", "Option 2", "\n",
-                                  "Option 3", "Option 4", "\n",
-                                  "Option 5", "Option 6", "\n", "\0"
-                                 };
 
 void customMenu(){
   lv_obj_t * btnm1 = lv_btnmatrix_create(lv_scr_act());
@@ -33,6 +55,10 @@ void customMenu(){
   lv_obj_add_event_cb(btnm1, event_handler, LV_EVENT_ALL, NULL);
   Braccio.connectJoystickTo(btnm1);
 }
+
+/**************************************************************************************
+ * SETUP/LOOP
+ **************************************************************************************/
 
 void setup() {
   Braccio.begin(customMenu);
