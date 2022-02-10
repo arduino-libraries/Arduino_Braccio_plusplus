@@ -104,7 +104,11 @@ void setup()
   Serial.begin(115200);
   while(!Serial) { }
 
-  Braccio.begin();
+  if (!Braccio.begin()) {
+    Serial.println("Braccio.begin() failed.");
+    for(;;) { }
+  }
+
   Braccio.disengage();
 
   for (auto & servo : INITIAL_SERVO_POSITION)

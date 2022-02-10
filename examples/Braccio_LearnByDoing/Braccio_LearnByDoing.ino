@@ -118,7 +118,7 @@ static mbed::FATFileSystem fs("fs");
 void setup()
 {
   Serial.begin(115200);
-  while (!Serial) { }
+  for (auto const start = millis(); !Serial && ((millis() - start) < 5000); delay(10)) { }
 
   // Mount file system for load/store movements
   int err = fs.mount(&bd);
@@ -126,12 +126,15 @@ void setup()
     err = fs.reformat(&bd);
   }
 
-  // Call Braccio.begin() for default menu or pass a function for custom menu
-  Braccio.begin(customMenu);
+  if (!Braccio.begin(customMenu)) {
+    if (Serial) Serial.println("Braccio.begin() failed.");
+    for(;;) { }
+  }
   Serial.println("Replicate a movement");
 }
 
-void loop() {
+void loop()
+{
   if (state == LEARN) {
     Braccio.positions(idx);
     idx += 6;

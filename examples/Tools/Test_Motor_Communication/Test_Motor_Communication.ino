@@ -10,7 +10,11 @@ void setup()
   Serial.begin(115200);
   while(!Serial) { }
 
-  Braccio.begin();
+  if (!Braccio.begin()) {
+    Serial.println("Braccio.begin() failed.");
+    for(;;) { }
+  }
+
   Serial.println("Testing motor communication!");
   Serial.println("Choose motor 1 to 6 to test the connection");
   Serial.print(">> ");

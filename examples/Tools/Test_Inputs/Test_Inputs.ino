@@ -9,9 +9,13 @@
 void setup()
 {
   Serial.begin(115200);
-  while(!Serial){}
+  while(!Serial) { }
 
-  Braccio.begin();
+  if (!Braccio.begin()) {
+    Serial.println("Braccio.begin() failed.");
+    for(;;) { }
+  }
+
   Serial.println("Press any button or move the joystick.");
 }
 
