@@ -1,6 +1,18 @@
-#include "Braccio++.h"
+/*
+ * @brief Learn the arm an movement and replay it.
+ */
+
+/**************************************************************************************
+ * INCLUDE
+ **************************************************************************************/
+
+#include <Braccio++.h>
 #include "FlashIAPBlockDevice.h"
 #include "FATFileSystem.h"
+
+/**************************************************************************************
+ * VARIABLES
+ **************************************************************************************/
 
 enum states {
   LEARN,
@@ -13,6 +25,10 @@ int state = IDLE;
 float values[10000];
 float* idx = values;
 float* final_idx = 0;
+
+/**************************************************************************************
+ * FUNCTIONS
+ **************************************************************************************/
 
 static void event_handler(lv_event_t * e) {
   lv_event_code_t code = lv_event_get_code(e);
@@ -95,9 +111,14 @@ void customMenu() {
 static FlashIAPBlockDevice bd(XIP_BASE + 0x100000, 0x100000);
 static mbed::FATFileSystem fs("fs");
 
-void setup() {
+/**************************************************************************************
+ * SETUP/LOOP
+ **************************************************************************************/
 
+void setup()
+{
   Serial.begin(115200);
+  while (!Serial) { }
 
   // Mount file system for load/store movements
   int err = fs.mount(&bd);

@@ -1,6 +1,34 @@
-#include "Braccio++.h"
+/*
+ * @brief This sketch demonstrates how to build a very simple
+ * and basic custom menu interacting with the Braccio++ carriers
+ * joystick, allowing to control a specific motor by selecting
+ * it from the menu.
+ */
+
+/**************************************************************************************
+ * INCLUDE
+ **************************************************************************************/
+
+#include <Braccio++.h>
+
+/**************************************************************************************
+ * VARIABLES
+ **************************************************************************************/
 
 int selected_motor = 0;
+
+/**************************************************************************************
+ * CONSTANTS
+ **************************************************************************************/
+
+static const char * btnm_map[] = {"Motor 1", "Motor 2", "\n",
+                                  "Motor 3", "Motor 4", "\n",
+                                  "Motor 5", "Motor 6", "\n", "\0"
+                                 };
+
+/**************************************************************************************
+ * FUNCTIONS
+ **************************************************************************************/
 
 static void event_handler(lv_event_t * e)
 {
@@ -37,12 +65,6 @@ static void event_handler(lv_event_t * e)
   }
 }
 
-
-static const char * btnm_map[] = {"Motor 1", "Motor 2", "\n",
-                                  "Motor 3", "Motor 4", "\n",
-                                  "Motor 5", "Motor 6", "\n", "\0"
-                                 };
-
 void customMenu() {
   lv_obj_t * btnm1 = lv_btnmatrix_create(lv_scr_act());
   lv_btnmatrix_set_map(btnm1, btnm_map);
@@ -57,8 +79,11 @@ void customMenu() {
   Braccio.connectJoystickTo(btnm1);
 }
 
+/**************************************************************************************
+ * SETUP/LOOP
+ **************************************************************************************/
+
 void setup() {
-  // Call Braccio.begin() for default menu or pass a function for custom menu
   Braccio.begin(customMenu);
   Serial.begin(115200);
 }

@@ -1,7 +1,6 @@
 /*
- * @brief This sketch demonstrates how to build a very simple
- * and basic custom menu interacting with the Braccio++ carriers
- * joystick.
+ * @brief Activating the "MOVE" button by pressing
+ * the joystick enables a waving motion of the arm.
  */
 
 /**************************************************************************************
@@ -11,47 +10,50 @@
 #include <Braccio++.h>
 
 /**************************************************************************************
- * DEFINE
+ * GLOBAL CONSTANTS
  **************************************************************************************/
 
-#define MARGIN_LEFT   0
-#define MARGIN_TOP    0
+float const home_position[6] = {SmartServoClass::MAX_ANGLE / 2.0f,
+                                SmartServoClass::MAX_ANGLE / 2.0f,
+                                SmartServoClass::MAX_ANGLE / 2.0f,
+                                SmartServoClass::MAX_ANGLE / 2.0f,
+                                SmartServoClass::MAX_ANGLE / 2.0f,
+                                90.0f};
+static const char * btnm_map[] = {"Move", "\0"};
 
 /**************************************************************************************
- * CONSTANT
+ * GLOBAL VARIABLES
  **************************************************************************************/
 
-static const char * btnm_map[] = {"Option 1", "Option 2", "\n",
-                                  "Option 3", "Option 4", "\n",
-                                  "Option 5", "Option 6", "\n", "\0"
-                                 };
+bool move_joint = false;
 
 /**************************************************************************************
  * FUNCTIONS
  **************************************************************************************/
 
-static void event_handler(lv_event_t * e){
+static void event_handler(lv_event_t * e)
+{
   lv_event_code_t code = lv_event_get_code(e);
   lv_obj_t * obj = lv_event_get_target(e);
-  if (code == LV_EVENT_CLICKED) {
+  if (code == LV_EVENT_CLICKED)
+  {
     uint32_t id = lv_btnmatrix_get_selected_btn(obj);
     const char * txt = lv_btnmatrix_get_btn_text(obj, id);
 
     LV_LOG_USER("%s was pressed\n", txt);
-    Serial.println(String(txt) + " was pressed.");
+    if (Serial) Serial.println(txt);
+
+    if (strcmp(txt, "Move") == 0)
+      move_joint = !move_joint;
   }
 }
 
-void customMenu(){
+void customMenu()
+{
   lv_obj_t * btnm1 = lv_btnmatrix_create(lv_scr_act());
   lv_btnmatrix_set_map(btnm1, btnm_map);
   lv_btnmatrix_set_btn_ctrl(btnm1, 0, LV_BTNMATRIX_CTRL_CHECKABLE);
-  lv_btnmatrix_set_btn_ctrl(btnm1, 1, LV_BTNMATRIX_CTRL_CHECKABLE);
-  lv_btnmatrix_set_btn_ctrl(btnm1, 2, LV_BTNMATRIX_CTRL_CHECKABLE);
-  lv_btnmatrix_set_btn_ctrl(btnm1, 3, LV_BTNMATRIX_CTRL_CHECKABLE);
-  lv_btnmatrix_set_btn_ctrl(btnm1, 4, LV_BTNMATRIX_CTRL_CHECKABLE);
-  lv_btnmatrix_set_btn_ctrl(btnm1, 5, LV_BTNMATRIX_CTRL_CHECKABLE);
-  lv_obj_align(btnm1, LV_ALIGN_CENTER, MARGIN_LEFT, MARGIN_TOP);
+  lv_obj_align(btnm1, LV_ALIGN_CENTER, 0, 0);
   lv_obj_add_event_cb(btnm1, event_handler, LV_EVENT_ALL, NULL);
   Braccio.connectJoystickTo(btnm1);
 }
@@ -60,10 +62,27 @@ void customMenu(){
  * SETUP/LOOP
  **************************************************************************************/
 
-void setup() {
-  Braccio.begin(customMenu);
+void setup()
+{
+  Serial.begin(115200);
+  for (auto const start = millis(); !Serial && ((millis() - start) < 5000); delay(10)) { }
+
+  if (!Braccio.begin(customMenu)) {
+    if (Serial) Serial.println("Braccio.begin() failed.");
+    for(;;) { }
+  }
+
+  Braccio.moveTo(home_position[0], home_position[1], home_position[2], home_position[3], home_position[4], home_position[5]);
+  delay(1000);
 }
 
-void loop() {
-  
+void loop()
+{
+  if (move_joint)
+  {
+    Braccio.move(4).to((SmartServoClass::MAX_ANGLE / 2.0f) - 45.0f).in(1s);
+    delay(1000);
+    Braccio.move(4).to((SmartServoClass::MAX_ANGLE / 2.0f) + 45.0f).in(1s);
+    delay(1000);
+  }
 }
