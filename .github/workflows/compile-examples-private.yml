@@ -52,7 +52,7 @@ jobs:
           libraries: |
             # Install the library from the local path.
             - source-path: ./
-            - source-url: https://github.com/lvgl/lvgl.git
+            - name: lvgl
             # Additional library dependencies can be listed here.
             # See: https://github.com/arduino/compile-sketches#libraries
           sketch-paths: |
