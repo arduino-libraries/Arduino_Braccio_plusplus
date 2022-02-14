@@ -4,7 +4,7 @@
 ==========================
 
 [![Check Arduino status](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/check-arduino.yml/badge.svg)](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/check-arduino.yml)
-[![Compile Examples status](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/compile-examples-private.yml/badge.svg)](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/compile-examples-private.yml)
+[![Compile Examples status](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/compile-examples.yml/badge.svg)](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/compile-examples.yml)
 [![Spell Check status](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/spell-check.yml/badge.svg)](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/spell-check.yml)
 
 This library allows you to control and interact with the 6 DOF Braccio++ robot arm.
