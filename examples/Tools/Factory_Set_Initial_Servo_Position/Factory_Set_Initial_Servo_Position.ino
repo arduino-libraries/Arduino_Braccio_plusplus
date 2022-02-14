@@ -111,6 +111,7 @@ bool set_initial_servo_position(int const id, float const target_angle)
     return false;
   }
 
+  Serial.println("Calibration ... OK");
   return true;
 }
 
