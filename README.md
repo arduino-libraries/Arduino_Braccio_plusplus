@@ -1,7 +1,7 @@
 <img src="https://content.arduino.cc/website/Arduino_logo_teal.svg" height="100" align="right" />
 
-`Braccio++`
-===========
+`Arduino_Braccio_plusplus`
+==========================
 
 [![Check Arduino status](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/check-arduino.yml/badge.svg)](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/check-arduino.yml)
 [![Compile Examples status](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/compile-examples-private.yml/badge.svg)](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/compile-examples-private.yml)
