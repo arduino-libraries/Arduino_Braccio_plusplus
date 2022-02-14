@@ -49,9 +49,22 @@ static std::array<InitialServoPosition, 6> const INITIAL_SERVO_POSITION =
 
 bool set_initial_servo_position(int const id, float const target_angle)
 {
+  auto isTimeout = [](unsigned long const start) -> bool { return ((millis() - start) > 2000); };
+
+  auto start = millis();
+
   Serial.print("Connecting .... ");
-  for (; !Braccio.get(id).connected(); delay(10)) { }
-  Serial.println("OK.");
+  for (; !Braccio.get(id).connected() && !isTimeout(start); delay(10)) { }
+  if (!isTimeout(start))
+    Serial.println("OK.");
+  else
+  {
+    Serial.print("Error: Can not connect to servo ");
+    Serial.print(id);
+    Serial.println(" within time limit.");
+    Serial.println();
+    return false;
+  }
   delay(500);
 
   Serial.print("Disengaging ... ");
@@ -65,14 +78,12 @@ bool set_initial_servo_position(int const id, float const target_angle)
   delay(500);
 
   /* Drive to the position for assembling the servo horn. */
-  auto const start = millis();
-  auto isTimeout = [start]() -> bool { return ((millis() - start) > 5000); };
   auto isTargetAngleReached = [target_angle, id](float const epsilon) -> bool { return (fabs(Braccio.get(id).position() - target_angle) <= epsilon); };
 
   static float constexpr EPSILON = 2.0f;
 
   for ( float current_angle = Braccio.get(id).position();
-       !isTargetAngleReached(EPSILON) && !isTimeout();)
+       !isTargetAngleReached(EPSILON) && !isTimeout(start);)
   {
     Braccio.get(id).move().to(target_angle).in(200ms);
     delay(250);
@@ -91,7 +102,7 @@ bool set_initial_servo_position(int const id, float const target_angle)
     return false;
   }
 
-  if (isTimeout())
+  if (isTimeout(start))
   {
     Serial.print("Error: Servo ");
     Serial.print(id);
@@ -132,7 +143,7 @@ void setup()
       success_cnt++;
   }
 
-  if (success_cnt != (SmartServoClass::NUM_MOTORS - 1))
+  if (success_cnt == SmartServoClass::NUM_MOTORS)
   {
     Serial.println("SUCCESS : all servos are set to their initial position.");
   }
