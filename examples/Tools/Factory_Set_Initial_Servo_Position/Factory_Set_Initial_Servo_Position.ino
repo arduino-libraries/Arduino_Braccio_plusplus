@@ -112,7 +112,7 @@ void setup()
   Serial.begin(115200);
   while(!Serial) { }
 
-  if (!Braccio.begin()) {
+  if (!Braccio.begin(nullptr, false)) {
     Serial.println("Braccio.begin() failed.");
     for(;;) { }
   }
