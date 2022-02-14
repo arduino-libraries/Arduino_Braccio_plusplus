@@ -82,13 +82,21 @@ bool set_initial_servo_position(int const id, float const target_angle)
     Serial.println(msg);
   }
 
-  if (!isTargetAngleReached(EPSILON)) {
-    Serial.println("Servo did not reach target angle.");
+  if (!isTargetAngleReached(EPSILON))
+  {
+    Serial.print("Error: Servo ");
+    Serial.print(id);
+    Serial.print(" did not reach target angle.");
+    Serial.println();
     return false;
   }
 
-  if (isTimeout()) {
-    Serial.println("Timeout error.");
+  if (isTimeout())
+  {
+    Serial.print("Error: Servo ");
+    Serial.print(id);
+    Serial.println(" did not reach target angle within time limit.");
+    Serial.println();
     return false;
   }
 
@@ -111,22 +119,32 @@ void setup()
 
   Braccio.disengage();
 
+  int success_cnt = 0;
   for (auto & servo : INITIAL_SERVO_POSITION)
   {
     Serial.print("Servo ");
     Serial.print(servo.id());
     Serial.print(": Target Angle = ");
     Serial.print(servo.angle());
-    Serial.print(" °");
     Serial.println();
 
-    if (!set_initial_servo_position(servo.id(), servo.angle())) {
-      Serial.println("ERROR.");
-      return;
-    }
+    if (set_initial_servo_position(servo.id(), servo.angle()))
+      success_cnt++;
   }
 
-  Serial.println("SUCCESS : all servos are set to their initial position.");
+  if (success_cnt != (SmartServoClass::NUM_MOTORS - 1))
+  {
+    Serial.println("SUCCESS : all servos are set to their initial position.");
+  }
+  else
+  {
+    Serial.print("ERROR: only ");
+    Serial.print(success_cnt);
+    Serial.print(" of ");
+    Serial.print(SmartServoClass::NUM_MOTORS);
+    Serial.print(" could be set to the desired initial position.");
+    Serial.println();
+  }
 }
 
 void loop()
