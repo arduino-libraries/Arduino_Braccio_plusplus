@@ -3,9 +3,9 @@
 `Braccio++`
 ===========
 
-[![Check Arduino status](https://github.com/arduino-libraries/Braccio_v2_library/actions/workflows/check-arduino.yml/badge.svg)](https://github.com/arduino-libraries/Braccio_v2_library/actions/workflows/check-arduino.yml)
-[![Compile Examples status](https://github.com/arduino-libraries/Braccio_v2_library/actions/workflows/compile-examples-private.yml/badge.svg)](https://github.com/arduino-libraries/Braccio_v2_library/actions/workflows/compile-examples-private.yml)
-[![Spell Check status](https://github.com/arduino-libraries/Braccio_v2_library/actions/workflows/spell-check.yml/badge.svg)](https://github.com/arduino-libraries/Braccio_v2_library/actions/workflows/spell-check.yml)
+[![Check Arduino status](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/check-arduino.yml/badge.svg)](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/check-arduino.yml)
+[![Compile Examples status](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/compile-examples-private.yml/badge.svg)](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/compile-examples-private.yml)
+[![Spell Check status](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/spell-check.yml/badge.svg)](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/actions/workflows/spell-check.yml)
 
 This library allows you to control and interact with the 6 DOF Braccio++ robot arm.
 
@@ -17,7 +17,7 @@ This library allows you to control and interact with the 6 DOF Braccio++ robot a
 
 ## :bug: Bugs & Issues
 
-If you want to report an issue with this library, you can submit it to the [issue tracker](https://github.com/arduino-libraries/Braccio_v2_library/issues) of this repository. Remember to include as much detail as you can about your hardware set-up, code and steps for reproducing the issue. Make sure you're using an original Arduino board.
+If you want to report an issue with this library, you can submit it to the [issue tracker](https://github.com/arduino-libraries/Arduino_Braccio_plusplus/issues) of this repository. Remember to include as much detail as you can about your hardware set-up, code and steps for reproducing the issue. Make sure you're using an original Arduino board.
 
 ## :technologist: Development
 
