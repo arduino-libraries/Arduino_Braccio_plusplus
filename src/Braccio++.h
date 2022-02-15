@@ -65,7 +65,8 @@ public:
   BraccioClass();
 
   inline bool begin() { return begin(nullptr); }
-         bool begin(voidFuncPtr custom_menu, bool const wait_for_all_motor_connected = true);
+  inline bool begin(voidFuncPtr custom_menu) { return begin(custom_menu, true); }
+         bool begin(voidFuncPtr custom_menu, bool const wait_for_all_motor_connected);
 
   void pingOn();
   void pingOff();
