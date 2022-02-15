@@ -49,7 +49,7 @@ static std::array<InitialServoPosition, 6> const INITIAL_SERVO_POSITION =
 
 bool set_initial_servo_position(int const id, float const target_angle)
 {
-  auto isTimeout = [](unsigned long const start) -> bool { return ((millis() - start) > 2000); };
+  auto isTimeout = [](unsigned long const start) -> bool { return ((millis() - start) > 5000); };
 
   auto start = millis();
 
