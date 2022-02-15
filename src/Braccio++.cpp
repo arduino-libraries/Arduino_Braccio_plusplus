@@ -409,6 +409,7 @@ void BraccioClass::lvgl_init()
 
 void BraccioClass::display_thread_func()
 {
+  delay(200);
   for(;;)
   {
     lv_task_handler();
