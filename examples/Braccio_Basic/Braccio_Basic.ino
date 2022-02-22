@@ -33,6 +33,7 @@ bool move_joint = false;
 
 static void event_handler(lv_event_t * e)
 {
+  Braccio.lvgl_lock();
   lv_event_code_t code = lv_event_get_code(e);
   lv_obj_t * obj = lv_event_get_target(e);
   if (code == LV_EVENT_CLICKED)
@@ -46,15 +47,19 @@ static void event_handler(lv_event_t * e)
     if (strcmp(txt, "Move") == 0)
       move_joint = !move_joint;
   }
+  Braccio.lvgl_unlock();
 }
 
 void customMenu()
 {
+  Braccio.lvgl_lock();
   lv_obj_t * btnm1 = lv_btnmatrix_create(lv_scr_act());
   lv_btnmatrix_set_map(btnm1, btnm_map);
   lv_btnmatrix_set_btn_ctrl(btnm1, 0, LV_BTNMATRIX_CTRL_CHECKABLE);
   lv_obj_align(btnm1, LV_ALIGN_CENTER, 0, 0);
   lv_obj_add_event_cb(btnm1, event_handler, LV_EVENT_ALL, NULL);
+  Braccio.lvgl_unlock();
+
   Braccio.connectJoystickTo(btnm1);
 }
 

@@ -96,6 +96,9 @@ public:
   inline bool isJoystickPressed_DOWN()   { return (digitalRead(BTN_DOWN) == LOW); }
   inline bool isButtonPressed_ENTER()    { return (digitalRead(BTN_ENTER) == LOW); }
 
+  inline void lvgl_lock  () { _display_mtx.lock(); }
+  inline void lvgl_unlock() { _display_mtx.unlock(); }
+
   static BraccioClass& get_default_instance() {
     static BraccioClass dev;
     return dev;
@@ -151,6 +154,7 @@ private:
   lv_group_t * _lvgl_p_obj_group;
   lv_indev_t * _lvgl_kb_indev;
   lv_style_t _lv_style;
+  rtos::Mutex _display_mtx;
   rtos::Thread _display_thd;
   bool backlight_init();
   void display_init();

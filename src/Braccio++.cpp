@@ -81,6 +81,7 @@ BraccioClass::BraccioClass()
 , _lvgl_draw_buf{}
 , _lvgl_p_obj_group{nullptr}
 , _lvgl_kb_indev{nullptr}
+, _display_mtx{}
 , _display_thd{}
 , _pd_events{}
 , _pd_timer{}
@@ -238,6 +239,7 @@ int BraccioClass::getKey() {
 
 void BraccioClass::connectJoystickTo(lv_obj_t* obj)
 {
+  mbed::ScopedLock<rtos::Mutex> lock(_display_mtx);
   lv_group_add_obj(_lvgl_p_obj_group, obj);
   lv_indev_set_group(_lvgl_kb_indev, _lvgl_p_obj_group);
 }
@@ -409,31 +411,40 @@ void BraccioClass::lvgl_init()
 
 void BraccioClass::display_thread_func()
 {
-  for(;;)
+  for(;; delay(LV_DISP_DEF_REFR_PERIOD))
   {
+    mbed::ScopedLock<rtos::Mutex> lock(_display_mtx);
     lv_task_handler();
     lv_tick_inc(LV_DISP_DEF_REFR_PERIOD);
-    delay(LV_DISP_DEF_REFR_PERIOD);
   }
 }
 
 void BraccioClass::lvgl_splashScreen(unsigned long const duration_ms)
 {
   extern const lv_img_dsc_t img_bulb_gif;
+  lv_obj_t * img = nullptr;
 
-  LV_IMG_DECLARE(img_bulb_gif);
-  lv_obj_t* img = lv_gif_create(lv_scr_act());
-  lv_gif_set_src(img, &img_bulb_gif);
-  lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
+  {
+    mbed::ScopedLock<rtos::Mutex> lock(_display_mtx);
+    LV_IMG_DECLARE(img_bulb_gif);
+    img = lv_gif_create(lv_scr_act());
+    lv_gif_set_src(img, &img_bulb_gif);
+    lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
+  }
 
   /* Wait until the splash screen duration is over. */
   for (unsigned long const start = millis(); millis() - start < duration_ms; delay(10)) { }
 
-  lv_obj_del(img);
+  {
+    mbed::ScopedLock<rtos::Mutex> lock(_display_mtx);
+    lv_obj_del(img);
+  }
 }
 
 void BraccioClass::lvgl_pleaseConnectPower()
 {
+  mbed::ScopedLock<rtos::Mutex> lock(_display_mtx);
+
   lv_style_set_text_font(&_lv_style, &lv_font_montserrat_32);
   lv_obj_t * label1 = lv_label_create(lv_scr_act());
   lv_obj_add_style(label1, &_lv_style, 0);
@@ -445,7 +456,8 @@ void BraccioClass::lvgl_pleaseConnectPower()
 
 void BraccioClass::lvgl_defaultMenu()
 {
-  // TODO: create a meaningful default menu
+  mbed::ScopedLock<rtos::Mutex> lock(_display_mtx);
+
   lv_style_set_text_font(&_lv_style, &lv_font_montserrat_32);
   lv_obj_t * label1 = lv_label_create(lv_scr_act());
   lv_obj_add_style(label1, &_lv_style, 0);
