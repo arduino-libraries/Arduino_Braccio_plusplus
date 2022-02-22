@@ -52,7 +52,6 @@ bool set_initial_servo_position(int const id, float const target_angle)
   auto isTimeout = [](unsigned long const start) -> bool { return ((millis() - start) > 2000); };
 
   auto start = millis();
-
   Serial.print("Connecting .... ");
   for (; !Braccio.get(id).connected() && !isTimeout(start); delay(10)) { }
   if (!isTimeout(start))
@@ -82,6 +81,7 @@ bool set_initial_servo_position(int const id, float const target_angle)
 
   static float constexpr EPSILON = 2.0f;
 
+  start = millis();
   for ( float current_angle = Braccio.get(id).position();
        !isTargetAngleReached(EPSILON) && !isTimeout(start);)
   {
