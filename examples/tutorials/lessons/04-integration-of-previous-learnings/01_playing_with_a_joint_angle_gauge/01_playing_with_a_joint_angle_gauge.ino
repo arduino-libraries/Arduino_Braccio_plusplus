@@ -23,12 +23,15 @@ lv_meter_indicator_t * indic;
 
 static void eventHandlerMeter(lv_event_t * e) {
   /* Set the meter value */
+  Braccio.lvgl_lock();
   lv_meter_set_indicator_end_value(meter, indic, (int32_t)angles[motorID - 1]);
+  Braccio.lvgl_unlock();
 }
 
 
 void meterScreen(void)
 {
+  Braccio.lvgl_lock();
   meter = lv_meter_create(lv_scr_act());
 
   lv_obj_center(meter);
@@ -52,6 +55,7 @@ void meterScreen(void)
   indic = lv_meter_add_arc(meter, scale, 10, lv_color_hex(COLOR_LIGHT_TEAL), 0);
 
   lv_obj_add_event_cb(meter, eventHandlerMeter, LV_EVENT_KEY, NULL);
+  Braccio.lvgl_unlock();
 
   Braccio.connectJoystickTo(meter);
 }
