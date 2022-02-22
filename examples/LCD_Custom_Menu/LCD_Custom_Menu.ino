@@ -28,10 +28,13 @@ static const char * btnm_map[] = {"Option 1", "\n",
  * FUNCTIONS
  **************************************************************************************/
 
-void customMenu(){
+void customMenu()
+{
+  Braccio.lvgl_lock();
   lv_obj_t * btnm1 = lv_btnmatrix_create(lv_scr_act());
   lv_btnmatrix_set_map(btnm1, btnm_map);
   lv_obj_align(btnm1, LV_ALIGN_CENTER, MARGIN_LEFT, MARGIN_TOP);
+  Braccio.lvgl_unlock();
 }
 
 /**************************************************************************************
