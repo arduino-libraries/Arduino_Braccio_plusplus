@@ -151,6 +151,7 @@ private:
   lv_group_t * _lvgl_p_obj_group;
   lv_indev_t * _lvgl_kb_indev;
   lv_style_t _lv_style;
+  rtos::Mutex _display_mtx;
   rtos::Thread _display_thd;
   bool backlight_init();
   void display_init();
