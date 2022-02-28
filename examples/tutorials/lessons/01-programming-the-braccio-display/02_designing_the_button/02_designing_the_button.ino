@@ -9,6 +9,7 @@
 
 
 void customMenu() {
+  Braccio.lvgl_lock();
   static lv_style_t style;
   lv_style_init(&style);
   lv_style_set_bg_color(&style, lv_color_hex(COLOR_WHITE));
@@ -26,6 +27,7 @@ void customMenu() {
   lv_obj_center(label1);
 
   lv_obj_add_style(btn1, &style, 0);
+  Braccio.lvgl_unlock();
 }
 
 void setup() {
