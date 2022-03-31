@@ -33,7 +33,7 @@
 #include "drivers/Ticker.h"
 
 #include "lib/TFT_eSPI/TFT_eSPI.h" // Hardware-specific library
-#include <lvgl.h>
+#include "lib/lvgl/lvgl.h"
 
 #include <chrono>
 using namespace std::chrono;
