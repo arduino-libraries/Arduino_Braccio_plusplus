@@ -23,9 +23,7 @@ cd Arduino_Braccio_plusplus/extras
 mkdir build && cd build
 cmake ..
 make -j8
-cp liblvgl.a ../../src/cortex-m0plus/
 ```
-**Note**: Copy all header files contained within `lvgl/src/*` to `Arduino_Braccio_plusplus/lib/lvgl/src`.
 
 ## :bug: Bugs & Issues
 
