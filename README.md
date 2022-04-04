@@ -21,7 +21,7 @@ git clone https://github.com/lvgl/lvgl
 git clone https://github.com/arduino-libraries/Arduino_Braccio_plusplus
 cd Arduino_Braccio_plusplus/extras
 mkdir build && cd build
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j8
 ```
 
