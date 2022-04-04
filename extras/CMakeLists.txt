@@ -18,3 +18,12 @@ target_sources(${PROJECT_NAME} PUBLIC ${LVGL_SOURCES})
 ##########################################################################
 target_compile_options(${PROJECT_NAME} PRIVATE -mcpu=cortex-m0plus -fPIC)
 ##########################################################################
+file(WRITE ${CMAKE_BINARY_DIR}/cp-lvgl-hdr.cmake
+  "file(COPY ${LVGL_ROOT_DIR}/src DESTINATION ../../src/lib/lvgl FILES_MATCHING PATTERN *.h)\n"
+)
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+  COMMAND cp ${CMAKE_BINARY_DIR}/liblvgl.a ../../src/cortex-m0plus/liblvgl.a
+  COMMAND cp ${LVGL_ROOT_DIR}/lvgl.h ../../src/lib/lvgl
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/cp-lvgl-hdr.cmake
+)
+##########################################################################
