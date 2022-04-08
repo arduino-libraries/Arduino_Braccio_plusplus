@@ -9,6 +9,16 @@
 
 This library allows you to control and interact with the 6 DOF Braccio++ robot arm.
 
+## How-to-update precompiled `liblvgl`
+```bash
+git clone https://github.com/lvgl/lvgl
+git clone https://github.com/arduino-libraries/Arduino_Braccio_plusplus
+cd Arduino_Braccio_plusplus/extras
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j8
+```
+
 ## :mag_right: Resources
 
 * [How to install a library](https://www.arduino.cc/en/guide/libraries)
