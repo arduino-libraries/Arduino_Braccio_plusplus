@@ -18,7 +18,7 @@
  * USA.
  */
 
-#include <lvgl.h>
+#include "lib/lvgl/lvgl.h"
 
 #ifndef LV_ATTRIBUTE_MEM_ALIGN
 #define LV_ATTRIBUTE_MEM_ALIGN
