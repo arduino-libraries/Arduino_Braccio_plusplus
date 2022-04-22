@@ -3,6 +3,7 @@
 // Colors
 #define COLOR_TEAL       0x00878F
 #define COLOR_LIGHT_TEAL 0x62AEB2
+#define COLOR_ORANGE     0xE47128
 
 enum states {
   LEARN,
@@ -69,6 +70,11 @@ static void eventHandlerMenu(lv_event_t * e) {
 }
 
 void mainMenu() {
+  static lv_style_t style_focus;
+  lv_style_init(&style_focus);
+  lv_style_set_outline_color(&style_focus, lv_color_hex(COLOR_ORANGE));
+  lv_style_set_outline_width(&style_focus, 4);
+
   static lv_style_t style_btn;
   lv_style_init(&style_btn);
   lv_style_set_bg_color(&style_btn, lv_color_hex(COLOR_LIGHT_TEAL));
@@ -80,6 +86,7 @@ void mainMenu() {
   lv_obj_align(btnm, LV_ALIGN_CENTER, 0, 0);
 
   lv_obj_add_style(btnm, &style_btn, LV_PART_ITEMS);
+  lv_obj_add_style(btnm, &style_focus, LV_PART_ITEMS | LV_STATE_FOCUS_KEY);
 
   lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKABLE);
   lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_CHECKABLE);
