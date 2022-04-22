@@ -50,6 +50,7 @@ static void eventHandlerMenu(lv_event_t * e) {
         Braccio.disengage();
         lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKED);
         Serial.println("LEARN");
+        lv_btnmatrix_clear_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED); // remove disabled state of the replay button
         break;
       case 1:
         state = REPEAT;
@@ -89,7 +90,7 @@ void mainMenu() {
   lv_obj_add_style(btnm, &style_focus, LV_PART_ITEMS | LV_STATE_FOCUS_KEY);
 
   lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKABLE);
-  lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_CHECKABLE);
+  lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKABLE);
 
   lv_btnmatrix_set_one_checked(btnm, true);
