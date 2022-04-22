@@ -15,7 +15,7 @@ int state = IDLE;
 float values[10000];
 float* idx = values;
 float* final_idx = 0;
-float homePos[6] = {160.0, 150.0, 220.0, 220.0, 100.0, 180.0};
+float homePos[6] = {157.5, 157.5, 157.5, 157.5, 157.5, 90.0};
 
 static lv_obj_t * counter;
 static lv_obj_t * btnm;
