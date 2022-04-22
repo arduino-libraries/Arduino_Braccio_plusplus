@@ -44,24 +44,35 @@ static void eventHandlerMenu(lv_event_t * e) {
     idx = values;
 
     switch (id) {
-      case 0:
-        state = LEARN;
-        Braccio.disengage();
-        lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKED);
-        Serial.println("LEARN");
-        lv_btnmatrix_clear_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED); // remove disabled state of the replay button
+      case 0: // if the button pressed is the first one
+        if (txt == "LEARN") {
+          state = LEARN;
+          Braccio.disengage(); // allow the user to freely move the braccio
+          lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKED);
+          Serial.println("LEARN");
+          lv_btnmatrix_clear_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED); // remove disabled state of the replay button
+          btnm_map[0] = "STOP"; // change the label of the first button to "STOP"
+        }
+        else if (txt == "STOP") {
+          state = IDLE;
+          Braccio.engage(); // enable the steppers so that the braccio stands still
+          lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
+          btnm_map[0] = "LEARN"; // reset the label of the first button back to "LEARN"
+        }
         break;
       case 1:
         state = REPEAT;
+        btnm_map[0] = "LEARN"; // reset the label of the first button back to "LEARN"
         Braccio.engage();
         lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_CHECKED);
         Serial.println("REPEAT");
         break;
       default:
         state = IDLE;
+        btnm_map[0] = "LEARN"; // reset the label of the first button back to "LEARN"
+        Braccio.engage();
         delay(500);
         Braccio.moveTo(homePos[0], homePos[1], homePos[2], homePos[3], homePos[4], homePos[5]);
-        
         lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
         Serial.println("IDLE");
         break;
