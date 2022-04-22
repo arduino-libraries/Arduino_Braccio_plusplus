@@ -20,7 +20,7 @@ float homePos[6] = {157.5, 157.5, 157.5, 157.5, 157.5, 90.0};
 static lv_obj_t * counter;
 static lv_obj_t * btnm;
 
-static const char * btnm_map[] = { "Learn", "\n", "Replay", "\n", "Idle", "\n", "\0" };
+static const char * btnm_map[] = { "LEARN", "\n", "REPLAY", "\n", "IDLE", "\n", "\0" };
 
 
 static void eventHandlerMenu(lv_event_t * e) {
