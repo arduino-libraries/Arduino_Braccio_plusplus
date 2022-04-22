@@ -7,7 +7,7 @@
 
 enum states {
   LEARN,
-  REPEAT,
+  REPEAT, // for consistency is better to name this REPLAY or rename the button label repeat TODO
   IDLE
 };
 
