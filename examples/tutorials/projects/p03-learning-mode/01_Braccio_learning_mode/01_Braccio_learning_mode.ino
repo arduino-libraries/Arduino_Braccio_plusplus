@@ -43,7 +43,6 @@ static void eventHandlerMenu(lv_event_t * e) {
 
     idx = values;
 
-    FILE* f;
     switch (id) {
       case 0:
         state = LEARN;
