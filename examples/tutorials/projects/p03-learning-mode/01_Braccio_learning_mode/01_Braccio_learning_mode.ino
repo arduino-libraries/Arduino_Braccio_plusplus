@@ -93,7 +93,7 @@ void mainMenu() {
   lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKABLE);
 
   lv_btnmatrix_set_one_checked(btnm, true);
-  lv_btnmatrix_set_selected_btn(btnm, 2);
+  lv_btnmatrix_set_selected_btn(btnm, 0);
   lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
 
   counter = lv_label_create(btnm);
