@@ -345,7 +345,7 @@ void BraccioClass::motorConnectedThreadFunc()
   int next_id_to_be_pinged = SmartServoClass::MIN_MOTOR_ID;
   int servo_missed_ping_cnt[SmartServoClass::NUM_MOTORS] = {0};
 
-  static int const MAX_MISSED_PING_CNT = 3;
+  static int const MAX_MISSED_PING_CNT = 2;
 
   for (;;)
   {
@@ -356,7 +356,7 @@ void BraccioClass::motorConnectedThreadFunc()
       if (!is_connected) servo_missed_ping_cnt[SmartServoClass::idToArrayIndex(next_id_to_be_pinged)]++;
       else               servo_missed_ping_cnt[SmartServoClass::idToArrayIndex(next_id_to_be_pinged)] = 0;
 
-      if (servo_missed_ping_cnt[SmartServoClass::idToArrayIndex(next_id_to_be_pinged)] > MAX_MISSED_PING_CNT)
+      if (servo_missed_ping_cnt[SmartServoClass::idToArrayIndex(next_id_to_be_pinged)] >= MAX_MISSED_PING_CNT)
         setMotorConnectionStatus(next_id_to_be_pinged, false);
       else
         setMotorConnectionStatus(next_id_to_be_pinged, true);
