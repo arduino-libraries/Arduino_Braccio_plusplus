@@ -16,9 +16,12 @@ enum states {
 
 int state = ZERO_POSITION;
 
-float values[10000];
+static int const MAX_SAMPLES = 6*1000*2; /* 20 seconds. */
+
+float values[MAX_SAMPLES];
 float* idx = values;
 float* final_idx = 0;
+int sample_cnt = 0;
 float homePos[6] = {157.5, 157.5, 157.5, 157.5, 157.5, 90.0};
 
 static lv_obj_t * counter;
@@ -41,6 +44,7 @@ static void eventHandlerMenu(lv_event_t * e) {
     }
 
     idx = values;
+    sample_cnt = 0;
 
     switch (id) {
       case 0: // if the button pressed is the first one
@@ -140,12 +144,23 @@ void setup() {
 
 void loop() {
   if (state == RECORD) {
+
+    /* Check if we still have space for samples. */
+    if (sample_cnt >= MAX_SAMPLES) {
+      state = ZERO_POSITION;
+      Serial.println("ZERO_POSITION");
+      btnm_map[0] = "RECORD"; // reset the label of the first button back to "RECORD"
+      lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKABLE);
+    }
+    /* Capture those samples. */
     Braccio.positions(idx);
     idx += 6;
+    sample_cnt += 6;
   }
   if (state == REPLAY) {
     Braccio.moveTo(idx[0], idx[1], idx[2], idx[3], idx[4], idx[5]);
     idx += 6;
+    sample_cnt += 6;
     if (idx >= final_idx) {
       Serial.println("REPLAY done");
       state = ZERO_POSITION;
@@ -153,12 +168,8 @@ void loop() {
       lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
     }
   }
-  if (idx - values >= sizeof(values)) {
-    Serial.println("ZERO_POSITION");
-    state = ZERO_POSITION;
-  }
   delay(100);
   if (state != ZERO_POSITION) {
-    lv_label_set_text_fmt(counter, "Counter: %d" , idx - values);
+    lv_label_set_text_fmt(counter, "Counter: %d" , sample_cnt);
   }
 }
