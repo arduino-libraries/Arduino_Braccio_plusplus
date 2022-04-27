@@ -6,7 +6,7 @@
 #define COLOR_ORANGE     0xE47128
 
 enum states {
-  LEARN,
+  RECORD,
   REPLAY,
   ZERO_POSITION
 };
@@ -21,7 +21,7 @@ float homePos[6] = {157.5, 157.5, 157.5, 157.5, 157.5, 90.0};
 static lv_obj_t * counter;
 static lv_obj_t * btnm;
 
-static const char * btnm_map[] = { "LEARN", "\n", "REPLAY", "\n", "ZERO_POSITION", "\n", "\0" };
+static const char * btnm_map[] = { "RECORD", "\n", "REPLAY", "\n", "ZERO_POSITION", "\n", "\0" };
 
 
 static void eventHandlerMenu(lv_event_t * e) {
@@ -37,7 +37,7 @@ static void eventHandlerMenu(lv_event_t * e) {
     uint32_t id = lv_btnmatrix_get_selected_btn(obj);
     const char * txt = lv_btnmatrix_get_btn_text(obj, id);
 
-    if (state == LEARN) {
+    if (state == RECORD) {
       final_idx = idx;
     }
 
@@ -45,11 +45,11 @@ static void eventHandlerMenu(lv_event_t * e) {
 
     switch (id) {
       case 0: // if the button pressed is the first one
-        if (txt == "LEARN") {
-          state = LEARN;
+        if (txt == "RECORD") {
+          state = RECORD;
           Braccio.disengage(); // allow the user to freely move the braccio
           lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKED);
-          Serial.println("LEARN");
+          Serial.println("RECORD");
           lv_btnmatrix_clear_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED); // remove disabled state of the replay button
           btnm_map[0] = "STOP"; // change the label of the first button to "STOP"
         }
@@ -57,11 +57,11 @@ static void eventHandlerMenu(lv_event_t * e) {
           state = ZERO_POSITION;
           Braccio.engage(); // enable the steppers so that the braccio stands still
           lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
-          btnm_map[0] = "LEARN"; // reset the label of the first button back to "LEARN"
+          btnm_map[0] = "RECORD"; // reset the label of the first button back to "RECORD"
         }
         break;
       case 1:
-        btnm_map[0] = "LEARN"; // reset the label of the first button back to "LEARN"
+        btnm_map[0] = "RECORD"; // reset the label of the first button back to "RECORD"
         if (txt == "REPLAY"){
         state = REPLAY;
         btnm_map[2] = "STOP"; // change the label of the second button to "STOP"
@@ -80,7 +80,7 @@ static void eventHandlerMenu(lv_event_t * e) {
       
       default:
         state = ZERO_POSITION;
-        btnm_map[0] = "LEARN"; // reset the label of the first button back to "LEARN"
+        btnm_map[0] = "RECORD"; // reset the label of the first button back to "RECORD"
         btnm_map[2] = "REPLAY"; // reset the label of the first button back to "REPLAY"
         Braccio.engage();
         delay(500);
@@ -140,7 +140,7 @@ void setup() {
 }
 
 void loop() {
-  if (state == LEARN) {
+  if (state == RECORD) {
     Braccio.positions(idx);
     idx += 6;
   }
