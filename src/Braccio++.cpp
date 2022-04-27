@@ -342,15 +342,15 @@ void BraccioClass::setMotorConnectionStatus(int const id, bool const is_connecte
 
 void BraccioClass::motorConnectedThreadFunc()
 {
+  int next_id_to_be_pinged = SmartServoClass::MIN_MOTOR_ID;
+
   for (;;)
   {
     if (isPingAllowed())
     {
-      for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++)
-      {
-        bool const is_connected = (_servos.ping(id) == 0);
-        setMotorConnectionStatus(id, is_connected);
-      }
+      bool const is_connected = (_servos.ping(next_id_to_be_pinged) == 0);
+      setMotorConnectionStatus(next_id_to_be_pinged, is_connected);
+      next_id_to_be_pinged = (next_id_to_be_pinged < SmartServoClass::MAX_MOTOR_ID) ? next_id_to_be_pinged + 1 : SmartServoClass::MIN_MOTOR_ID;
 
       for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
         if (connected(id))
