@@ -342,15 +342,26 @@ void BraccioClass::setMotorConnectionStatus(int const id, bool const is_connecte
 
 void BraccioClass::motorConnectedThreadFunc()
 {
+  int next_id_to_be_pinged = SmartServoClass::MIN_MOTOR_ID;
+  int servo_missed_ping_cnt[SmartServoClass::NUM_MOTORS] = {0};
+
+  static int const MAX_MISSED_PING_CNT = 2;
+
   for (;;)
   {
     if (isPingAllowed())
     {
-      for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++)
-      {
-        bool const is_connected = (_servos.ping(id) == 0);
-        setMotorConnectionStatus(id, is_connected);
-      }
+      bool const is_connected = (_servos.ping(next_id_to_be_pinged) == 0);
+
+      if (!is_connected) servo_missed_ping_cnt[SmartServoClass::idToArrayIndex(next_id_to_be_pinged)]++;
+      else               servo_missed_ping_cnt[SmartServoClass::idToArrayIndex(next_id_to_be_pinged)] = 0;
+
+      if (servo_missed_ping_cnt[SmartServoClass::idToArrayIndex(next_id_to_be_pinged)] >= MAX_MISSED_PING_CNT)
+        setMotorConnectionStatus(next_id_to_be_pinged, false);
+      else
+        setMotorConnectionStatus(next_id_to_be_pinged, true);
+
+      next_id_to_be_pinged = (next_id_to_be_pinged < SmartServoClass::MAX_MOTOR_ID) ? next_id_to_be_pinged + 1 : SmartServoClass::MIN_MOTOR_ID;
 
       for (int id = SmartServoClass::MIN_MOTOR_ID; id <= SmartServoClass::MAX_MOTOR_ID; id++) {
         if (connected(id))
@@ -359,7 +370,7 @@ void BraccioClass::motorConnectedThreadFunc()
           expander_setRed(id);
       }
     }
-    delay(1000);
+    delay(500);
   }
 }
 
