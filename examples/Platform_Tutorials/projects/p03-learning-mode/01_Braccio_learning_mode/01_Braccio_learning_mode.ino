@@ -7,7 +7,7 @@
 
 enum states {
   LEARN,
-  REPEAT, // for consistency is better to name this REPEAT or rename the button label repeat TODO
+  REPLAY,
   ZERO_POSITION
 };
 
@@ -21,7 +21,7 @@ float homePos[6] = {157.5, 157.5, 157.5, 157.5, 157.5, 90.0};
 static lv_obj_t * counter;
 static lv_obj_t * btnm;
 
-static const char * btnm_map[] = { "LEARN", "\n", "REPEAT", "\n", "ZERO_POSITION", "\n", "\0" };
+static const char * btnm_map[] = { "LEARN", "\n", "REPLAY", "\n", "ZERO_POSITION", "\n", "\0" };
 
 
 static void eventHandlerMenu(lv_event_t * e) {
@@ -62,18 +62,18 @@ static void eventHandlerMenu(lv_event_t * e) {
         break;
       case 1:
         btnm_map[0] = "LEARN"; // reset the label of the first button back to "LEARN"
-        if (txt == "REPEAT"){
-        state = REPEAT;
+        if (txt == "REPLAY"){
+        state = REPLAY;
         btnm_map[2] = "STOP"; // change the label of the second button to "STOP"
         Braccio.engage();
         lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_CHECKED);
-        Serial.println("REPEAT");
+        Serial.println("REPLAY");
         }
         else if (txt=="STOP"){
           state = ZERO_POSITION;
           Braccio.engage(); // enable the steppers so that the braccio stands still
           lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
-          btnm_map[2] = "REPEAT"; // reset the label of the first button back to "REPEAT"
+          btnm_map[2] = "REPLAY"; // reset the label of the first button back to "REPLAY"
         }
         
         break;
@@ -81,7 +81,7 @@ static void eventHandlerMenu(lv_event_t * e) {
       default:
         state = ZERO_POSITION;
         btnm_map[0] = "LEARN"; // reset the label of the first button back to "LEARN"
-        btnm_map[2] = "REPEAT"; // reset the label of the first button back to "REPEAT"
+        btnm_map[2] = "REPLAY"; // reset the label of the first button back to "REPLAY"
         Braccio.engage();
         delay(500);
         Braccio.moveTo(homePos[0], homePos[1], homePos[2], homePos[3], homePos[4], homePos[5]);
@@ -144,13 +144,13 @@ void loop() {
     Braccio.positions(idx);
     idx += 6;
   }
-  if (state == REPEAT) {
+  if (state == REPLAY) {
     Braccio.moveTo(idx[0], idx[1], idx[2], idx[3], idx[4], idx[5]);
     idx += 6;
     if (idx >= final_idx) {
-      Serial.println("Repeat done");
+      Serial.println("REPLAY done");
       state = ZERO_POSITION;
-      btnm_map[2] = "REPEAT"; // reset the label of the first button back to "REPEAT"
+      btnm_map[2] = "REPLAY"; // reset the label of the first button back to "REPLAY"
       lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
     }
   }
