@@ -170,6 +170,6 @@ void loop() {
   }
   delay(100);
   if (state != ZERO_POSITION) {
-    lv_label_set_text_fmt(counter, "Counter: %d" , sample_cnt);
+    lv_label_set_text_fmt(counter, "Counter: %d" , (sample_cnt / 6));
   }
 }
