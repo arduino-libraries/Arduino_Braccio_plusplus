@@ -370,7 +370,7 @@ void BraccioClass::motorConnectedThreadFunc()
           expander_setRed(id);
       }
     }
-    delay(1000);
+    delay(500);
   }
 }
 
