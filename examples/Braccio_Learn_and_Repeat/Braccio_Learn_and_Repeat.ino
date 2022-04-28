@@ -31,9 +31,9 @@ static const char * btnm_map[] = { "RECORD", "\n", "REPLAY", "\n", "ZERO_POSITIO
 
 
 static void eventHandlerMenu(lv_event_t * e) {
+  Braccio.lvgl_lock();
   lv_event_code_t code = lv_event_get_code(e);
   lv_obj_t * obj = lv_event_get_target(e);
-
 
   if (code == LV_EVENT_CLICKED || (code == LV_EVENT_KEY && Braccio.getKey() == BUTTON_ENTER)) {
     uint32_t id = lv_btnmatrix_get_selected_btn(obj);
@@ -93,9 +93,12 @@ static void eventHandlerMenu(lv_event_t * e) {
         break;
     }
   }
+  Braccio.lvgl_unlock();
 }
 
-void mainMenu() {
+void mainMenu()
+{
+  Braccio.lvgl_lock();
   static lv_style_t style_focus;
   lv_style_init(&style_focus);
   lv_style_set_outline_color(&style_focus, lv_color_hex(COLOR_ORANGE));
@@ -127,6 +130,7 @@ void mainMenu() {
   lv_obj_align(counter, LV_ALIGN_CENTER, 0, 80);
 
   lv_obj_add_event_cb(btnm, eventHandlerMenu, LV_EVENT_ALL, NULL);
+  Braccio.lvgl_unlock();
 
   Braccio.connectJoystickTo(btnm);
 }
@@ -149,8 +153,10 @@ void loop() {
     if (sample_cnt >= MAX_SAMPLES) {
       state = ZERO_POSITION;
       Serial.println("ZERO_POSITION");
+      Braccio.lvgl_lock();
       btnm_map[0] = "RECORD"; // reset the label of the first button back to "RECORD"
       lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKABLE);
+      Braccio.lvgl_unlock();
     }
     /* Capture those samples. */
     Braccio.positions(idx);
@@ -164,12 +170,16 @@ void loop() {
     if (idx >= final_idx) {
       Serial.println("REPLAY done");
       state = ZERO_POSITION;
+      Braccio.lvgl_lock();
       btnm_map[2] = "REPLAY"; // reset the label of the first button back to "REPLAY"
       lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
+      Braccio.lvgl_unlock();
     }
   }
   delay(100);
   if (state != ZERO_POSITION) {
+    Braccio.lvgl_lock();
     lv_label_set_text_fmt(counter, "Counter: %d" , (sample_cnt / 6));
+    Braccio.lvgl_unlock();
   }
 }
