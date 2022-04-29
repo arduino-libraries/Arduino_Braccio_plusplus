@@ -80,15 +80,6 @@ void moveJoints(uint32_t btnID) {
 }
 
 // Event Handlers
-static void eventHandlerMenu(lv_event_t * e) {
-  lv_obj_t * obj = lv_event_get_target(e);
-  uint32_t id = lv_btnmatrix_get_selected_btn(obj);
-
-  selectedJoints = jointsPair[id];
-
-  directionScreen();
-  lv_obj_del(btnm);
-}
 
 static void eventHandlerDirectional(lv_event_t * e) {
   lv_event_code_t code = lv_event_get_code(e);
@@ -141,8 +132,6 @@ void mainMenu() {
   lv_btnmatrix_set_one_checked(btnm, true);
   lv_btnmatrix_set_selected_btn(btnm, 0);
 
-  lv_obj_add_event_cb(btnm, eventHandlerMenu, LV_EVENT_PRESSED, NULL);
-
   Braccio.connectJoystickTo(btnm);
 }
 
@@ -175,7 +164,7 @@ void directionScreen(void)
   lv_btnmatrix_set_btn_ctrl(directional, 7, LV_BTNMATRIX_CTRL_CHECKABLE);
   lv_btnmatrix_set_btn_ctrl(directional, 8, LV_BTNMATRIX_CTRL_HIDDEN);
 
-  if (selectedJoints == "Elbow") {
+  if (state == ELBOW) {
     lv_btnmatrix_set_btn_ctrl(directional, 3, LV_BTNMATRIX_CTRL_HIDDEN);
     lv_btnmatrix_set_btn_ctrl(directional, 5, LV_BTNMATRIX_CTRL_HIDDEN);
   }
@@ -185,12 +174,12 @@ void directionScreen(void)
 
   lv_obj_add_event_cb(directional, eventHandlerDirectional, LV_EVENT_ALL, NULL);
 
-  delay(50);
-  Braccio.connectJoystickTo(btnm);
+  // delay(50);
+  Braccio.connectJoystickTo(directional);
 }
 
 void setup() {
-  Braccio.begin(mainMenu);
+  Braccio.begin(directionScreen);
   delay(500); // Waits for the Braccio initialization
 
   Braccio.speed(SLOW);
