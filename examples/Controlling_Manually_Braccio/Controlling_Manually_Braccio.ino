@@ -8,7 +8,7 @@
 #define COLOR_YELLOW     0xE5AD24
 
 // Variables
-float homePos[6] = {157.5, 157.5, 157.5, 157.5, 157.5, 90.0};
+float homePos[6] = {157.5, 157.5, 157.5, 157.5, 157.5, 190.0};
 float angles[6]; // All motors current angles
 
 // Braccio ++ joints
@@ -25,7 +25,8 @@ String selectedJoints = "Shoulder";
 enum states {
   SHOULDER,
   ELBOW,
-  WRIST
+  WRIST,
+  PINCH
 };
 
 int state = SHOULDER;
@@ -73,6 +74,12 @@ void moveJoints(uint32_t btnID) {
         default: break;
       }
       break;
+    case PINCH:
+      switch (btnID) {
+        case 1: gripper.move().to(angles[0] + 10.0); break;
+        case 2: gripper.move().to(angles[0] - 10.0); break;      
+        default: break;
+      }
     default:
       break;
 
@@ -95,7 +102,7 @@ static void eventHandlerDirectional(lv_event_t * e) {
       //mainMenu(); // Load motor menu screen
       //lv_obj_del(directional); // Delete the object
       state++;
-      if (state > WRIST) {
+      if (state > PINCH) {
         state = SHOULDER; // restart from the shoulder
       }
     }
