@@ -9,7 +9,7 @@
 
 // Variables
 String selectedJoints;
-float homePos[6] = {160.0, 150.0, 220.0, 220.0, 100.0, 180.0};
+float homePos[6] = {157.5, 157.5, 157.5, 157.5, 157.5, 90.0};
 float angles[6]; // All motors current angles
 
 // Braccio ++ joints
