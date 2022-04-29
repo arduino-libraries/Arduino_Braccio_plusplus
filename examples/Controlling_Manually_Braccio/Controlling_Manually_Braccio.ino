@@ -174,7 +174,7 @@ void directionScreen(void)
 
   lv_obj_add_event_cb(directional, eventHandlerDirectional, LV_EVENT_ALL, NULL);
 
-  // delay(50);
+  delay(50);
   Braccio.connectJoystickTo(directional);
 }
 
