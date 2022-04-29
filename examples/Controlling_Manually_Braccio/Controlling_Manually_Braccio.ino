@@ -8,7 +8,6 @@
 #define COLOR_YELLOW     0xE5AD24
 
 // Variables
-String selectedJoints;
 float homePos[6] = {157.5, 157.5, 157.5, 157.5, 157.5, 90.0};
 float angles[6]; // All motors current angles
 
@@ -21,6 +20,16 @@ auto shoulder   = Braccio.get(5);
 auto base       = Braccio.get(6);
 
 String jointsPair[] = {"Shoulder", "Elbow", "Wrist"};
+String selectedJoints = "Shoulder";
+
+enum states {
+  SHOULDER,
+  ELBOW,
+  WRIST
+};
+
+int state = SHOULDER;
+
 
 static const char * btnm_map[] = {"Shoulder", "\n",
                                   "Elbow", "\n",
@@ -38,32 +47,35 @@ lv_obj_t * directional; // Direction button matrix
 
 // Function
 void moveJoints(uint32_t btnID) {
-  if (selectedJoints == "Shoulder") {
-    switch (btnID) {
-      case 4: shoulder.move().to(angles[4] - 10.0); break;
-      case 1: base.move().to(angles[5] - 10.0);    break;
-      case 2: base.move().to(angles[5] + 10.0);    break;
-      case 5: shoulder.move().to(angles[4] + 10.0); break;
-      default: break;
-    }
-  }
+  switch (state) {
+    case SHOULDER:
+      switch (btnID) {
+        case 4: shoulder.move().to(angles[4] - 10.0); break;
+        case 1: base.move().to(angles[5] - 10.0);    break;
+        case 2: base.move().to(angles[5] + 10.0);    break;
+        case 5: shoulder.move().to(angles[4] + 10.0); break;
+        default: break;
+      }
+      break;
+    case ELBOW:
+      switch (btnID) {
+        case 4: elbow.move().to(angles[3] - 10.0); break;
+        case 5: elbow.move().to(angles[3] + 10.0); break;
+        default: break;
+      }
+      break;
+    case WRIST:
+      switch (btnID) {
+        case 4: wristPitch.move().to(angles[2] - 10.0); break;
+        case 1: wristRoll.move().to(angles[1] - 10.0);  break;
+        case 2: wristRoll.move().to(angles[1] + 10.0);  break;
+        case 5: wristPitch.move().to(angles[2] + 10.0); break;
+        default: break;
+      }
+      break;
+    default:
+      break;
 
-  if (selectedJoints == "Elbow") {
-    switch (btnID) {
-      case 4: elbow.move().to(angles[3] - 10.0); break;
-      case 5: elbow.move().to(angles[3] + 10.0); break;
-      default: break;
-    }
-  }
-
-  if (selectedJoints == "Wrist") {
-    switch (btnID) {
-      case 4: wristPitch.move().to(angles[2] - 10.0); break;
-      case 1: wristRoll.move().to(angles[1] - 10.0);  break;
-      case 2: wristRoll.move().to(angles[1] + 10.0);  break;
-      case 5: wristPitch.move().to(angles[2] + 10.0); break;
-      default: break;
-    }
   }
 }
 
@@ -89,8 +101,12 @@ static void eventHandlerDirectional(lv_event_t * e) {
   moveJoints(pressed_key);
 
     if (pressed_key == BUTTON_ENTER) {
-      mainMenu(); // Load motor menu screen
-      lv_obj_del(directional); // Delete the object
+      //mainMenu(); // Load motor menu screen
+      //lv_obj_del(directional); // Delete the object
+      state++;
+      if (state > WRIST) {
+        state = SHOULDER; // restart from the shoulder
+      }
     }
   }
 }
@@ -184,5 +200,4 @@ void setup() {
 }
 
 void loop() {
-
 }
