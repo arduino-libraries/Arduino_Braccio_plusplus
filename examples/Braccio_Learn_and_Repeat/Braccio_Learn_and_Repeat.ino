@@ -5,6 +5,9 @@
 #define COLOR_LIGHT_TEAL 0x62AEB2
 #define COLOR_ORANGE     0xE47128
 
+// ENTER button
+#define BUTTON_ENTER     6
+
 enum states {
   RECORD,
   REPLAY,
@@ -28,12 +31,8 @@ static void eventHandlerMenu(lv_event_t * e) {
   lv_event_code_t code = lv_event_get_code(e);
   lv_obj_t * obj = lv_event_get_target(e);
 
-  if (code == LV_EVENT_KEY && lv_indev_get_key(lv_indev_get_act()) == LV_KEY_HOME) {
-    state = ZERO_POSITION;
-    return;
-  }
 
-  if (code == LV_EVENT_CLICKED) {
+  if (code == LV_EVENT_CLICKED || (code == LV_EVENT_KEY && Braccio.getKey() == BUTTON_ENTER)) {
     uint32_t id = lv_btnmatrix_get_selected_btn(obj);
     const char * txt = lv_btnmatrix_get_btn_text(obj, id);
 
