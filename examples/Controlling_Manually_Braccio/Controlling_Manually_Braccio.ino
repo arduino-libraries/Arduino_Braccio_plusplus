@@ -40,28 +40,28 @@ lv_obj_t * directional; // Direction button matrix
 void moveJoints(uint32_t btnID) {
   if (selectedJoints == "Shoulder") {
     switch (btnID) {
-      case 1: shoulder.move().to(angles[4] - 10.0); break;
-      case 3: base.move().to(angles[5] - 10.0);    break;
-      case 5: base.move().to(angles[5] + 10.0);    break;
-      case 7: shoulder.move().to(angles[4] + 10.0); break;
+      case 4: shoulder.move().to(angles[4] - 10.0); break;
+      case 1: base.move().to(angles[5] - 10.0);    break;
+      case 2: base.move().to(angles[5] + 10.0);    break;
+      case 5: shoulder.move().to(angles[4] + 10.0); break;
       default: break;
     }
   }
 
   if (selectedJoints == "Elbow") {
     switch (btnID) {
-      case 1: elbow.move().to(angles[3] - 10.0); break;
-      case 7: elbow.move().to(angles[3] + 10.0); break;
+      case 4: elbow.move().to(angles[3] - 10.0); break;
+      case 5: elbow.move().to(angles[3] + 10.0); break;
       default: break;
     }
   }
 
   if (selectedJoints == "Wrist") {
     switch (btnID) {
-      case 1: wristPitch.move().to(angles[2] - 10.0); break;
-      case 3: wristRoll.move().to(angles[1] - 10.0);  break;
-      case 5: wristRoll.move().to(angles[1] + 10.0);  break;
-      case 7: wristPitch.move().to(angles[2] + 10.0); break;
+      case 4: wristPitch.move().to(angles[2] - 10.0); break;
+      case 1: wristRoll.move().to(angles[1] - 10.0);  break;
+      case 2: wristRoll.move().to(angles[1] + 10.0);  break;
+      case 5: wristPitch.move().to(angles[2] + 10.0); break;
       default: break;
     }
   }
@@ -83,18 +83,15 @@ static void eventHandlerDirectional(lv_event_t * e) {
   lv_obj_t * obj = lv_event_get_target(e);
 
   if (code == LV_EVENT_KEY) {
-    uint32_t pressed_key = Braccio.getKey();
+  uint32_t pressed_key = Braccio.getKey();
+  Braccio.positions(angles);
+  delay(5);
+  moveJoints(pressed_key);
 
     if (pressed_key == BUTTON_ENTER) {
       mainMenu(); // Load motor menu screen
       lv_obj_del(directional); // Delete the object
     }
-  }
-  if (code == LV_EVENT_PRESSING) {
-    uint32_t id = lv_btnmatrix_get_selected_btn(obj);
-    Braccio.positions(angles);
-    delay(5);
-    moveJoints(id);
   }
 }
 
