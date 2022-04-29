@@ -196,4 +196,18 @@ void setup() {
 }
 
 void loop() {
+  if (state == ELBOW) {
+    lv_btnmatrix_set_btn_ctrl(directional, 3, LV_BTNMATRIX_CTRL_HIDDEN);
+    lv_btnmatrix_set_btn_ctrl(directional, 5, LV_BTNMATRIX_CTRL_HIDDEN);
+  }
+  else if (state == PINCH) {
+    lv_btnmatrix_set_btn_ctrl(directional, 1, LV_BTNMATRIX_CTRL_HIDDEN);
+    lv_btnmatrix_set_btn_ctrl(directional, 7, LV_BTNMATRIX_CTRL_HIDDEN);
+  }
+  else {
+    lv_btnmatrix_clear_btn_ctrl(directional, 1, LV_BTNMATRIX_CTRL_HIDDEN);
+    lv_btnmatrix_clear_btn_ctrl(directional, 3, LV_BTNMATRIX_CTRL_HIDDEN);
+    lv_btnmatrix_clear_btn_ctrl(directional, 5, LV_BTNMATRIX_CTRL_HIDDEN);
+    lv_btnmatrix_clear_btn_ctrl(directional, 7, LV_BTNMATRIX_CTRL_HIDDEN);
+  }
 }
