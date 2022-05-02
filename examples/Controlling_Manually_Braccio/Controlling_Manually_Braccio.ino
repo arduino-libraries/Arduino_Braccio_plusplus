@@ -32,19 +32,12 @@ enum states {
 int state = SHOULDER;
 
 
-static const char * btnm_map[] = {"Shoulder", "\n",
-                                  "Elbow", "\n",
-                                  "Wrist", "\0"
-                                 };
-
 static const char * directional_map[] = {" ", LV_SYMBOL_UP, " ", "\n",
                                          LV_SYMBOL_LEFT, " ", LV_SYMBOL_RIGHT, "\n",
                                          " ", LV_SYMBOL_DOWN, " ", "\0"
                                         };
 
-lv_obj_t * btnm; // Joints button matrix
 lv_obj_t * directional; // Direction button matrix
-
 
 // Function
 void moveJoints(uint32_t btnID) {
@@ -110,37 +103,6 @@ static void eventHandlerDirectional(lv_event_t * e) {
 }
 
 // Screens functions
-void mainMenu() {
-  static lv_style_t style_bg;
-  lv_style_init(&style_bg);
-  lv_style_set_bg_color(&style_bg, lv_color_white());
-
-  static lv_style_t style_btn;
-  lv_style_init(&style_btn);
-  lv_style_set_bg_color(&style_btn, lv_color_hex(COLOR_YELLOW));
-  lv_style_set_border_color(&style_btn, lv_color_hex(COLOR_LIGHT_TEAL));
-  lv_style_set_border_width(&style_btn, 2);
-  lv_style_set_text_color(&style_btn, lv_color_hex(COLOR_TEAL));
-  lv_style_set_text_letter_space(&style_btn, 8);
-
-  btnm = lv_btnmatrix_create(lv_scr_act());
-  lv_obj_set_size(btnm, 240, 240);
-  lv_btnmatrix_set_map(btnm, btnm_map);
-  lv_obj_align(btnm, LV_ALIGN_CENTER, 0, 0);
-
-  lv_obj_add_style(btnm, &style_bg, 0);
-  lv_obj_add_style(btnm, &style_btn, LV_PART_ITEMS);
-
-  lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKABLE);
-  lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_CHECKABLE);
-  lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKABLE);
-  lv_btnmatrix_set_btn_ctrl(btnm, 3, LV_BTNMATRIX_CTRL_CHECKABLE);
-
-  lv_btnmatrix_set_one_checked(btnm, true);
-  lv_btnmatrix_set_selected_btn(btnm, 0);
-
-  Braccio.connectJoystickTo(btnm);
-}
 
 void directionScreen(void)
 {
