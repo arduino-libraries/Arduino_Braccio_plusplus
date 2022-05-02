@@ -183,21 +183,7 @@ void loop()
 
     if (state == State::REPLAY)
     {
-      Braccio.moveTo(values[replay_cnt + 0], values[replay_cnt + 1], values[replay_cnt + 2], values[replay_cnt + 3], values[replay_cnt + 4], values[replay_cnt + 5]);
-      replay_cnt += 6;
-
-      if (replay_cnt >= sample_cnt)
-      {
-        state = State::ZERO_POSITION;
-        Braccio.lvgl_lock();
-        btnm_map[2] = "REPLAY"; // reset the label of the first button back to "REPLAY"
-        lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
-        Braccio.lvgl_unlock();
-      }
-
-      Braccio.lvgl_lock();
-      lv_label_set_text_fmt(counter, "Counter: %d" , (replay_cnt / 6));
-      Braccio.lvgl_unlock();
+      state = handle_REPLAY();
     }
 
     if (state == State::ZERO_POSITION)
@@ -220,23 +206,43 @@ State handle_RECORD()
     replay_cnt = 0;
 
     Braccio.lvgl_lock();
-    btnm_map[0] = "RECORD"; // reset the label of the first button back to "RECORD"
+    btnm_map[0] = "RECORD";
     lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKABLE);
     Braccio.lvgl_unlock();
 
     return State::ZERO_POSITION;
   }
-  else
-  {
-    /* Capture those samples. */
-    Braccio.positions(values + sample_cnt);
-    sample_cnt += 6;
 
-    /* Update sample counter. */
+  /* Capture those samples. */
+  Braccio.positions(values + sample_cnt);
+  sample_cnt += 6;
+
+  /* Update sample counter. */
+  Braccio.lvgl_lock();
+  lv_label_set_text_fmt(counter, "Counter: %d" , (sample_cnt / 6));
+  Braccio.lvgl_unlock();
+
+  return State::RECORD;
+}
+
+State handle_REPLAY()
+{
+  if (replay_cnt >= sample_cnt)
+  {
     Braccio.lvgl_lock();
-    lv_label_set_text_fmt(counter, "Counter: %d" , (sample_cnt / 6));
+    btnm_map[2] = "REPLAY";
+    lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
     Braccio.lvgl_unlock();
 
-    return State::RECORD;
+    return State::ZERO_POSITION;
   }
+
+  Braccio.moveTo(values[replay_cnt + 0], values[replay_cnt + 1], values[replay_cnt + 2], values[replay_cnt + 3], values[replay_cnt + 4], values[replay_cnt + 5]);
+  replay_cnt += 6;
+
+  Braccio.lvgl_lock();
+  lv_label_set_text_fmt(counter, "Counter: %d" , (replay_cnt / 6));
+  Braccio.lvgl_unlock();
+
+  return State::REPLAY;
 }
