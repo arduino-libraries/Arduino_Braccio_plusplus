@@ -148,47 +148,53 @@ void setup() {
 
 void loop()
 {
-  if (state == RECORD)
+  /* Every 100 ms, which is the system sample rate, do ... */
+  static auto prev = millis();
+  auto const now = millis();
+  if ((now - prev) >= 100)
   {
-    /* Check if we still have space for samples. */
-    if (sample_cnt >= MAX_SAMPLES) {
-      state = ZERO_POSITION;
-      Serial.println("ZERO_POSITION");
-      Braccio.lvgl_lock();
-      btnm_map[0] = "RECORD"; // reset the label of the first button back to "RECORD"
-      lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKABLE);
-      Braccio.lvgl_unlock();
-    }
-    else
+    prev = now;
+
+    if (state == RECORD)
     {
-      /* Capture those samples. */
-      Braccio.positions(idx);
+      /* Check if we still have space for samples. */
+      if (sample_cnt >= MAX_SAMPLES) {
+        state = ZERO_POSITION;
+        Serial.println("ZERO_POSITION");
+        Braccio.lvgl_lock();
+        btnm_map[0] = "RECORD"; // reset the label of the first button back to "RECORD"
+        lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKABLE);
+        Braccio.lvgl_unlock();
+      }
+      else
+      {
+        /* Capture those samples. */
+        Braccio.positions(idx);
+        idx += 6;
+        sample_cnt += 6;
+      }
+    }
+
+    if (state == REPLAY)
+    {
+      Braccio.moveTo(idx[0], idx[1], idx[2], idx[3], idx[4], idx[5]);
       idx += 6;
       sample_cnt += 6;
+      if (idx >= final_idx) {
+        Serial.println("REPLAY done");
+        state = ZERO_POSITION;
+        Braccio.lvgl_lock();
+        btnm_map[2] = "REPLAY"; // reset the label of the first button back to "REPLAY"
+        lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
+        Braccio.lvgl_unlock();
+      }
     }
-  }
 
-  if (state == REPLAY)
-  {
-    Braccio.moveTo(idx[0], idx[1], idx[2], idx[3], idx[4], idx[5]);
-    idx += 6;
-    sample_cnt += 6;
-    if (idx >= final_idx) {
-      Serial.println("REPLAY done");
-      state = ZERO_POSITION;
+    if (state != ZERO_POSITION)
+    {
       Braccio.lvgl_lock();
-      btnm_map[2] = "REPLAY"; // reset the label of the first button back to "REPLAY"
-      lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
+      lv_label_set_text_fmt(counter, "Counter: %d" , (sample_cnt / 6));
       Braccio.lvgl_unlock();
     }
-  }
-
-  delay(100);
-
-  if (state != ZERO_POSITION)
-  {
-    Braccio.lvgl_lock();
-    lv_label_set_text_fmt(counter, "Counter: %d" , (sample_cnt / 6));
-    Braccio.lvgl_unlock();
   }
 }
