@@ -19,9 +19,8 @@ int state = ZERO_POSITION;
 static int const MAX_SAMPLES = 6*100*2; /* 20 seconds. */
 
 float values[MAX_SAMPLES];
-float* idx = values;
-float* final_idx = 0;
 int sample_cnt = 0;
+int replay_cnt = 0;
 float homePos[6] = {157.5, 157.5, 157.5, 157.5, 157.5, 90.0};
 
 static lv_obj_t * counter;
@@ -30,33 +29,32 @@ static lv_obj_t * btnm;
 static const char * btnm_map[] = { "RECORD", "\n", "REPLAY", "\n", "ZERO_POSITION", "\n", "\0" };
 
 
-static void eventHandlerMenu(lv_event_t * e) {
+static void eventHandlerMenu(lv_event_t * e)
+{
   Braccio.lvgl_lock();
   lv_event_code_t code = lv_event_get_code(e);
   lv_obj_t * obj = lv_event_get_target(e);
 
-  if (code == LV_EVENT_CLICKED || (code == LV_EVENT_KEY && Braccio.getKey() == BUTTON_ENTER)) {
+  if (code == LV_EVENT_CLICKED || (code == LV_EVENT_KEY && Braccio.getKey() == BUTTON_ENTER))
+  {
     uint32_t id = lv_btnmatrix_get_selected_btn(obj);
     const char * txt = lv_btnmatrix_get_btn_text(obj, id);
 
-    if (state == RECORD) {
-      final_idx = idx;
-    }
-
-    idx = values;
-    sample_cnt = 0;
-
-    switch (id) {
+    switch (id)
+    {
       case 0: // if the button pressed is the first one
-        if (txt == "RECORD") {
+        if (txt == "RECORD")
+        {
           state = RECORD;
+          sample_cnt = 0;
           Braccio.disengage(); // allow the user to freely move the braccio
           lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKED);
           Serial.println("RECORD");
           lv_btnmatrix_clear_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED); // remove disabled state of the replay button
           btnm_map[0] = "STOP"; // change the label of the first button to "STOP"
         }
-        else if (txt == "STOP") {
+        else if (txt == "STOP")
+        {
           state = ZERO_POSITION;
           Braccio.engage(); // enable the steppers so that the braccio stands still
           lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
@@ -65,14 +63,16 @@ static void eventHandlerMenu(lv_event_t * e) {
         break;
       case 1:
         btnm_map[0] = "RECORD"; // reset the label of the first button back to "RECORD"
-        if (txt == "REPLAY"){
-        state = REPLAY;
-        btnm_map[2] = "STOP"; // change the label of the second button to "STOP"
-        Braccio.engage();
-        lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_CHECKED);
-        Serial.println("REPLAY");
+        if (txt == "REPLAY")
+        {
+          state = REPLAY;
+          replay_cnt = 0;
+          btnm_map[2] = "STOP"; // change the label of the second button to "STOP"
+          Braccio.engage();
+          lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_CHECKED);
         }
-        else if (txt=="STOP"){
+        else if (txt=="STOP")
+        {
           state = ZERO_POSITION;
           Braccio.engage(); // enable the steppers so that the braccio stands still
           lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
@@ -89,7 +89,6 @@ static void eventHandlerMenu(lv_event_t * e) {
         delay(500);
         Braccio.moveTo(homePos[0], homePos[1], homePos[2], homePos[3], homePos[4], homePos[5]);
         lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
-        Serial.println("ZERO_POSITION");
         break;
     }
   }
@@ -158,9 +157,10 @@ void loop()
     if (state == RECORD)
     {
       /* Check if we still have space for samples. */
-      if (sample_cnt >= MAX_SAMPLES) {
+      if (sample_cnt >= MAX_SAMPLES)
+      {
         state = ZERO_POSITION;
-        Serial.println("ZERO_POSITION");
+        replay_cnt = 0;
         Braccio.lvgl_lock();
         btnm_map[0] = "RECORD"; // reset the label of the first button back to "RECORD"
         lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKABLE);
@@ -169,32 +169,38 @@ void loop()
       else
       {
         /* Capture those samples. */
-        Braccio.positions(idx);
-        idx += 6;
+        Braccio.positions(values + sample_cnt);
         sample_cnt += 6;
       }
+
+      Braccio.lvgl_lock();
+      lv_label_set_text_fmt(counter, "Counter: %d" , (sample_cnt / 6));
+      Braccio.lvgl_unlock();
     }
 
     if (state == REPLAY)
     {
-      Braccio.moveTo(idx[0], idx[1], idx[2], idx[3], idx[4], idx[5]);
-      idx += 6;
-      sample_cnt += 6;
-      if (idx >= final_idx) {
-        Serial.println("REPLAY done");
+      Braccio.moveTo(values[replay_cnt + 0], values[replay_cnt + 1], values[replay_cnt + 2], values[replay_cnt + 3], values[replay_cnt + 4], values[replay_cnt + 5]);
+      replay_cnt += 6;
+
+      if (replay_cnt >= sample_cnt)
+      {
         state = ZERO_POSITION;
         Braccio.lvgl_lock();
         btnm_map[2] = "REPLAY"; // reset the label of the first button back to "REPLAY"
         lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
         Braccio.lvgl_unlock();
       }
+
+      Braccio.lvgl_lock();
+      lv_label_set_text_fmt(counter, "Counter: %d" , (replay_cnt / 6));
+      Braccio.lvgl_unlock();
     }
 
-    if (state != ZERO_POSITION)
+    if (state == ZERO_POSITION)
     {
-      Braccio.lvgl_lock();
-      lv_label_set_text_fmt(counter, "Counter: %d" , (sample_cnt / 6));
-      Braccio.lvgl_unlock();
+      Braccio.engage();
+      Braccio.moveTo(homePos[0], homePos[1], homePos[2], homePos[3], homePos[4], homePos[5]);
     }
   }
 }
