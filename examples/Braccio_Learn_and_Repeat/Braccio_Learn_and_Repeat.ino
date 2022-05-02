@@ -175,20 +175,11 @@ void loop()
   if ((now - prev) >= 100)
   {
     prev = now;
-
-    if (state == State::RECORD)
+    switch (state)
     {
-      state = handle_RECORD();
-    }
-
-    if (state == State::REPLAY)
-    {
-      state = handle_REPLAY();
-    }
-
-    if (state == State::ZERO_POSITION)
-    {
-      state = handle_ZERO_POSITION();
+      case State::RECORD:        state = handle_RECORD(); break;
+      case State::REPLAY:        state = handle_REPLAY(); break;
+      case State::ZERO_POSITION: state = handle_ZERO_POSITION(); break;
     }
   }
 }
