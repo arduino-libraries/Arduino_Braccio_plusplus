@@ -188,8 +188,7 @@ void loop()
 
     if (state == State::ZERO_POSITION)
     {
-      Braccio.engage();
-      Braccio.moveTo(homePos[0], homePos[1], homePos[2], homePos[3], homePos[4], homePos[5]);
+      state = handle_ZERO_POSITION();
     }
   }
 }
@@ -208,7 +207,11 @@ State handle_RECORD()
     Braccio.lvgl_lock();
     btnm_map[0] = "RECORD";
     lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKABLE);
+    lv_label_set_text_fmt(counter, "Counter: %d" , 0);
     Braccio.lvgl_unlock();
+
+    Braccio.engage();
+    Braccio.moveTo(homePos[0], homePos[1], homePos[2], homePos[3], homePos[4], homePos[5]);
 
     return State::ZERO_POSITION;
   }
@@ -232,7 +235,10 @@ State handle_REPLAY()
     Braccio.lvgl_lock();
     btnm_map[2] = "REPLAY";
     lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
+    lv_label_set_text_fmt(counter, "Counter: %d" , 0);
     Braccio.lvgl_unlock();
+
+    Braccio.moveTo(homePos[0], homePos[1], homePos[2], homePos[3], homePos[4], homePos[5]);
 
     return State::ZERO_POSITION;
   }
@@ -245,4 +251,9 @@ State handle_REPLAY()
   Braccio.lvgl_unlock();
 
   return State::REPLAY;
+}
+
+State handle_ZERO_POSITION()
+{
+  return State::ZERO_POSITION;
 }
