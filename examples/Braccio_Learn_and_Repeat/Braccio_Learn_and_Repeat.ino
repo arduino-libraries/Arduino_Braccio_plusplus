@@ -8,13 +8,14 @@
 // ENTER button
 #define BUTTON_ENTER     6
 
-enum states {
+enum class State
+{
   RECORD,
   REPLAY,
   ZERO_POSITION
 };
 
-int state = ZERO_POSITION;
+State state = State::ZERO_POSITION;
 
 static int const MAX_SAMPLES = 6*100*2; /* 20 seconds. */
 
@@ -45,7 +46,7 @@ static void eventHandlerMenu(lv_event_t * e)
       case 0: // if the button pressed is the first one
         if (txt == "RECORD")
         {
-          state = RECORD;
+          state = State::RECORD;
           sample_cnt = 0;
           Braccio.disengage(); // allow the user to freely move the braccio
           lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKED);
@@ -55,7 +56,7 @@ static void eventHandlerMenu(lv_event_t * e)
         }
         else if (txt == "STOP")
         {
-          state = ZERO_POSITION;
+          state = State::ZERO_POSITION;
           Braccio.engage(); // enable the steppers so that the braccio stands still
           lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
           btnm_map[0] = "RECORD"; // reset the label of the first button back to "RECORD"
@@ -65,7 +66,7 @@ static void eventHandlerMenu(lv_event_t * e)
         btnm_map[0] = "RECORD"; // reset the label of the first button back to "RECORD"
         if (txt == "REPLAY")
         {
-          state = REPLAY;
+          state = State::REPLAY;
           replay_cnt = 0;
           btnm_map[2] = "STOP"; // change the label of the second button to "STOP"
           Braccio.engage();
@@ -73,7 +74,7 @@ static void eventHandlerMenu(lv_event_t * e)
         }
         else if (txt=="STOP")
         {
-          state = ZERO_POSITION;
+          state = State::ZERO_POSITION;
           Braccio.engage(); // enable the steppers so that the braccio stands still
           lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
           btnm_map[2] = "REPLAY"; // reset the label of the first button back to "REPLAY"
@@ -82,7 +83,7 @@ static void eventHandlerMenu(lv_event_t * e)
         break;
       
       default:
-        state = ZERO_POSITION;
+        state = State::ZERO_POSITION;
         btnm_map[0] = "RECORD"; // reset the label of the first button back to "RECORD"
         btnm_map[2] = "REPLAY"; // reset the label of the first button back to "REPLAY"
         Braccio.engage();
@@ -154,12 +155,12 @@ void loop()
   {
     prev = now;
 
-    if (state == RECORD)
+    if (state == State::RECORD)
     {
       /* Check if we still have space for samples. */
       if (sample_cnt >= MAX_SAMPLES)
       {
-        state = ZERO_POSITION;
+        state = State::ZERO_POSITION;
         replay_cnt = 0;
         Braccio.lvgl_lock();
         btnm_map[0] = "RECORD"; // reset the label of the first button back to "RECORD"
@@ -178,14 +179,14 @@ void loop()
       Braccio.lvgl_unlock();
     }
 
-    if (state == REPLAY)
+    if (state == State::REPLAY)
     {
       Braccio.moveTo(values[replay_cnt + 0], values[replay_cnt + 1], values[replay_cnt + 2], values[replay_cnt + 3], values[replay_cnt + 4], values[replay_cnt + 5]);
       replay_cnt += 6;
 
       if (replay_cnt >= sample_cnt)
       {
-        state = ZERO_POSITION;
+        state = State::ZERO_POSITION;
         Braccio.lvgl_lock();
         btnm_map[2] = "REPLAY"; // reset the label of the first button back to "REPLAY"
         lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
@@ -197,7 +198,7 @@ void loop()
       Braccio.lvgl_unlock();
     }
 
-    if (state == ZERO_POSITION)
+    if (state == State::ZERO_POSITION)
     {
       Braccio.engage();
       Braccio.moveTo(homePos[0], homePos[1], homePos[2], homePos[3], homePos[4], homePos[5]);
