@@ -146,9 +146,10 @@ void setup() {
   Serial.println("Replicate a movement");
 }
 
-void loop() {
-  if (state == RECORD) {
-
+void loop()
+{
+  if (state == RECORD)
+  {
     /* Check if we still have space for samples. */
     if (sample_cnt >= MAX_SAMPLES) {
       state = ZERO_POSITION;
@@ -158,12 +159,17 @@ void loop() {
       lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKABLE);
       Braccio.lvgl_unlock();
     }
-    /* Capture those samples. */
-    Braccio.positions(idx);
-    idx += 6;
-    sample_cnt += 6;
+    else
+    {
+      /* Capture those samples. */
+      Braccio.positions(idx);
+      idx += 6;
+      sample_cnt += 6;
+    }
   }
-  if (state == REPLAY) {
+
+  if (state == REPLAY)
+  {
     Braccio.moveTo(idx[0], idx[1], idx[2], idx[3], idx[4], idx[5]);
     idx += 6;
     sample_cnt += 6;
@@ -176,8 +182,11 @@ void loop() {
       Braccio.lvgl_unlock();
     }
   }
+
   delay(100);
-  if (state != ZERO_POSITION) {
+
+  if (state != ZERO_POSITION)
+  {
     Braccio.lvgl_lock();
     lv_label_set_text_fmt(counter, "Counter: %d" , (sample_cnt / 6));
     Braccio.lvgl_unlock();
