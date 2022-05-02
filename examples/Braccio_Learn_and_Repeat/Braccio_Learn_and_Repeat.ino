@@ -16,7 +16,7 @@ enum states {
 
 int state = ZERO_POSITION;
 
-static int const MAX_SAMPLES = 6*1000*2; /* 20 seconds. */
+static int const MAX_SAMPLES = 6*100*2; /* 20 seconds. */
 
 float values[MAX_SAMPLES];
 float* idx = values;
