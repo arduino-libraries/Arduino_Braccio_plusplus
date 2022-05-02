@@ -178,26 +178,7 @@ void loop()
 
     if (state == State::RECORD)
     {
-      /* Check if we still have space for samples. */
-      if (sample_cnt >= MAX_SAMPLES)
-      {
-        state = State::ZERO_POSITION;
-        replay_cnt = 0;
-        Braccio.lvgl_lock();
-        btnm_map[0] = "RECORD"; // reset the label of the first button back to "RECORD"
-        lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKABLE);
-        Braccio.lvgl_unlock();
-      }
-      else
-      {
-        /* Capture those samples. */
-        Braccio.positions(values + sample_cnt);
-        sample_cnt += 6;
-      }
-
-      Braccio.lvgl_lock();
-      lv_label_set_text_fmt(counter, "Counter: %d" , (sample_cnt / 6));
-      Braccio.lvgl_unlock();
+      state = handle_RECORD();
     }
 
     if (state == State::REPLAY)
@@ -224,5 +205,38 @@ void loop()
       Braccio.engage();
       Braccio.moveTo(homePos[0], homePos[1], homePos[2], homePos[3], homePos[4], homePos[5]);
     }
+  }
+}
+
+/**************************************************************************************
+ * FUNCTION DEFINITIONS
+ **************************************************************************************/
+
+State handle_RECORD()
+{
+  /* Check if we still have space for samples. */
+  if (sample_cnt >= MAX_SAMPLES)
+  {
+    replay_cnt = 0;
+
+    Braccio.lvgl_lock();
+    btnm_map[0] = "RECORD"; // reset the label of the first button back to "RECORD"
+    lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKABLE);
+    Braccio.lvgl_unlock();
+
+    return State::ZERO_POSITION;
+  }
+  else
+  {
+    /* Capture those samples. */
+    Braccio.positions(values + sample_cnt);
+    sample_cnt += 6;
+
+    /* Update sample counter. */
+    Braccio.lvgl_lock();
+    lv_label_set_text_fmt(counter, "Counter: %d" , (sample_cnt / 6));
+    Braccio.lvgl_unlock();
+
+    return State::RECORD;
   }
 }
