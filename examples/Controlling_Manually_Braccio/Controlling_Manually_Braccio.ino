@@ -101,47 +101,70 @@ void moveJoints(uint32_t btnID) {
 void updateButtons(uint32_t key)
 {
   if (key == UP){
+    Braccio.lvgl_lock();
     lv_btnmatrix_set_selected_btn(direction_btnm, BTN_UP);
     lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_UP, LV_BTNMATRIX_CTRL_CHECKED);
+    Braccio.lvgl_unlock();
   }
   else if (key == DOWN){
+    Braccio.lvgl_lock();
     lv_btnmatrix_set_selected_btn(direction_btnm, BTN_DOWN);
     lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_DOWN, LV_BTNMATRIX_CTRL_CHECKED);
+    Braccio.lvgl_unlock();
   }
   else if (key == LEFT) {
+    Braccio.lvgl_lock();
     lv_btnmatrix_set_selected_btn(direction_btnm, BTN_LEFT);
     lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_LEFT, LV_BTNMATRIX_CTRL_CHECKED);
+    Braccio.lvgl_unlock();
   }
   else if (key == RIGHT){
+    Braccio.lvgl_lock();
     lv_btnmatrix_set_selected_btn(direction_btnm, BTN_RIGHT);
     lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_RIGHT, LV_BTNMATRIX_CTRL_CHECKED);
+    Braccio.lvgl_unlock();
   }
   else {
+    Braccio.lvgl_lock();
     lv_btnmatrix_set_selected_btn(direction_btnm, NULL);
+    Braccio.lvgl_unlock();
   }
 
   if (state == ELBOW){
+    Braccio.lvgl_lock();
     lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_LEFT, LV_BTNMATRIX_CTRL_HIDDEN);
     lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_RIGHT, LV_BTNMATRIX_CTRL_HIDDEN);
+    Braccio.lvgl_unlock();
   }
   else if (state == PINCH){
+    Braccio.lvgl_lock();
     lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_UP, LV_BTNMATRIX_CTRL_HIDDEN);
     lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_DOWN, LV_BTNMATRIX_CTRL_HIDDEN);
+    Braccio.lvgl_unlock();
   }
   else{
+    Braccio.lvgl_lock();
     lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_UP, LV_BTNMATRIX_CTRL_HIDDEN);
     lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_DOWN, LV_BTNMATRIX_CTRL_HIDDEN);
     lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_LEFT, LV_BTNMATRIX_CTRL_HIDDEN);
     lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_RIGHT, LV_BTNMATRIX_CTRL_HIDDEN);
+    Braccio.lvgl_unlock();
   }
+  
+  Braccio.lvgl_lock();
   lv_label_set_text(label, jointsPair[state]);
+  Braccio.lvgl_unlock();
 }
 
 // Event Handlers
 
 static void eventHandlerDirectional(lv_event_t * e) {
+  Braccio.lvgl_lock();
+  
   lv_event_code_t code = lv_event_get_code(e);
   lv_obj_t * obj = lv_event_get_target(e);
+  
+  Braccio.lvgl_unlock();
 
   if (code == LV_EVENT_KEY){
   pressed_key = Braccio.getKey();
@@ -164,6 +187,8 @@ static void eventHandlerDirectional(lv_event_t * e) {
 
 void directionScreen(void)
 {
+  Braccio.lvgl_lock();
+  
   static lv_style_t style_bg;
   lv_style_init(&style_bg);
   lv_style_set_bg_color(&style_bg, lv_color_white());
@@ -201,6 +226,8 @@ void directionScreen(void)
   lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
   lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
   lv_label_set_text(label, jointsPair[state]);
+  
+  Braccio.lvgl_unlock();
 
   delay(50);
   Braccio.connectJoystickTo(direction_btnm);
@@ -221,11 +248,16 @@ void loop()
 {
   pressed_key= Braccio.getKey();
  if (pressed_key == 0) {
-if(pressed_key != last_pressed_key){
-  lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_UP, LV_BTNMATRIX_CTRL_CHECKED);
+  if(pressed_key != last_pressed_key){
+    Braccio.lvgl_lock();
+    
+    lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_UP, LV_BTNMATRIX_CTRL_CHECKED);
     lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_DOWN, LV_BTNMATRIX_CTRL_CHECKED);
     lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_RIGHT, LV_BTNMATRIX_CTRL_CHECKED);
     lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_LEFT, LV_BTNMATRIX_CTRL_CHECKED);
+    
+    Braccio.lvgl_unlock();
+    
     delay(50);  
 
     }
