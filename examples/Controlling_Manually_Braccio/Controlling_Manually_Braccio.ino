@@ -41,6 +41,7 @@ enum KEYS
 };
 
 uint32_t pressed_key;
+uint32_t last_pressed_key;
 
 
 // IDs of the displayed directional UI buttons
@@ -218,5 +219,16 @@ void setup()
 
 void loop()
 {
+  pressed_key= Braccio.getKey();
+ if (pressed_key == 0) {
+if(pressed_key != last_pressed_key){
+  lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_UP, LV_BTNMATRIX_CTRL_CHECKED);
+    lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_DOWN, LV_BTNMATRIX_CTRL_CHECKED);
+    lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_RIGHT, LV_BTNMATRIX_CTRL_CHECKED);
+    lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_LEFT, LV_BTNMATRIX_CTRL_CHECKED);
+    delay(50);  
 
+    }
+  }
+    last_pressed_key=pressed_key;
 }
