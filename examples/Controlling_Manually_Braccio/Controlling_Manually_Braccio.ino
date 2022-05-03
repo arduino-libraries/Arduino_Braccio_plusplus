@@ -1,7 +1,5 @@
 #include <Braccio++.h>
 
-#define BUTTON_ENTER         6
-
 // Colors
 #define COLOR_TEAL       0x00878F
 #define COLOR_LIGHT_TEAL 0x62AEB2
@@ -19,7 +17,7 @@ auto elbow      = Braccio.get(4);
 auto shoulder   = Braccio.get(5);
 auto base       = Braccio.get(6);
 
-String jointsPair[] = {"Shoulder", "Elbow", "Wrist"};
+char * jointsPair[] = {"Shoulder", "Elbow", "Wrist", "Pinch"};
 String selectedJoints = "Shoulder";
 
 enum states {
@@ -31,13 +29,34 @@ enum states {
 
 int state = SHOULDER;
 
+// Values of clicked input keys returned by Braccio.getKey() function (defined inside the library).
+enum KEYS
+{
+  UP = 4,
+  DOWN = 5,
+  LEFT = 1,
+  RIGHT = 2,
+  CLICK = 3, // click of joystick
+  ENTER = 6,
+};
 
-static const char * directional_map[] = {" ", LV_SYMBOL_UP, " ", "\n",
-                                         LV_SYMBOL_LEFT, " ", LV_SYMBOL_RIGHT, "\n",
-                                         " ", LV_SYMBOL_DOWN, " ", "\0"
-                                        };
+uint32_t pressed_key;
 
-lv_obj_t * directional; // Direction button matrix
+
+// IDs of the displayed directional UI buttons
+enum BUTTONS {
+  BTN_UP = 1,
+  BTN_DOWN = 7,
+  BTN_LEFT = 3,
+  BTN_RIGHT = 5,
+};
+
+static const char *direction_btnm_map[] = {" ", LV_SYMBOL_UP, " ", "\n",
+                                        LV_SYMBOL_LEFT, " ", LV_SYMBOL_RIGHT, "\n",
+                                        " ", LV_SYMBOL_DOWN, " ", "\0"};
+
+lv_obj_t * direction_btnm;  // Direction button matrix
+static lv_obj_t * label; // Label
 
 // Function
 void moveJoints(uint32_t btnID) {
@@ -75,8 +94,46 @@ void moveJoints(uint32_t btnID) {
       }
     default:
       break;
-
   }
+}
+
+void updateButtons(uint32_t key)
+{
+  if (key == UP){
+    lv_btnmatrix_set_selected_btn(direction_btnm, BTN_UP);
+    lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_UP, LV_BTNMATRIX_CTRL_CHECKED);
+  }
+  else if (key == DOWN){
+    lv_btnmatrix_set_selected_btn(direction_btnm, BTN_DOWN);
+    lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_DOWN, LV_BTNMATRIX_CTRL_CHECKED);
+  }
+  else if (key == LEFT) {
+    lv_btnmatrix_set_selected_btn(direction_btnm, BTN_LEFT);
+    lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_LEFT, LV_BTNMATRIX_CTRL_CHECKED);
+  }
+  else if (key == RIGHT){
+    lv_btnmatrix_set_selected_btn(direction_btnm, BTN_RIGHT);
+    lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_RIGHT, LV_BTNMATRIX_CTRL_CHECKED);
+  }
+  else {
+    lv_btnmatrix_set_selected_btn(direction_btnm, NULL);
+  }
+
+  if (state == ELBOW){
+    lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_LEFT, LV_BTNMATRIX_CTRL_HIDDEN);
+    lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_RIGHT, LV_BTNMATRIX_CTRL_HIDDEN);
+  }
+  else if (state == PINCH){
+    lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_UP, LV_BTNMATRIX_CTRL_HIDDEN);
+    lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_DOWN, LV_BTNMATRIX_CTRL_HIDDEN);
+  }
+  else{
+    lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_UP, LV_BTNMATRIX_CTRL_HIDDEN);
+    lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_DOWN, LV_BTNMATRIX_CTRL_HIDDEN);
+    lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_LEFT, LV_BTNMATRIX_CTRL_HIDDEN);
+    lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_RIGHT, LV_BTNMATRIX_CTRL_HIDDEN);
+  }
+  lv_label_set_text(label, jointsPair[state]);
 }
 
 // Event Handlers
@@ -85,20 +142,20 @@ static void eventHandlerDirectional(lv_event_t * e) {
   lv_event_code_t code = lv_event_get_code(e);
   lv_obj_t * obj = lv_event_get_target(e);
 
-  if (code == LV_EVENT_KEY) {
-  uint32_t pressed_key = Braccio.getKey();
-  Braccio.positions(angles);
-  delay(5);
-  moveJoints(pressed_key);
+  if (code == LV_EVENT_KEY){
+  pressed_key = Braccio.getKey();
 
-    if (pressed_key == BUTTON_ENTER) {
-      //mainMenu(); // Load motor menu screen
-      //lv_obj_del(directional); // Delete the object
-      state++;
-      if (state > PINCH) {
+    if (pressed_key == ENTER){
+      state++; // Index the next joints in the states enum array
+      
+      if (state > PINCH){
         state = SHOULDER; // restart from the shoulder
       }
     }
+    updateButtons(pressed_key);
+    Braccio.positions(angles);
+    delay(5);
+    moveJoints(pressed_key);
   }
 }
 
@@ -115,39 +172,41 @@ void directionScreen(void)
   lv_style_set_bg_color(&style_btn, lv_color_hex(COLOR_LIGHT_TEAL));
   lv_style_set_text_color(&style_btn, lv_color_white());
 
-  directional = lv_btnmatrix_create(lv_scr_act());
-  lv_obj_set_size(directional, 240, 240);
-  lv_btnmatrix_set_map(directional, directional_map);
-  lv_obj_align(directional, LV_ALIGN_CENTER, 0, 0);
+  direction_btnm = lv_btnmatrix_create(lv_scr_act());
+  lv_obj_set_size(direction_btnm, 240, 240);
+  lv_btnmatrix_set_map(direction_btnm, direction_btnm_map);
+  lv_obj_align(direction_btnm, LV_ALIGN_CENTER, 0, 0);
 
-  lv_obj_add_style(directional, &style_bg, 0);
-  lv_obj_add_style(directional, &style_btn, LV_PART_ITEMS);
+  lv_obj_add_style(direction_btnm, &style_bg, 0);
+  lv_obj_add_style(direction_btnm, &style_btn, LV_PART_ITEMS);
 
-  lv_btnmatrix_set_btn_ctrl(directional, 0, LV_BTNMATRIX_CTRL_HIDDEN);
-  lv_btnmatrix_set_btn_ctrl(directional, 1, LV_BTNMATRIX_CTRL_CHECKABLE);
-  lv_btnmatrix_set_btn_ctrl(directional, 2, LV_BTNMATRIX_CTRL_HIDDEN);
-  lv_btnmatrix_set_btn_ctrl(directional, 3, LV_BTNMATRIX_CTRL_CHECKABLE);
-  lv_btnmatrix_set_btn_ctrl(directional, 4, LV_BTNMATRIX_CTRL_HIDDEN);
-  lv_btnmatrix_set_btn_ctrl(directional, 5, LV_BTNMATRIX_CTRL_CHECKABLE);
-  lv_btnmatrix_set_btn_ctrl(directional, 6, LV_BTNMATRIX_CTRL_HIDDEN);
-  lv_btnmatrix_set_btn_ctrl(directional, 7, LV_BTNMATRIX_CTRL_CHECKABLE);
-  lv_btnmatrix_set_btn_ctrl(directional, 8, LV_BTNMATRIX_CTRL_HIDDEN);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 0, LV_BTNMATRIX_CTRL_HIDDEN);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 1, LV_BTNMATRIX_CTRL_CHECKABLE);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 2, LV_BTNMATRIX_CTRL_HIDDEN);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 3, LV_BTNMATRIX_CTRL_CHECKABLE);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 4, LV_BTNMATRIX_CTRL_HIDDEN);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 5, LV_BTNMATRIX_CTRL_CHECKABLE);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 6, LV_BTNMATRIX_CTRL_HIDDEN);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 7, LV_BTNMATRIX_CTRL_CHECKABLE);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 8, LV_BTNMATRIX_CTRL_HIDDEN);
 
-  if (state == ELBOW) {
-    lv_btnmatrix_set_btn_ctrl(directional, 3, LV_BTNMATRIX_CTRL_HIDDEN);
-    lv_btnmatrix_set_btn_ctrl(directional, 5, LV_BTNMATRIX_CTRL_HIDDEN);
-  }
+  lv_btnmatrix_set_one_checked(direction_btnm, true);
+  lv_btnmatrix_set_selected_btn(direction_btnm, 1);
 
-  lv_btnmatrix_set_one_checked(directional, true);
-  lv_btnmatrix_set_selected_btn(directional, 1);
+  lv_obj_add_event_cb(direction_btnm, eventHandlerDirectional, LV_EVENT_ALL, NULL);
 
-  lv_obj_add_event_cb(directional, eventHandlerDirectional, LV_EVENT_ALL, NULL);
+ label = lv_label_create(lv_scr_act());
+  lv_obj_set_width(label, 240);
+  lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+  lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+  lv_label_set_text(label, jointsPair[state]);
 
   delay(50);
-  Braccio.connectJoystickTo(directional);
+  Braccio.connectJoystickTo(direction_btnm);
 }
 
-void setup() {
+void setup()
+{
   Braccio.begin(directionScreen);
   delay(500); // Waits for the Braccio initialization
 
@@ -157,19 +216,7 @@ void setup() {
   delay(500);
 }
 
-void loop() {
-  if (state == ELBOW) {
-    lv_btnmatrix_set_btn_ctrl(directional, 3, LV_BTNMATRIX_CTRL_HIDDEN);
-    lv_btnmatrix_set_btn_ctrl(directional, 5, LV_BTNMATRIX_CTRL_HIDDEN);
-  }
-  else if (state == PINCH) {
-    lv_btnmatrix_set_btn_ctrl(directional, 1, LV_BTNMATRIX_CTRL_HIDDEN);
-    lv_btnmatrix_set_btn_ctrl(directional, 7, LV_BTNMATRIX_CTRL_HIDDEN);
-  }
-  else {
-    lv_btnmatrix_clear_btn_ctrl(directional, 1, LV_BTNMATRIX_CTRL_HIDDEN);
-    lv_btnmatrix_clear_btn_ctrl(directional, 3, LV_BTNMATRIX_CTRL_HIDDEN);
-    lv_btnmatrix_clear_btn_ctrl(directional, 5, LV_BTNMATRIX_CTRL_HIDDEN);
-    lv_btnmatrix_clear_btn_ctrl(directional, 7, LV_BTNMATRIX_CTRL_HIDDEN);
-  }
+void loop()
+{
+
 }
