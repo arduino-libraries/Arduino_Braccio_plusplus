@@ -146,7 +146,7 @@ static void eventHandlerDirectional(lv_event_t * e) {
   if (code == LV_EVENT_KEY){
   pressed_key = Braccio.getKey();
 
-    if (pressed_key == ENTER){
+    if (pressed_key == ENTER || pressed_key == CLICK){
       state++; // Index the next joints in the states enum array
       
       if (state > PINCH){
