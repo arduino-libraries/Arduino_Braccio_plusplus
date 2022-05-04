@@ -87,6 +87,7 @@ protected:
 class ReplayState : public State
 {
 public:
+           ReplayState() : _replay_cnt{0} { }
   virtual ~ReplayState() { }
   virtual StateName name() override { return StateName::Replay; }
   virtual void onEnter() override;
@@ -120,11 +121,6 @@ public:
   , _mtx{}
   { }
 
-  static IdleState   _idle_state;
-  static RecordState _record_state;
-  static ReplayState _replay_state;
-  static ZeroState   _zero_state;
-
   void enableButtons();
 
   void update(EventSource const evt_src)
@@ -133,7 +129,7 @@ public:
     
     if (!_state)
     {
-      _state = &_zero_state;
+      _state = new ZeroState();
       _state->onEnter();
       return;
     }
@@ -143,6 +139,7 @@ public:
     if (next_state->name() != _state->name())
     {
       _state->onExit();
+      delete _state;
       _state = next_state;
       _state->onEnter();
     }    

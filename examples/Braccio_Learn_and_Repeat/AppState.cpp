@@ -32,11 +32,6 @@ const char * btnm_map[] = { "RECORD", "\n", "REPLAY", "\n", "ZERO_POSITION", "\n
 static float sample_buf[SAMPLE_BUF_SIZE];
 static int   sample_cnt;
 
-IdleState   LearnAndRepeatApp::_idle_state;
-RecordState LearnAndRepeatApp::_record_state;
-ReplayState LearnAndRepeatApp::_replay_state;
-ZeroState   LearnAndRepeatApp::_zero_state;
-
 extern LearnAndRepeatApp app;
 
 /**************************************************************************************
@@ -107,7 +102,7 @@ void custom_main_menu()
 
 State * State::handle_OnZeroPosition()
 {
-  return &LearnAndRepeatApp::_zero_state;
+  return new ZeroState();
 }
 
 /**************************************************************************************
@@ -126,12 +121,12 @@ void IdleState::onExit()
 
 State * IdleState::handle_OnRecord()
 {
-  return &LearnAndRepeatApp::_record_state;
+  return new RecordState();
 }
 
 State * IdleState::handle_OnReplay()
 {
-  return &LearnAndRepeatApp::_replay_state;
+  return new ReplayState();
 }
 
 /**************************************************************************************
@@ -159,14 +154,14 @@ void RecordState::onExit()
 
 State * RecordState::handle_OnRecord()
 { 
-  return &LearnAndRepeatApp::_idle_state;
+  return new IdleState();
 }
 
 State * RecordState::handle_OnTimerTick()
 {
   /* The sample buffer is full. */
   if (sample_cnt >= SAMPLE_BUF_SIZE) {
-    return &LearnAndRepeatApp::_idle_state;
+    return new IdleState();
   }
 
   /* We still have space, let's sample some data. */
@@ -185,8 +180,6 @@ State * RecordState::handle_OnTimerTick()
 
 void ReplayState::onEnter()
 {
-  _replay_cnt = 0;
-
   btnm_map[2] = "STOP";
   lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_CHECKED);
@@ -202,14 +195,14 @@ void ReplayState::onExit()
 
 State * ReplayState::handle_OnReplay()
 {
-  return &LearnAndRepeatApp::_idle_state;
+  return new IdleState();
 }
 
 State * ReplayState::handle_OnTimerTick()
 {
   /* All samples have been replayed. */
   if (_replay_cnt >= sample_cnt) {
-    return &LearnAndRepeatApp::_idle_state;
+    return new IdleState();
   }
 
   /* Replay recorded movements. */
@@ -232,7 +225,7 @@ State * ReplayState::handle_OnTimerTick()
 
 State * ZeroState::handle_OnTimerTick()
 {
-  return &LearnAndRepeatApp::_idle_state;
+  return new IdleState();
 }
 
 void ZeroState::onEnter()
