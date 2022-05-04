@@ -25,11 +25,11 @@ void setup()
 
 void loop()
 {
-  /* Only execute every 100 ms. */
+  /* Only execute every 50 ms. */
   static auto prev = millis();
   auto const now = millis();
 
-  if ((now - prev) > 100)
+  if ((now - prev) > 50)
   {
     prev = now;
     app.update(EventSource::TimerTick);
