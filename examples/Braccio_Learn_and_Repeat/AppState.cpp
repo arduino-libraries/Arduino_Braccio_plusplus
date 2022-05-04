@@ -137,6 +137,7 @@ void RecordState::onEnter()
 {
   btnm_map[0] = "STOP";
   lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKED);
+  lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED);
 
   Braccio.disengage();
   sample_cnt = 0;
