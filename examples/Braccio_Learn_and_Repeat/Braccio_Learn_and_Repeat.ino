@@ -10,7 +10,6 @@
  * GLOBAL VARIABLES
  **************************************************************************************/
 
-extern lv_obj_t * btnm;
 LearnAndRepeatApp app;
 
 /**************************************************************************************
@@ -19,11 +18,9 @@ LearnAndRepeatApp app;
 
 void setup()
 {
-  Braccio.begin(custom_main_menu);
-
-  /* Enable buttons once init is complete. */
-  lv_btnmatrix_clear_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_DISABLED);
-  lv_btnmatrix_clear_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
+  if (Braccio.begin(custom_main_menu)) {
+    app.enableButtons();
+  }
 }
 
 void loop()

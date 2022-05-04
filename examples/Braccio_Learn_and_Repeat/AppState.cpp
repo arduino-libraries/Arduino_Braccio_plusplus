@@ -62,7 +62,6 @@ static void event_handler_menu(lv_event_t * e)
   }
 }
 
-
 void custom_main_menu()
 {
   Braccio.lvgl_lock();
@@ -250,4 +249,15 @@ void ZeroState::onEnter()
 void ZeroState::onExit()
 {
   lv_btnmatrix_clear_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
+}
+
+/**************************************************************************************
+ * LearnAndRepeatApp
+ **************************************************************************************/
+
+void LearnAndRepeatApp::enableButtons()
+{
+  /* Enable buttons once init is complete. */
+  lv_btnmatrix_clear_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_DISABLED);
+  lv_btnmatrix_clear_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
 }

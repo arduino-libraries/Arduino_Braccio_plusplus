@@ -125,6 +125,8 @@ public:
   static ReplayState _replay_state;
   static ZeroState   _zero_state;
 
+  void enableButtons();
+
   void update(EventSource const evt_src)
   {
     mbed::ScopedLock<rtos::Mutex> lock(_mtx);
