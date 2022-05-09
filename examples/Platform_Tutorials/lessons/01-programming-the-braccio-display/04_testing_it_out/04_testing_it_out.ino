@@ -14,7 +14,6 @@ static const char * btnm_map[] = {"OPTION 1", "OPTION 2", "OPTION 3", "\n",
                                  };
 
 void customMenu() {
-  Braccio.lvgl_lock();
   static lv_style_t style_bg;
   lv_style_init(&style_bg);
   lv_style_set_bg_color(&style_bg, lv_color_hex(COLOR_LIGHT_TEAL));
@@ -34,7 +33,6 @@ void customMenu() {
   
   lv_obj_add_style(btnm1, &style_bg, 0);
   lv_obj_add_style(btnm1, &style_btn, LV_PART_ITEMS);
-  Braccio.lvgl_unlock();
 }
 
 void setup() {

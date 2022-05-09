@@ -16,7 +16,6 @@ static const char * btnm_map[] = {"Option 1", "Option 2", "\n",
                                  };
 
 static void eventHandler(lv_event_t * e) {
-  Braccio.lvgl_lock();
   lv_event_code_t code = lv_event_get_code(e);
   lv_obj_t * obj = lv_event_get_target(e);
   if (code == LV_EVENT_PRESSED) {
@@ -26,11 +25,9 @@ static void eventHandler(lv_event_t * e) {
     LV_LOG_USER("%s was selected\n", txt);
     Serial.println(String(txt) + " was selected.");
   }
-  Braccio.lvgl_unlock();
 }
 
 void customMenu() {
-  Braccio.lvgl_lock();
   static lv_style_t style_bg;
   lv_style_init(&style_bg);
   lv_style_set_bg_color(&style_bg, lv_color_hex(COLOR_WHITE));
@@ -59,10 +56,7 @@ void customMenu() {
 
   lv_btnmatrix_set_one_checked(btnm1, true);
   
-  lv_obj_add_event_cb(btnm1, eventHandler, LV_EVENT_ALL, NULL);
-  Braccio.lvgl_unlock();
-
-  Braccio.connectJoystickTo(btnm1);
+  Braccio.connectJoystickTo(btnm1, eventHandler);
 }
 
 void setup() {
