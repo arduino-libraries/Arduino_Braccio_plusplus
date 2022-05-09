@@ -1,5 +1,7 @@
 #include <Braccio++.h>
 
+#include "AppState.h"
+
 // Colors
 #define COLOR_TEAL       0x00878F
 #define COLOR_LIGHT_TEAL 0x62AEB2
@@ -57,7 +59,7 @@ static const char *direction_btnm_map[] = {" ", LV_SYMBOL_UP, " ", "\n",
                                         " ", LV_SYMBOL_DOWN, " ", "\0"};
 
 lv_obj_t * direction_btnm;  // Direction button matrix
-static lv_obj_t * label; // Label
+lv_obj_t * label; // Label
 
 // Function
 void moveJoints(uint32_t btnID) {
@@ -150,38 +152,62 @@ void updateButtons(uint32_t key)
     lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_RIGHT, LV_BTNMATRIX_CTRL_HIDDEN);
     Braccio.lvgl_unlock();
   }
-  
+  /*
   Braccio.lvgl_lock();
   lv_label_set_text(label, jointsPair[state]);
   Braccio.lvgl_unlock();
+  */
 }
 
 // Event Handlers
 
-static void eventHandlerDirectional(lv_event_t * e) {
-  Braccio.lvgl_lock();
-  
+ControlApp app;
+
+static void eventHandlerDirectional(lv_event_t * e)
+{
   lv_event_code_t code = lv_event_get_code(e);
-  lv_obj_t * obj = lv_event_get_target(e);
-  
-  Braccio.lvgl_unlock();
 
-  if (code == LV_EVENT_KEY){
-  pressed_key = Braccio.getKey();
+  if (code == LV_EVENT_KEY)
+  {
+    lv_obj_t * obj = lv_event_get_target(e);
+    uint32_t const id = lv_btnmatrix_get_selected_btn(obj);
 
-    if (pressed_key == ENTER || pressed_key == CLICK){
-      state++; // Index the next joints in the states enum array
-      
-      if (state > PINCH){
-        state = SHOULDER; // restart from the shoulder
-      }
+    Serial.println(id);
+
+    switch (id)
+    {
+    case UP   : app.update(EventSource::Button_Up);    break;
+    //case DOWN : app.update(EventSource::Button_Down);  break;
+    case LEFT : app.update(EventSource::Button_Left);  break;
+    case RIGHT: app.update(EventSource::Button_Right); break;
+    case CLICK:
+    case ENTER: app.update(EventSource::Button_Enter); break;
     }
-    updateButtons(pressed_key);
-    Braccio.positions(angles);
-    delay(5);
-    moveJoints(pressed_key);
   }
 }
+  // Braccio.lvgl_lock();
+  
+  // lv_event_code_t code = lv_event_get_code(e);
+  // lv_obj_t * obj = lv_event_get_target(e);
+  
+  // Braccio.lvgl_unlock();
+
+  // if (code == LV_EVENT_KEY){
+  // pressed_key = Braccio.getKey();
+
+  //   if (pressed_key == ENTER || pressed_key == CLICK){
+  //     state++; // Index the next joints in the states enum array
+      
+  //     if (state > PINCH){
+  //       state = SHOULDER; // restart from the shoulder
+  //     }
+  //   }
+  //   updateButtons(pressed_key);
+  //   Braccio.positions(angles);
+  //   delay(5);
+  //   moveJoints(pressed_key);
+  // }
+// }
 
 // Screens functions
 
@@ -229,12 +255,14 @@ void directionScreen(void)
   
   Braccio.lvgl_unlock();
 
-  delay(50);
-  Braccio.connectJoystickTo(direction_btnm);
+  //delay(50);
+  //Braccio.connectJoystickTo(direction_btnm);
 }
 
 void setup()
 {
+  Serial.begin(115200);
+
   Braccio.begin(directionScreen);
   delay(500); // Waits for the Braccio initialization
 
@@ -246,6 +274,24 @@ void setup()
 
 void loop()
 {
+  if (Braccio.isButtonPressed_ENTER()) {
+    static auto prev_enter_event = millis();
+    auto const now = millis();
+    if ((now - prev_enter_event) > 200 && Braccio.isButtonPressed_ENTER())
+    {
+      prev_enter_event = now;
+      app.update(EventSource::Button_Enter);
+    }
+  }
+
+  if (Braccio.isJoystickPressed_DOWN()) {
+    app.update(EventSource::Button_DownPressed);
+    Serial.println("Braccio.isJoystickPressed_DOWN()");
+  } else {
+    app.update(EventSource::Button_DownReleased);
+  }
+
+  /*
   pressed_key= Braccio.getKey();
  if (pressed_key == 0) {
   if(pressed_key != last_pressed_key){
@@ -263,4 +309,5 @@ void loop()
     }
   }
     last_pressed_key=pressed_key;
+    */
 }
