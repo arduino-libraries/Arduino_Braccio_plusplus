@@ -2,17 +2,18 @@
 #define APP_STATE_H_
 
 /**************************************************************************************
+ * INCLUDE
+ **************************************************************************************/
+
+#include <mbed.h>
+
+/**************************************************************************************
  * TYPEDEF
  **************************************************************************************/
 
-enum class EventSource
+enum class Button
 {
-  Button_DownPressed, Button_DownReleased, Button_Up, Button_Left, Button_Right, Button_Enter
-};
-
-enum class StateName
-{
-  Shoulder, Elbow, Wrist, Pinch
+  None, Enter, Home, Up, Down, Left, Right
 };
 
 /**************************************************************************************
@@ -23,125 +24,109 @@ class State
 {
 public:
   virtual ~State() { }
-  virtual void onEnter() { }
-  virtual void onExit() { }
-  virtual StateName name() = 0;
-  State * update(EventSource const evt_src)
+  State * update(Button const button)
   {
     State * next_state = this;
-    switch (evt_src)
+    switch (button)
     {
-      case EventSource::Button_DownPressed:  next_state = handle_OnButtonDownPressed();  break;
-      case EventSource::Button_DownReleased: next_state = handle_OnButtonDownReleased(); break;
-
-      case EventSource::Button_Up:    next_state = handle_OnButtonUp();       break;
-      case EventSource::Button_Left:  next_state = handle_OnButtonLeft(); break;
-      case EventSource::Button_Right: next_state = handle_OnButtonRight();    break;
-      case EventSource::Button_Enter: next_state = handle_OnButtonEnter();    break;
+      case Button::Home:
+      case Button::Enter: next_state = handle_OnEnter(); break;
+      case Button::Up:    next_state = handle_OnUp();    break;
+      case Button::Down:  next_state = handle_OnDown();  break;
+      case Button::Left:  next_state = handle_OnLeft();  break;
+      case Button::Right: next_state = handle_OnRight(); break;
+      default:                                           break;
     }
     return next_state;
   }
 
 protected:
-  virtual State * handle_OnButtonDownPressed();
-  virtual State * handle_OnButtonDownReleased();
-  virtual State * handle_OnButtonUp()    { return this; }
-  virtual State * handle_OnButtonLeft()  { return this; }
-  virtual State * handle_OnButtonRight() { return this; }
-  virtual State * handle_OnButtonEnter() { return this; }
+  virtual State * handle_OnEnter() = 0;
+  virtual State * handle_OnUp   () { return this; }
+  virtual State * handle_OnDown () { return this; }
+  virtual State * handle_OnLeft () { return this; }
+  virtual State * handle_OnRight() { return this; }
 };
 
 class ShoulderState : public State
 {
 public:
+           ShoulderState();
   virtual ~ShoulderState() { }
-  virtual StateName name() override { return StateName::Shoulder; }
-  virtual void onEnter() override;
-  virtual void onExit() override;
-
 protected:
-  virtual State * handle_OnButtonDownPressed() override;
-  virtual State * handle_OnButtonDownReleased() override;
-  virtual State * handle_OnButtonUp()    override;
-  virtual State * handle_OnButtonLeft()  override;
-  virtual State * handle_OnButtonRight() override;
-  virtual State * handle_OnButtonEnter() override;
+  virtual State * handle_OnEnter() override;
+  virtual State * handle_OnUp   () override;
+  virtual State * handle_OnDown () override;
+  virtual State * handle_OnLeft () override;
+  virtual State * handle_OnRight() override;
 };
+
 
 class ElbowState : public State
 {
 public:
+           ElbowState();
   virtual ~ElbowState() { }
-  virtual StateName name() override { return StateName::Elbow; }
-  virtual void onEnter() override;
-  virtual void onExit() override;
-
 protected:
-  virtual State * handle_OnButtonDownPressed() override;
-  virtual State * handle_OnButtonDownReleased() override;
-  virtual State * handle_OnButtonUp()    override;
-  virtual State * handle_OnButtonEnter() override;
+  virtual State * handle_OnEnter() override;
+  virtual State * handle_OnUp   () override;
+  virtual State * handle_OnDown () override;
 };
 
 class WristState : public State
 {
 public:
+           WristState();
   virtual ~WristState() { }
-  virtual StateName name() override { return StateName::Wrist; }
-  virtual void onEnter() override;
-  virtual void onExit() override;
-
 protected:
-  virtual State * handle_OnButtonDownPressed() override;
-  virtual State * handle_OnButtonDownReleased() override;
-  virtual State * handle_OnButtonUp()    override;
-  virtual State * handle_OnButtonLeft()  override;
-  virtual State * handle_OnButtonRight() override;
-  virtual State * handle_OnButtonEnter() override;
+  virtual State * handle_OnEnter() override;
+  virtual State * handle_OnUp   () override;
+  virtual State * handle_OnDown () override;
+  virtual State * handle_OnLeft () override;
+  virtual State * handle_OnRight() override;
 };
+
 
 class PinchState : public State
 {
 public:
+           PinchState();
   virtual ~PinchState() { }
-  virtual StateName name() override { return StateName::Pinch; }
-  virtual void onEnter() override;
-  virtual void onExit() override;
-
 protected:
-  virtual State * handle_OnButtonLeft()  override;
-  virtual State * handle_OnButtonRight() override;
-  virtual State * handle_OnButtonEnter() override;
+  virtual State * handle_OnEnter() override;
+  virtual State * handle_OnLeft () override;
+  virtual State * handle_OnRight() override;
 };
 
-class ControlApp
+class ManualControlApp
 {
 public:
-  ControlApp()
+  ManualControlApp()
   : _state{nullptr}
+  , _mtx{}
   { }
 
-  void update(EventSource const evt_src)
+  void update(Button const button)
   {
+    mbed::ScopedLock<rtos::Mutex> lock(_mtx);
+    
     if (!_state)
     {
       _state = new ShoulderState();
-      _state->onEnter();
+      return;
     }
     
-    State * next_state = _state->update(evt_src);
+    State * next_state = _state->update(button);
       
-    if (next_state->name() != _state->name())
-    {
-      _state->onExit();
+    if (next_state != _state) {
       delete _state;
       _state = next_state;
-      _state->onEnter();
     }    
   }
 
 private:
   State * _state;
+  rtos::Mutex _mtx;
 };
 
 #endif /* APP_STATE_H_ */

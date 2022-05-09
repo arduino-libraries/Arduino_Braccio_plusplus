@@ -6,197 +6,145 @@
 
 #include <Braccio++.h>
 
-extern lv_obj_t * label;
-extern lv_obj_t * direction_btnm;
-
-enum BUTTONS {
-  BTN_UP = 1,
-  BTN_DOWN = 7,
-  BTN_LEFT = 3,
-  BTN_RIGHT = 5,
-};
-
 /**************************************************************************************
- * State
+ * EXTERN
  **************************************************************************************/
 
-State * State::handle_OnButtonDownPressed()
-{
-  Braccio.lvgl_lock();
-  lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_DOWN, LV_BTNMATRIX_CTRL_CHECKED);
-  Braccio.lvgl_unlock();
-  return this;
-}
+extern lv_obj_t * label;
 
-State * State::handle_OnButtonDownReleased()
-{
-  Braccio.lvgl_lock();
-  lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_DOWN, LV_BTNMATRIX_CTRL_CHECKED);
-  Braccio.lvgl_unlock();
-  return this;
-}
+/**************************************************************************************
+ * GLOBAL VARIABLES
+ **************************************************************************************/
+
+static auto gripper    = Braccio.get(1);
+static auto wristRoll  = Braccio.get(2);
+static auto wristPitch = Braccio.get(3);
+static auto elbow      = Braccio.get(4);
+static auto shoulder   = Braccio.get(5);
+static auto base       = Braccio.get(6);
 
 /**************************************************************************************
  * ShoulderState
  **************************************************************************************/
 
-void ShoulderState::onEnter()
+ShoulderState::ShoulderState()
 {
   Braccio.lvgl_lock();
   lv_label_set_text(label, "Shoulder");
   Braccio.lvgl_unlock();
 }
 
-void ShoulderState::onExit()
-{
-
-}
-
-State * ShoulderState::handle_OnButtonDownPressed()
-{
-  State::handle_OnButtonDownPressed();
-  return this;
-}
-
-State * ShoulderState::handle_OnButtonDownReleased()
-{
-  State::handle_OnButtonDownReleased();
-  return this;
-}
-
-State * ShoulderState::handle_OnButtonUp()
-{
-  return this;
-}
-
-State * ShoulderState::handle_OnButtonLeft()
-{
-  return this;
-}
-
-State * ShoulderState::handle_OnButtonRight()
-{
-  return this;
-}
-
-State * ShoulderState::handle_OnButtonEnter()
+State * ShoulderState::handle_OnEnter()
 {
   return new ElbowState();
+}
+
+State * ShoulderState::handle_OnUp()
+{
+  return this;
+}
+
+State * ShoulderState::handle_OnDown()
+{
+  return this;
+}
+
+State * ShoulderState::handle_OnLeft()
+{
+  return this;
+}
+
+State * ShoulderState::handle_OnRight()
+{
+  return this;
 }
 
 /**************************************************************************************
  * ElbowState
  **************************************************************************************/
 
-void ElbowState::onEnter()
+ElbowState::ElbowState()
 {
   Braccio.lvgl_lock();
   lv_label_set_text(label, "Elbow");
   Braccio.lvgl_unlock();
 }
 
-void ElbowState::onExit()
-{
-
-}
-
-State * ElbowState::handle_OnButtonDownPressed()
-{
-  State::handle_OnButtonDownPressed();
-  return this;
-}
-
-State * ElbowState::handle_OnButtonDownReleased()
-{
-  State::handle_OnButtonDownReleased();
-  return this;
-}
-
-State * ElbowState::handle_OnButtonUp()
+State * ElbowState::handle_OnEnter()
 {
   return new WristState();
 }
 
-State * ElbowState::handle_OnButtonEnter()
+State * ElbowState::handle_OnUp()
 {
-  return new WristState();
+  return this;
+}
+
+State * ElbowState::handle_OnDown()
+{
+  return this;
 }
 
 /**************************************************************************************
  * WristState
  **************************************************************************************/
 
-void WristState::onEnter()
+WristState::WristState()
 {
   Braccio.lvgl_lock();
   lv_label_set_text(label, "Wrist");
   Braccio.lvgl_unlock();
 }
 
-void WristState::onExit()
-{
-
-}
-
-State * WristState::handle_OnButtonDownPressed()
-{
-  State::handle_OnButtonDownPressed();
-  return this;
-}
-
-State * WristState::handle_OnButtonDownReleased()
-{
-  State::handle_OnButtonDownReleased();
-  return this;
-}
-
-State * WristState::handle_OnButtonUp()
-{
-  return this;
-}
-
-State * WristState::handle_OnButtonLeft()
-{
-  return this;
-}
-
-State * WristState::handle_OnButtonRight()
-{
-  return this;
-}
-
-State * WristState::handle_OnButtonEnter()
+State * WristState::handle_OnEnter()
 {
   return new PinchState();
+}
+
+State * WristState::handle_OnUp()
+{
+  return this;
+}
+
+State * WristState::handle_OnDown()
+{
+  return this;
+}
+
+State * WristState::handle_OnLeft()
+{
+  return this;
+}
+
+State * WristState::handle_OnRight()
+{
+  return this;
 }
 
 /**************************************************************************************
  * PinchState
  **************************************************************************************/
 
-void PinchState::onEnter()
+PinchState::PinchState()
 {
   Braccio.lvgl_lock();
   lv_label_set_text(label, "Pinch");
   Braccio.lvgl_unlock();
 }
 
-void PinchState::onExit()
-{
-
-}
-
-State * PinchState::handle_OnButtonLeft()
-{
-  return this;
-}
-
-State * PinchState::handle_OnButtonRight()
-{
-  return this;
-}
-
-State * PinchState::handle_OnButtonEnter()
+State * PinchState::handle_OnEnter()
 {
   return new ShoulderState();
+}
+
+State * PinchState::handle_OnLeft()
+{
+  gripper.move().to(gripper.position() + 10.0f).in(10ms);
+  return this;
+}
+
+State * PinchState::handle_OnRight()
+{
+  gripper.move().to(gripper.position() - 10.0f).in(10ms);
+  return this;
 }

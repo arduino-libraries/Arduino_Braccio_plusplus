@@ -1,11 +1,57 @@
+/**************************************************************************************
+ * INCLUDE
+ **************************************************************************************/
+
 #include <Braccio++.h>
 
 #include "AppState.h"
+
+/**************************************************************************************
+ * DEFINES
+ **************************************************************************************/
 
 // Colors
 #define COLOR_TEAL       0x00878F
 #define COLOR_LIGHT_TEAL 0x62AEB2
 #define COLOR_YELLOW     0xE5AD24
+
+/**************************************************************************************
+ * TYPEDEF
+ **************************************************************************************/
+
+enum states {
+  SHOULDER,
+  ELBOW,
+  WRIST,
+  PINCH
+};
+
+// Values of clicked input keys returned by Braccio.getKey() function (defined inside the library).
+enum KEYS
+{
+  UP = 4,
+  DOWN = 5,
+  LEFT = 1,
+  RIGHT = 2,
+  CLICK = 3, // click of joystick
+  ENTER = 6,
+};
+
+// IDs of the displayed directional UI buttons
+enum BUTTONS {
+  BTN_UP = 1,
+  BTN_DOWN = 7,
+  BTN_LEFT = 3,
+  BTN_RIGHT = 5,
+};
+
+static const char *direction_btnm_map[] = {" ", LV_SYMBOL_UP, " ", "\n",
+                                        LV_SYMBOL_LEFT, " ", LV_SYMBOL_RIGHT, "\n",
+                                        " ", LV_SYMBOL_DOWN, " ", "\0"};
+
+/**************************************************************************************
+ * GLOBAL VARIABLES
+ **************************************************************************************/
 
 // Variables
 float homePos[6] = {157.5, 157.5, 157.5, 157.5, 157.5, 190.0};
@@ -20,46 +66,13 @@ auto shoulder   = Braccio.get(5);
 auto base       = Braccio.get(6);
 
 char * jointsPair[] = {"Shoulder", "Elbow", "Wrist", "Pinch"};
-String selectedJoints = "Shoulder";
-
-enum states {
-  SHOULDER,
-  ELBOW,
-  WRIST,
-  PINCH
-};
 
 int state = SHOULDER;
 
-// Values of clicked input keys returned by Braccio.getKey() function (defined inside the library).
-enum KEYS
-{
-  UP = 4,
-  DOWN = 5,
-  LEFT = 1,
-  RIGHT = 2,
-  CLICK = 3, // click of joystick
-  ENTER = 6,
-};
-
-uint32_t pressed_key;
-uint32_t last_pressed_key;
-
-
-// IDs of the displayed directional UI buttons
-enum BUTTONS {
-  BTN_UP = 1,
-  BTN_DOWN = 7,
-  BTN_LEFT = 3,
-  BTN_RIGHT = 5,
-};
-
-static const char *direction_btnm_map[] = {" ", LV_SYMBOL_UP, " ", "\n",
-                                        LV_SYMBOL_LEFT, " ", LV_SYMBOL_RIGHT, "\n",
-                                        " ", LV_SYMBOL_DOWN, " ", "\0"};
-
 lv_obj_t * direction_btnm;  // Direction button matrix
 lv_obj_t * label; // Label
+
+ManualControlApp app;
 
 // Function
 void moveJoints(uint32_t btnID) {
@@ -161,53 +174,7 @@ void updateButtons(uint32_t key)
 
 // Event Handlers
 
-ControlApp app;
 
-static void eventHandlerDirectional(lv_event_t * e)
-{
-  lv_event_code_t code = lv_event_get_code(e);
-
-  if (code == LV_EVENT_KEY)
-  {
-    lv_obj_t * obj = lv_event_get_target(e);
-    uint32_t const id = lv_btnmatrix_get_selected_btn(obj);
-
-    Serial.println(id);
-
-    switch (id)
-    {
-    case UP   : app.update(EventSource::Button_Up);    break;
-    //case DOWN : app.update(EventSource::Button_Down);  break;
-    case LEFT : app.update(EventSource::Button_Left);  break;
-    case RIGHT: app.update(EventSource::Button_Right); break;
-    case CLICK:
-    case ENTER: app.update(EventSource::Button_Enter); break;
-    }
-  }
-}
-  // Braccio.lvgl_lock();
-  
-  // lv_event_code_t code = lv_event_get_code(e);
-  // lv_obj_t * obj = lv_event_get_target(e);
-  
-  // Braccio.lvgl_unlock();
-
-  // if (code == LV_EVENT_KEY){
-  // pressed_key = Braccio.getKey();
-
-  //   if (pressed_key == ENTER || pressed_key == CLICK){
-  //     state++; // Index the next joints in the states enum array
-      
-  //     if (state > PINCH){
-  //       state = SHOULDER; // restart from the shoulder
-  //     }
-  //   }
-  //   updateButtons(pressed_key);
-  //   Braccio.positions(angles);
-  //   delay(5);
-  //   moveJoints(pressed_key);
-  // }
-// }
 
 // Screens functions
 
@@ -245,18 +212,13 @@ void directionScreen(void)
   lv_btnmatrix_set_one_checked(direction_btnm, true);
   lv_btnmatrix_set_selected_btn(direction_btnm, 1);
 
-  lv_obj_add_event_cb(direction_btnm, eventHandlerDirectional, LV_EVENT_ALL, NULL);
-
- label = lv_label_create(lv_scr_act());
+  label = lv_label_create(lv_scr_act());
   lv_obj_set_width(label, 240);
   lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
   lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
   lv_label_set_text(label, jointsPair[state]);
   
   Braccio.lvgl_unlock();
-
-  //delay(50);
-  //Braccio.connectJoystickTo(direction_btnm);
 }
 
 void setup()
@@ -265,6 +227,8 @@ void setup()
 
   Braccio.begin(directionScreen);
   delay(500); // Waits for the Braccio initialization
+
+  app.update(Button::None);
 
   Braccio.speed(SLOW);
 
@@ -280,34 +244,122 @@ void loop()
     if ((now - prev_enter_event) > 200 && Braccio.isButtonPressed_ENTER())
     {
       prev_enter_event = now;
-      app.update(EventSource::Button_Enter);
+      app.update(Button::Enter);
     }
   }
 
-  if (Braccio.isJoystickPressed_DOWN()) {
-    app.update(EventSource::Button_DownPressed);
-    Serial.println("Braccio.isJoystickPressed_DOWN()");
-  } else {
-    app.update(EventSource::Button_DownReleased);
-  }
+  /* DOWN */
 
-  /*
-  pressed_key= Braccio.getKey();
- if (pressed_key == 0) {
-  if(pressed_key != last_pressed_key){
-    Braccio.lvgl_lock();
-    
-    lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_UP, LV_BTNMATRIX_CTRL_CHECKED);
-    lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_DOWN, LV_BTNMATRIX_CTRL_CHECKED);
-    lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_RIGHT, LV_BTNMATRIX_CTRL_CHECKED);
-    lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_LEFT, LV_BTNMATRIX_CTRL_CHECKED);
-    
-    Braccio.lvgl_unlock();
-    
-    delay(50);  
-
-    }
+  static bool prev_joystick_pressed_down = false;
+  bool const curr_joystick_pressed_down = Braccio.isJoystickPressed_DOWN();
+  if (!prev_joystick_pressed_down && curr_joystick_pressed_down) {
+    handle_OnButtonDownPressed();
   }
-    last_pressed_key=pressed_key;
-    */
+  if (prev_joystick_pressed_down && !curr_joystick_pressed_down) {
+    handle_OnButtonDownReleased();
+  }
+  prev_joystick_pressed_down = curr_joystick_pressed_down;
+
+  /* UP */
+
+  static bool prev_joystick_pressed_up = false;
+  bool const curr_joystick_pressed_up = Braccio.isJoystickPressed_UP();
+  if (!prev_joystick_pressed_up && curr_joystick_pressed_up) {
+    handle_OnButtonUpPressed();
+  }
+  if (prev_joystick_pressed_up && !curr_joystick_pressed_up) {
+    handle_OnButtonUpReleased();
+  }
+  prev_joystick_pressed_up = curr_joystick_pressed_up;
+
+  /* LEFT */
+
+  static bool prev_joystick_pressed_left = false;
+  bool const curr_joystick_pressed_left = Braccio.isJoystickPressed_LEFT();
+  if (!prev_joystick_pressed_left && curr_joystick_pressed_left) {
+    handle_OnButtonLeftPressed();
+  }
+  if (prev_joystick_pressed_left && !curr_joystick_pressed_left) {
+    handle_OnButtonLeftReleased();
+  }
+  prev_joystick_pressed_left = curr_joystick_pressed_left;
+
+  /* RIGHT */
+
+  static bool prev_joystick_pressed_right = false;
+  bool const curr_joystick_pressed_right = Braccio.isJoystickPressed_RIGHT();
+  if (!prev_joystick_pressed_right && curr_joystick_pressed_right) {
+    handle_OnButtonRightPressed();
+  }
+  if (prev_joystick_pressed_right && !curr_joystick_pressed_right) {
+    handle_OnButtonRightReleased();
+  }
+  prev_joystick_pressed_right = curr_joystick_pressed_right;
+
+  if (Braccio.isJoystickPressed_UP())
+    app.update(Button::Up);
+  if (Braccio.isJoystickPressed_DOWN())
+    app.update(Button::Down);
+  if (Braccio.isJoystickPressed_LEFT())
+    app.update(Button::Left);
+  if (Braccio.isJoystickPressed_RIGHT())
+    app.update(Button::Right);
+
+  delay(10);
+}
+
+void handle_OnButtonDownPressed()
+{
+  Braccio.lvgl_lock();
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_DOWN, LV_BTNMATRIX_CTRL_CHECKED);
+  Braccio.lvgl_unlock();
+}
+
+void handle_OnButtonDownReleased()
+{
+  Braccio.lvgl_lock();
+  lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_DOWN, LV_BTNMATRIX_CTRL_CHECKED);
+  Braccio.lvgl_unlock();
+}
+
+void handle_OnButtonUpPressed()
+{
+  Braccio.lvgl_lock();
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_UP, LV_BTNMATRIX_CTRL_CHECKED);
+  Braccio.lvgl_unlock();
+}
+
+void handle_OnButtonUpReleased()
+{
+  Braccio.lvgl_lock();
+  lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_UP, LV_BTNMATRIX_CTRL_CHECKED);
+  Braccio.lvgl_unlock();
+}
+
+void handle_OnButtonLeftPressed()
+{
+  Braccio.lvgl_lock();
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_LEFT, LV_BTNMATRIX_CTRL_CHECKED);
+  Braccio.lvgl_unlock();
+}
+
+void handle_OnButtonLeftReleased()
+{
+  Braccio.lvgl_lock();
+  lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_LEFT, LV_BTNMATRIX_CTRL_CHECKED);
+  Braccio.lvgl_unlock();
+}
+
+void handle_OnButtonRightPressed()
+{
+  Braccio.lvgl_lock();
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_RIGHT, LV_BTNMATRIX_CTRL_CHECKED);
+  Braccio.lvgl_unlock();
+}
+
+void handle_OnButtonRightReleased()
+{
+  Braccio.lvgl_lock();
+  lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_RIGHT, LV_BTNMATRIX_CTRL_CHECKED);
+  Braccio.lvgl_unlock();
 }
