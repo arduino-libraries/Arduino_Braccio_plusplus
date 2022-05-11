@@ -53,21 +53,25 @@ State * ShoulderState::handle_OnEnter()
 
 State * ShoulderState::handle_OnUp()
 {
+  shoulder.move().to(shoulder.position() + 5.0f);
   return this;
 }
 
 State * ShoulderState::handle_OnDown()
 {
+  shoulder.move().to(shoulder.position() - 5.0f);
   return this;
 }
 
 State * ShoulderState::handle_OnLeft()
 {
+  base.move().to(base.position() + 5.0f);
   return this;
 }
 
 State * ShoulderState::handle_OnRight()
 {
+  base.move().to(base.position() - 5.0f);
   return this;
 }
 
@@ -99,11 +103,13 @@ State * ElbowState::handle_OnEnter()
 
 State * ElbowState::handle_OnUp()
 {
+  elbow.move().to(elbow.position() + 5.0f);
   return this;
 }
 
 State * ElbowState::handle_OnDown()
 {
+  elbow.move().to(elbow.position() - 5.0f);
   return this;
 }
 
@@ -125,21 +131,25 @@ State * WristState::handle_OnEnter()
 
 State * WristState::handle_OnUp()
 {
+  wristRoll.move().to(wristRoll.position() + 5.0f);
   return this;
 }
 
 State * WristState::handle_OnDown()
 {
+  wristRoll.move().to(wristRoll.position() - 5.0f);
   return this;
 }
 
 State * WristState::handle_OnLeft()
 {
+  wristPitch.move().to(wristPitch.position() + 5.0f);
   return this;
 }
 
 State * WristState::handle_OnRight()
 {
+  wristPitch.move().to(wristPitch.position() - 5.0f);
   return this;
 }
 
@@ -171,12 +181,12 @@ State * PinchState::handle_OnEnter()
 
 State * PinchState::handle_OnLeft()
 {
-  gripper.move().to(gripper.position() + 2.5f);
+  gripper.move().to(gripper.position() + 5.0f);
   return this;
 }
 
 State * PinchState::handle_OnRight()
 {
-  gripper.move().to(gripper.position() - 2.5f);
+  gripper.move().to(gripper.position() - 5.0f);
   return this;
 }

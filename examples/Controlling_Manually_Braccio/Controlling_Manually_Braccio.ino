@@ -10,7 +10,6 @@
  * DEFINES
  **************************************************************************************/
 
-// Colors
 #define COLOR_TEAL       0x00878F
 #define COLOR_LIGHT_TEAL 0x62AEB2
 #define COLOR_YELLOW     0xE5AD24
@@ -27,66 +26,27 @@ enum BUTTONS {
   BTN_RIGHT = 5,
 };
 
-static const char *direction_btnm_map[] = {" ", LV_SYMBOL_UP, " ", "\n",
-                                        LV_SYMBOL_LEFT, " ", LV_SYMBOL_RIGHT, "\n",
-                                        " ", LV_SYMBOL_DOWN, " ", "\0"};
+/**************************************************************************************
+ * CONSTANTS
+ **************************************************************************************/
+
+static float const HOME_POS[6] = {157.5, 157.5, 157.5, 157.5, 157.5, 90.0};
+static const char *DIRECTION_BTNM_MAP[] = {" ", LV_SYMBOL_UP, " ", "\n",
+                                           LV_SYMBOL_LEFT, " ", LV_SYMBOL_RIGHT, "\n",
+                                           " ", LV_SYMBOL_DOWN, " ", "\0"};
 
 /**************************************************************************************
  * GLOBAL VARIABLES
  **************************************************************************************/
 
-// Variables
-static float const HOME_POS[6] = {157.5, 157.5, 157.5, 157.5, 157.5, 90.0};
-
-lv_obj_t * direction_btnm;  // Direction button matrix
-lv_obj_t * label; // Label
+lv_obj_t * direction_btnm;
+lv_obj_t * label;
 
 ManualControlApp app;
 
-// Screens functions
-
-void directionScreen(void)
-{
-  Braccio.lvgl_lock();
-  
-  static lv_style_t style_bg;
-  lv_style_init(&style_bg);
-  lv_style_set_bg_color(&style_bg, lv_color_white());
-
-  static lv_style_t style_btn;
-  lv_style_init(&style_btn);
-  lv_style_set_bg_color(&style_btn, lv_color_hex(COLOR_LIGHT_TEAL));
-  lv_style_set_text_color(&style_btn, lv_color_white());
-
-  direction_btnm = lv_btnmatrix_create(lv_scr_act());
-  lv_obj_set_size(direction_btnm, 240, 240);
-  lv_btnmatrix_set_map(direction_btnm, direction_btnm_map);
-  lv_obj_align(direction_btnm, LV_ALIGN_CENTER, 0, 0);
-
-  lv_obj_add_style(direction_btnm, &style_bg, 0);
-  lv_obj_add_style(direction_btnm, &style_btn, LV_PART_ITEMS);
-
-  lv_btnmatrix_set_btn_ctrl(direction_btnm, 0, LV_BTNMATRIX_CTRL_HIDDEN);
-  lv_btnmatrix_set_btn_ctrl(direction_btnm, 1, LV_BTNMATRIX_CTRL_DISABLED);
-  lv_btnmatrix_set_btn_ctrl(direction_btnm, 2, LV_BTNMATRIX_CTRL_HIDDEN);
-  lv_btnmatrix_set_btn_ctrl(direction_btnm, 3, LV_BTNMATRIX_CTRL_DISABLED);
-  lv_btnmatrix_set_btn_ctrl(direction_btnm, 4, LV_BTNMATRIX_CTRL_HIDDEN);
-  lv_btnmatrix_set_btn_ctrl(direction_btnm, 5, LV_BTNMATRIX_CTRL_DISABLED);
-  lv_btnmatrix_set_btn_ctrl(direction_btnm, 6, LV_BTNMATRIX_CTRL_HIDDEN);
-  lv_btnmatrix_set_btn_ctrl(direction_btnm, 7, LV_BTNMATRIX_CTRL_DISABLED);
-  lv_btnmatrix_set_btn_ctrl(direction_btnm, 8, LV_BTNMATRIX_CTRL_HIDDEN);
-
-  lv_btnmatrix_set_one_checked(direction_btnm, true);
-  lv_btnmatrix_set_selected_btn(direction_btnm, 1);
-
-  label = lv_label_create(lv_scr_act());
-  lv_obj_set_width(label, 240);
-  lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
-  lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
-  lv_label_set_text(label, "");
-  
-  Braccio.lvgl_unlock();
-}
+/**************************************************************************************
+ * SETUP/LOOP
+ **************************************************************************************/
 
 void setup()
 {
@@ -95,7 +55,7 @@ void setup()
   if (Braccio.begin(directionScreen))
   {
     /* Configure Braccio. */
-    Braccio.speed(MEDIUM);
+    Braccio.speed(speed_grade_t(150)/*MEDIUM*/);
     /* Move to home position. */
     Braccio.moveTo(HOME_POS[0], HOME_POS[1], HOME_POS[2], HOME_POS[3], HOME_POS[4], HOME_POS[5]);
     delay(500);
@@ -142,6 +102,53 @@ void loop()
         app.update(Button::Right);
     }
   }
+}
+
+/**************************************************************************************
+ * FUNCTIONS
+ **************************************************************************************/
+
+void directionScreen(void)
+{
+  Braccio.lvgl_lock();
+  
+  static lv_style_t style_bg;
+  lv_style_init(&style_bg);
+  lv_style_set_bg_color(&style_bg, lv_color_white());
+
+  static lv_style_t style_btn;
+  lv_style_init(&style_btn);
+  lv_style_set_bg_color(&style_btn, lv_color_hex(COLOR_LIGHT_TEAL));
+  lv_style_set_text_color(&style_btn, lv_color_white());
+
+  direction_btnm = lv_btnmatrix_create(lv_scr_act());
+  lv_obj_set_size(direction_btnm, 240, 240);
+  lv_btnmatrix_set_map(direction_btnm, DIRECTION_BTNM_MAP);
+  lv_obj_align(direction_btnm, LV_ALIGN_CENTER, 0, 0);
+
+  lv_obj_add_style(direction_btnm, &style_bg, 0);
+  lv_obj_add_style(direction_btnm, &style_btn, LV_PART_ITEMS);
+
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 0, LV_BTNMATRIX_CTRL_HIDDEN);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 1, LV_BTNMATRIX_CTRL_DISABLED);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 2, LV_BTNMATRIX_CTRL_HIDDEN);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 3, LV_BTNMATRIX_CTRL_DISABLED);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 4, LV_BTNMATRIX_CTRL_HIDDEN);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 5, LV_BTNMATRIX_CTRL_DISABLED);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 6, LV_BTNMATRIX_CTRL_HIDDEN);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 7, LV_BTNMATRIX_CTRL_DISABLED);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 8, LV_BTNMATRIX_CTRL_HIDDEN);
+
+  lv_btnmatrix_set_one_checked(direction_btnm, true);
+  lv_btnmatrix_set_selected_btn(direction_btnm, 1);
+
+  label = lv_label_create(lv_scr_act());
+  lv_obj_set_width(label, 240);
+  lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+  lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+  lv_label_set_text(label, "");
+  
+  Braccio.lvgl_unlock();
 }
 
 void handle_ButtonPressedReleased()
