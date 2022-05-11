@@ -131,25 +131,25 @@ State * WristState::handle_OnEnter()
 
 State * WristState::handle_OnUp()
 {
-  wristRoll.move().to(wristRoll.position() + 5.0f);
+  wristPitch.move().to(wristPitch.position() + 5.0f);
   return this;
 }
 
 State * WristState::handle_OnDown()
 {
-  wristRoll.move().to(wristRoll.position() - 5.0f);
+  wristPitch.move().to(wristPitch.position() - 5.0f);
   return this;
 }
 
 State * WristState::handle_OnLeft()
 {
-  wristPitch.move().to(wristPitch.position() + 5.0f);
+  wristRoll.move().to(wristRoll.position() + 10.0f);
   return this;
 }
 
 State * WristState::handle_OnRight()
 {
-  wristPitch.move().to(wristPitch.position() - 5.0f);
+  wristRoll.move().to(wristRoll.position() - 10.0f);
   return this;
 }
 
