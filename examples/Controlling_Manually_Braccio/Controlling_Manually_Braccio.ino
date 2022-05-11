@@ -247,6 +247,39 @@ void setup()
 
 void loop()
 {
+  /* Execute every 10 ms. */
+  {
+    static auto prev = millis();
+    auto const now = millis();
+    if ((now - prev) > 10)
+    {
+      prev = now;
+      handle_ButtonPressedReleased();
+    }
+  }
+
+  /* Execute every 100 ms. */
+  {
+    static auto prev = millis();
+    auto const now = millis();
+    if ((now - prev) > 100)
+    {
+      prev = now;
+
+      if (Braccio.isJoystickPressed_UP())
+        app.update(Button::Up);
+      if (Braccio.isJoystickPressed_DOWN())
+        app.update(Button::Down);
+      if (Braccio.isJoystickPressed_LEFT())
+        app.update(Button::Left);
+      if (Braccio.isJoystickPressed_RIGHT())
+        app.update(Button::Right);
+    }
+  }
+}
+
+void handle_ButtonPressedReleased()
+{
   /* ENTER */
 
   static bool prev_joystick_pressed_enter = false;
@@ -312,23 +345,6 @@ void loop()
     handle_OnButtonRightReleased();
   }
   prev_joystick_pressed_right = curr_joystick_pressed_right;
-
-
-  static auto prev = millis();
-  auto const now = millis();
-  if ((now - prev) > 100)
-  {
-    prev = now;
-
-    if (Braccio.isJoystickPressed_UP())
-      app.update(Button::Up);
-    if (Braccio.isJoystickPressed_DOWN())
-      app.update(Button::Down);
-    if (Braccio.isJoystickPressed_LEFT())
-      app.update(Button::Left);
-    if (Braccio.isJoystickPressed_RIGHT())
-      app.update(Button::Right);
-  }
 }
 
 void handle_OnButtonDownPressed()
