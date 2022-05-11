@@ -201,13 +201,13 @@ void directionScreen(void)
   lv_obj_add_style(direction_btnm, &style_btn, LV_PART_ITEMS);
 
   lv_btnmatrix_set_btn_ctrl(direction_btnm, 0, LV_BTNMATRIX_CTRL_HIDDEN);
-  lv_btnmatrix_set_btn_ctrl(direction_btnm, 1, LV_BTNMATRIX_CTRL_CHECKABLE);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 1, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_set_btn_ctrl(direction_btnm, 2, LV_BTNMATRIX_CTRL_HIDDEN);
-  lv_btnmatrix_set_btn_ctrl(direction_btnm, 3, LV_BTNMATRIX_CTRL_CHECKABLE);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 3, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_set_btn_ctrl(direction_btnm, 4, LV_BTNMATRIX_CTRL_HIDDEN);
-  lv_btnmatrix_set_btn_ctrl(direction_btnm, 5, LV_BTNMATRIX_CTRL_CHECKABLE);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 5, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_set_btn_ctrl(direction_btnm, 6, LV_BTNMATRIX_CTRL_HIDDEN);
-  lv_btnmatrix_set_btn_ctrl(direction_btnm, 7, LV_BTNMATRIX_CTRL_CHECKABLE);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, 7, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_set_btn_ctrl(direction_btnm, 8, LV_BTNMATRIX_CTRL_HIDDEN);
 
   lv_btnmatrix_set_one_checked(direction_btnm, true);
@@ -226,15 +226,23 @@ void setup()
 {
   Serial.begin(115200);
 
-  Braccio.begin(directionScreen);
-  delay(500); // Waits for the Braccio initialization
+  if (Braccio.begin(directionScreen))
+  {
+    /* Configure Braccio. */
+    Braccio.speed(SLOW);
+    /* Move to home position. */
+    Braccio.moveTo(homePos[0], homePos[1], homePos[2], homePos[3], homePos[4], homePos[5]);
+    delay(500);
+    /* Enable buttons. */
+    Braccio.lvgl_lock();
+    lv_btnmatrix_clear_btn_ctrl(direction_btnm, 1, LV_BTNMATRIX_CTRL_DISABLED);
+    lv_btnmatrix_clear_btn_ctrl(direction_btnm, 3, LV_BTNMATRIX_CTRL_DISABLED);
+    lv_btnmatrix_clear_btn_ctrl(direction_btnm, 5, LV_BTNMATRIX_CTRL_DISABLED);
+    lv_btnmatrix_clear_btn_ctrl(direction_btnm, 7, LV_BTNMATRIX_CTRL_DISABLED);
+    Braccio.lvgl_unlock();
+  }
 
   app.update(Button::None);
-
-  Braccio.speed(SLOW);
-
-  Braccio.moveTo(homePos[0], homePos[1], homePos[2], homePos[3], homePos[4], homePos[5]);
-  delay(500);
 }
 
 void loop()
