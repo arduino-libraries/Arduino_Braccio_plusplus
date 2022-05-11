@@ -144,7 +144,7 @@ void updateButtons(uint32_t key)
     lv_btnmatrix_set_selected_btn(direction_btnm, NULL);
     Braccio.lvgl_unlock();
   }
-
+/*
   if (state == ELBOW){
     Braccio.lvgl_lock();
     lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_LEFT, LV_BTNMATRIX_CTRL_HIDDEN);
@@ -165,6 +165,7 @@ void updateButtons(uint32_t key)
     lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_RIGHT, LV_BTNMATRIX_CTRL_HIDDEN);
     Braccio.lvgl_unlock();
   }
+  */
   /*
   Braccio.lvgl_lock();
   lv_label_set_text(label, jointsPair[state]);
@@ -238,15 +239,14 @@ void setup()
 
 void loop()
 {
-  if (Braccio.isButtonPressed_ENTER()) {
-    static auto prev_enter_event = millis();
-    auto const now = millis();
-    if ((now - prev_enter_event) > 200 && Braccio.isButtonPressed_ENTER())
-    {
-      prev_enter_event = now;
-      app.update(Button::Enter);
-    }
+  /* ENTER */
+
+  static bool prev_joystick_pressed_enter = false;
+  bool const curr_joystick_pressed_enter = Braccio.isButtonPressed_ENTER();
+  if (!prev_joystick_pressed_enter && curr_joystick_pressed_enter) {
+    app.update(Button::Enter);
   }
+  prev_joystick_pressed_enter = curr_joystick_pressed_enter;
 
   /* DOWN */
 

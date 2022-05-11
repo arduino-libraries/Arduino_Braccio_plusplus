@@ -66,7 +66,7 @@ class ElbowState : public State
 {
 public:
            ElbowState();
-  virtual ~ElbowState() { }
+  virtual ~ElbowState();
 protected:
   virtual State * handle_OnEnter() override;
   virtual State * handle_OnUp   () override;
@@ -91,7 +91,7 @@ class PinchState : public State
 {
 public:
            PinchState();
-  virtual ~PinchState() { }
+  virtual ~PinchState();
 protected:
   virtual State * handle_OnEnter() override;
   virtual State * handle_OnLeft () override;

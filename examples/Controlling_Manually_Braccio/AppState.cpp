@@ -7,10 +7,22 @@
 #include <Braccio++.h>
 
 /**************************************************************************************
+ * TYPEDEF
+ **************************************************************************************/
+
+enum BUTTONS {
+  BTN_UP = 1,
+  BTN_DOWN = 7,
+  BTN_LEFT = 3,
+  BTN_RIGHT = 5,
+};
+
+/**************************************************************************************
  * EXTERN
  **************************************************************************************/
 
 extern lv_obj_t * label;
+extern lv_obj_t * direction_btnm;
 
 /**************************************************************************************
  * GLOBAL VARIABLES
@@ -67,6 +79,16 @@ ElbowState::ElbowState()
 {
   Braccio.lvgl_lock();
   lv_label_set_text(label, "Elbow");
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_LEFT,  LV_BTNMATRIX_CTRL_HIDDEN);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_RIGHT, LV_BTNMATRIX_CTRL_HIDDEN);
+  Braccio.lvgl_unlock();
+}
+
+ElbowState::~ElbowState()
+{
+  Braccio.lvgl_lock();
+  lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_LEFT,  LV_BTNMATRIX_CTRL_HIDDEN);
+  lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_RIGHT, LV_BTNMATRIX_CTRL_HIDDEN);
   Braccio.lvgl_unlock();
 }
 
@@ -129,6 +151,16 @@ PinchState::PinchState()
 {
   Braccio.lvgl_lock();
   lv_label_set_text(label, "Pinch");
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_UP,   LV_BTNMATRIX_CTRL_HIDDEN);
+  lv_btnmatrix_set_btn_ctrl(direction_btnm, BTN_DOWN, LV_BTNMATRIX_CTRL_HIDDEN);
+  Braccio.lvgl_unlock();
+}
+
+PinchState::~PinchState()
+{
+  Braccio.lvgl_lock();
+  lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_UP,   LV_BTNMATRIX_CTRL_HIDDEN);
+  lv_btnmatrix_clear_btn_ctrl(direction_btnm, BTN_DOWN, LV_BTNMATRIX_CTRL_HIDDEN);
   Braccio.lvgl_unlock();
 }
 
