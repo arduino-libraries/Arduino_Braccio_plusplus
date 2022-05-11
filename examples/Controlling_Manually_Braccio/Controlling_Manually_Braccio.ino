@@ -248,6 +248,15 @@ void loop()
   }
   prev_joystick_pressed_enter = curr_joystick_pressed_enter;
 
+  /* SELECT */
+
+  static bool prev_joystick_pressed_select = false;
+  bool const curr_joystick_pressed_select = Braccio.isJoystickPressed_SELECT();
+  if (!prev_joystick_pressed_select && curr_joystick_pressed_select) {
+    app.update(Button::Enter);
+  }
+  prev_joystick_pressed_select = curr_joystick_pressed_select;
+
   /* DOWN */
 
   static bool prev_joystick_pressed_down = false;
