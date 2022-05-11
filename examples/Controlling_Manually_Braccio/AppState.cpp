@@ -171,12 +171,12 @@ State * PinchState::handle_OnEnter()
 
 State * PinchState::handle_OnLeft()
 {
-  gripper.move().to(gripper.position() + 10.0f).in(10ms);
+  gripper.move().to(gripper.position() + 2.5f);
   return this;
 }
 
 State * PinchState::handle_OnRight()
 {
-  gripper.move().to(gripper.position() - 10.0f).in(10ms);
+  gripper.move().to(gripper.position() - 2.5f);
   return this;
 }

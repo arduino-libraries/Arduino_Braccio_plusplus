@@ -229,7 +229,7 @@ void setup()
   if (Braccio.begin(directionScreen))
   {
     /* Configure Braccio. */
-    Braccio.speed(SLOW);
+    Braccio.speed(MEDIUM);
     /* Move to home position. */
     Braccio.moveTo(homePos[0], homePos[1], homePos[2], homePos[3], homePos[4], homePos[5]);
     delay(500);
@@ -313,16 +313,22 @@ void loop()
   }
   prev_joystick_pressed_right = curr_joystick_pressed_right;
 
-  if (Braccio.isJoystickPressed_UP())
-    app.update(Button::Up);
-  if (Braccio.isJoystickPressed_DOWN())
-    app.update(Button::Down);
-  if (Braccio.isJoystickPressed_LEFT())
-    app.update(Button::Left);
-  if (Braccio.isJoystickPressed_RIGHT())
-    app.update(Button::Right);
 
-  delay(10);
+  static auto prev = millis();
+  auto const now = millis();
+  if ((now - prev) > 100)
+  {
+    prev = now;
+
+    if (Braccio.isJoystickPressed_UP())
+      app.update(Button::Up);
+    if (Braccio.isJoystickPressed_DOWN())
+      app.update(Button::Down);
+    if (Braccio.isJoystickPressed_LEFT())
+      app.update(Button::Left);
+    if (Braccio.isJoystickPressed_RIGHT())
+      app.update(Button::Right);
+  }
 }
 
 void handle_OnButtonDownPressed()
