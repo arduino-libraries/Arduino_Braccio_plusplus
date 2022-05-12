@@ -14,14 +14,14 @@
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
 
-#include <std_msgs/msg/int32.h>
+#include <sensor_msgs/msg/joint_state.h>
 
 /**************************************************************************************
  * GLOBAL VARIABLES
  **************************************************************************************/
 
-rcl_publisher_t publisher;
-std_msgs__msg__Int32 msg;
+rcl_publisher_t joint_state_publisher;
+sensor_msgs__msg__JointState joint_state_msg;
 rclc_executor_t executor;
 rclc_support_t support;
 rcl_allocator_t allocator;
@@ -60,13 +60,13 @@ void setup()
 
   /* Create JointState publisher. */
   RCCHECK(rclc_publisher_init_default(
-    &publisher,
+    &joint_state_publisher,
     &node,
-    ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Int32),
+    ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, JointState),
     "braccio_plusplus_node_joint_state_publisher"));
 
   /* Create Timer. */
-  const unsigned int timer_timeout = 1000;
+  const unsigned int timer_timeout = 100;
   RCCHECK(rclc_timer_init_default(
     &timer,
     &support,
@@ -76,8 +76,6 @@ void setup()
   /* Create executor. */
   RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
   RCCHECK(rclc_executor_add_timer(&executor, &timer));
-
-  msg.data = 0;
 }
 
 void loop()
@@ -104,7 +102,6 @@ void timer_callback(rcl_timer_t * timer, int64_t last_call_time)
   RCLC_UNUSED(last_call_time);
   if (timer != NULL)
   {
-    RCSOFTCHECK(rcl_publish(&publisher, &msg, NULL));
-    msg.data++;
+    RCSOFTCHECK(rcl_publish(&joint_state_publisher, &joint_state_msg, NULL));
   }
 }
