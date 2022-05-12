@@ -6,6 +6,8 @@
  * INCLUDE
  **************************************************************************************/
 
+#include <Braccio++.h>
+
 #include <micro_ros_arduino.h>
 
 #include <stdio.h>
@@ -15,6 +17,11 @@
 #include <rclc/executor.h>
 
 #include <sensor_msgs/msg/joint_state.h>
+
+#include <rosidl_runtime_c/string_functions.h>
+
+#include <vector>
+#include <algorithm>
 
 /**************************************************************************************
  * GLOBAL VARIABLES
@@ -47,8 +54,11 @@ void setup()
   
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, HIGH);  
-  
-  delay(2000);
+
+  if (!Braccio.begin()) {
+    error_loop();
+  }
+  Braccio.disengage();
 
   allocator = rcl_get_default_allocator();
 
@@ -64,6 +74,32 @@ void setup()
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, JointState),
     "braccio_plusplus_node_joint_state_publisher"));
+
+  /* Initialize JointState message. */
+  rosidl_runtime_c__String__init  (&joint_state_msg.header.frame_id);
+  rosidl_runtime_c__String__assign(&joint_state_msg.header.frame_id, "/braccio_plusplus_joint_state");
+    
+  {
+    static rosidl_runtime_c__String joint_state_msg_name[SmartServoClass::NUM_MOTORS];
+    joint_state_msg.name.data = joint_state_msg_name;
+    joint_state_msg.name.size = SmartServoClass::NUM_MOTORS;
+    joint_state_msg.name.capacity = SmartServoClass::NUM_MOTORS;
+    std::vector<std::string> const JOINT_NAMES = {"base", "shoulder", "elbow", "wrist_roll", "wrist_pitch", "pinch"};
+    int i = 0;
+    std::for_each(std::cbegin(JOINT_NAMES),
+                  std::cend  (JOINT_NAMES),
+                  [&joint_state_msg, &i](std::string const & joint_name)
+                  {
+                    rosidl_runtime_c__String__init  (&joint_state_msg.name.data[i]);
+                    rosidl_runtime_c__String__assign(&joint_state_msg.name.data[i], joint_name.c_str());
+                    i++;
+                  });
+  }
+
+  static double joint_state_msg_position[SmartServoClass::NUM_MOTORS] = {0};
+  joint_state_msg.position.data = joint_state_msg_position;
+  joint_state_msg.position.size = SmartServoClass::NUM_MOTORS;
+  joint_state_msg.position.capacity = SmartServoClass::NUM_MOTORS;
 
   /* Create Timer. */
   const unsigned int timer_timeout = 100;
@@ -102,6 +138,21 @@ void timer_callback(rcl_timer_t * timer, int64_t last_call_time)
   RCLC_UNUSED(last_call_time);
   if (timer != NULL)
   {
+    /* Retrieve current servo positions. */
+    float current_servo_pos[SmartServoClass::NUM_MOTORS] = {0};
+    Braccio.positions(current_servo_pos);
+    /* Revert the array to fit with the names within the joint state message. */
+    std::reverse(current_servo_pos, current_servo_pos + SmartServoClass::NUM_MOTORS);
+
+    /* Populate header. */
+    joint_state_msg.header.stamp.sec = millis() / 1000;
+    joint_state_msg.header.stamp.nanosec = micros() * 1000;
+
+    /* Populate data. */
+    for (int i = 0; i < SmartServoClass::NUM_MOTORS; i++)
+      joint_state_msg.position.data[i] = current_servo_pos[i];
+
+    /* Publish message. */
     RCSOFTCHECK(rcl_publish(&joint_state_publisher, &joint_state_msg, NULL));
   }
 }
