@@ -73,11 +73,11 @@ void setup()
     &joint_state_publisher,
     &node,
     ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, JointState),
-    "braccio_plusplus_node_joint_state_publisher"));
+    "/braccio_joint_state_actual"));
 
   /* Initialize JointState message. */
   rosidl_runtime_c__String__init  (&joint_state_msg.header.frame_id);
-  rosidl_runtime_c__String__assign(&joint_state_msg.header.frame_id, "/braccio_plusplus_joint_state");
+  rosidl_runtime_c__String__assign(&joint_state_msg.header.frame_id, "base");
     
   {
     static rosidl_runtime_c__String joint_state_msg_name[SmartServoClass::NUM_MOTORS];
