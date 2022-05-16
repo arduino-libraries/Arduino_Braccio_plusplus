@@ -192,7 +192,8 @@ State * RecordState::handle_OnTimerTick()
                                     return (fabs(v) < EPSILON);
                                   });
   if (count > 0) {
-    lv_scr_load(stop_screen);
+    if (lv_scr_act() != stop_screen)
+     lv_scr_load(stop_screen);
   }
   else {
     sample_cnt += 6;
