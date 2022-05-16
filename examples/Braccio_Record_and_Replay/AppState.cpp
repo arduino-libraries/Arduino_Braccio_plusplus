@@ -27,6 +27,8 @@ static float const HOME_POS[6] = {157.5, 157.5, 157.5, 157.5, 157.5, 90.0};
 
 lv_obj_t * counter;
 lv_obj_t * btnm;
+lv_obj_t * menu_screen = nullptr;
+lv_obj_t * stop_screen = nullptr;
 const char * btnm_map[] = { "RECORD", "\n", "REPLAY", "\n", "ZERO_POSITION", "\n", "\0" };
 
 static float sample_buf[SAMPLE_BUF_SIZE];
@@ -90,6 +92,17 @@ void custom_main_menu()
   lv_obj_align(counter, LV_ALIGN_CENTER, 0, 80);
 
   lv_obj_add_event_cb(btnm, event_handler_menu, LV_EVENT_ALL, NULL);
+
+  /* Store a pointer to the screen in the menu_screen variable. */
+  menu_screen = lv_scr_act();
+
+  /* Create a separate screen for the stop sign image. */
+  LV_IMG_DECLARE(stop_sign);
+  stop_screen = lv_img_create(NULL);
+  lv_img_set_src(stop_screen, &stop_sign);
+  lv_obj_align(stop_screen, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_set_size(stop_screen, 240, 240);
+
   Braccio.lvgl_unlock();
 
   Braccio.connectJoystickTo(btnm);
@@ -178,17 +191,14 @@ State * RecordState::handle_OnTimerTick()
                                     float const EPSILON = 0.01;
                                     return (fabs(v) < EPSILON);
                                   });
-  if (count > 0)
-  {
-    LV_IMG_DECLARE(stop_sign);
-    lv_obj_t * img1 = lv_img_create(lv_scr_act());
-    lv_img_set_src(img1, &stop_sign);
-    lv_obj_align(img1, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_set_size(img1, 240, 240);
+  if (count > 0) {
+    lv_scr_load(stop_screen);
   }
-  else
-  {
+  else {
     sample_cnt += 6;
+    /* Reload the menu screen if it has not been currently loaded. */
+    if (lv_scr_act() != menu_screen)
+      lv_scr_load(menu_screen);
   }
 
   /* Update sample counter. */
