@@ -166,7 +166,30 @@ State * RecordState::handle_OnTimerTick()
 
   /* We still have space, let's sample some data. */
   Braccio.positions(sample_buf + sample_cnt);
-  sample_cnt += 6;
+
+  /* Check if any of the servos reports a position of
+   * 0.0 degrees. In this case we've entered the dead
+   * zone and should display a warning on the screen.
+   **/
+  int const count = std::count_if(sample_buf + sample_cnt,
+                                  sample_buf + sample_cnt + 6,
+                                  [](float const v)
+                                  {
+                                    float const EPSILON = 0.01;
+                                    return (fabs(v) < EPSILON);
+                                  });
+  if (count > 0)
+  {
+    LV_IMG_DECLARE(stop_sign);
+    lv_obj_t * img1 = lv_img_create(lv_scr_act());
+    lv_img_set_src(img1, &stop_sign);
+    lv_obj_align(img1, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_size(img1, 240, 240);
+  }
+  else
+  {
+    sample_cnt += 6;
+  }
 
   /* Update sample counter. */
   lv_label_set_text_fmt(counter, "Counter: %d" , (sample_cnt / 6));
