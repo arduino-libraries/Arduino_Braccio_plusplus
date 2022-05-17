@@ -271,7 +271,36 @@ void ZeroState::onEnter()
   Braccio.engage();
   delay(100);
   Braccio.moveTo(HOME_POS[0], HOME_POS[1], HOME_POS[2], HOME_POS[3], HOME_POS[4], HOME_POS[5]);
-  delay(500);
+
+  auto isInHomePos = []() -> bool
+  {
+    float current_angles[SmartServoClass::NUM_MOTORS] = {0};
+    Braccio.positions(current_angles);
+
+    float total_angle_err = 0.0;
+    for (size_t i = 0; i < SmartServoClass::NUM_MOTORS; i++)
+      total_angle_err += fabs(current_angles[i] - HOME_POS[i]);
+
+    static float const TOTAL_EPSILON = 10.0f;
+    bool const is_in_home_pos = (total_angle_err < TOTAL_EPSILON);
+    return is_in_home_pos;
+  };
+  auto isTimeout = [](unsigned long const start) -> bool
+  {
+    /* Timeout of one second. */
+    auto const now = millis();
+    if ((now - start) > 1000)
+      return true;
+    else
+      return false;
+  };
+
+  /* Wait until we've returned to the home position
+   * with a timeout (i.e. we leave this function)
+   * after one second even if we can't fully reach
+   * the home position.
+   */
+  for(auto start = millis(); !isInHomePos() && !isTimeout(start); delay(100)) { }
 }
  
 void ZeroState::onExit()
