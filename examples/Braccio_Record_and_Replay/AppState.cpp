@@ -152,6 +152,7 @@ void RecordState::onEnter()
   lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED);
 
   Braccio.disengage();
+  delay(100);
   sample_cnt = 0;
 }
 
