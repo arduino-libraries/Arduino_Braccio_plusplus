@@ -109,15 +109,6 @@ void custom_main_menu()
 }
 
 /**************************************************************************************
- * State
- **************************************************************************************/
-
-State * State::handle_OnZeroPosition()
-{
-  return new ZeroState();
-}
-
-/**************************************************************************************
  * IdleState
  **************************************************************************************/
 
@@ -141,6 +132,11 @@ State * IdleState::handle_OnReplay()
   return new ReplayState();
 }
 
+State * IdleState::handle_OnZeroPosition()
+{
+  return new ZeroState();
+}
+
 /**************************************************************************************
  * RecordState
  **************************************************************************************/
@@ -150,6 +146,7 @@ void RecordState::onEnter()
   btnm_map[0] = "STOP";
   lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKED);
   lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED);
+  lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
 
   Braccio.disengage();
   delay(100);
@@ -161,6 +158,7 @@ void RecordState::onExit()
   btnm_map[0] = "RECORD";
   lv_btnmatrix_clear_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKED);
   lv_btnmatrix_clear_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED);
+  lv_btnmatrix_clear_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
   lv_label_set_text_fmt(counter, "Counter: %d" , 0);
 
   Braccio.engage();
@@ -218,6 +216,7 @@ void ReplayState::onEnter()
   btnm_map[2] = "STOP";
   lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_CHECKED);
+  lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
 }
  
 void ReplayState::onExit()
@@ -225,6 +224,7 @@ void ReplayState::onExit()
   btnm_map[2] = "REPLAY";
   lv_btnmatrix_clear_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_clear_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_CHECKED);
+  lv_btnmatrix_clear_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
   lv_label_set_text_fmt(counter, "Counter: %d" , 0);
 }
 

@@ -54,7 +54,7 @@ public:
 protected:
   virtual State * handle_OnRecord()       { return this; }
   virtual State * handle_OnReplay()       { return this; }
-  virtual State * handle_OnZeroPosition();
+  virtual State * handle_OnZeroPosition() { return this; }
   virtual State * handle_OnTimerTick()    { return this; }
 };
 
@@ -67,8 +67,9 @@ public:
   virtual void onExit() override;
 
 protected:
-  virtual State * handle_OnRecord() override;
-  virtual State * handle_OnReplay() override;
+  virtual State * handle_OnRecord      () override;
+  virtual State * handle_OnReplay      () override;
+  virtual State * handle_OnZeroPosition() override;
 };
 
 class RecordState : public State
