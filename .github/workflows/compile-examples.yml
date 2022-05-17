@@ -52,6 +52,7 @@ jobs:
             - source-path: ./
             # Additional library dependencies can be listed here.
             # See: https://github.com/arduino/compile-sketches#libraries
+            - source-url: https://github.com/micro-ROS/micro_ros_arduino/archive/refs/tags/v2.0.4-galactic.zip
           sketch-paths: |
             - examples
           enable-deltas-report: true
