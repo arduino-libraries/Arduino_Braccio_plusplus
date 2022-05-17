@@ -1,5 +1,8 @@
+<img src="https://raw.githubusercontent.com/ros-infrastructure/artwork/master/distributions/galactic.png" height="100" align="right" />
+
 :floppydisk: `ROS2_Braccio_Driver`
 ==================================
+
 #### How-to-install
 * Install [ROS2 Galactic](https://docs.ros.org/en/galactic/Installation/Ubuntu-Install-Debians.html)
 * Install [colcon](https://colcon.readthedocs.io/en/released/user/installation.html)
