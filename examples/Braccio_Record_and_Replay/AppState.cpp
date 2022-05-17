@@ -27,6 +27,8 @@ static float const HOME_POS[6] = {157.5, 157.5, 157.5, 157.5, 157.5, 90.0};
 
 lv_obj_t * counter;
 lv_obj_t * btnm;
+lv_obj_t * menu_screen = nullptr;
+lv_obj_t * stop_screen = nullptr;
 const char * btnm_map[] = { "RECORD", "\n", "REPLAY", "\n", "ZERO_POSITION", "\n", "\0" };
 
 static float sample_buf[SAMPLE_BUF_SIZE];
@@ -90,6 +92,17 @@ void custom_main_menu()
   lv_obj_align(counter, LV_ALIGN_CENTER, 0, 80);
 
   lv_obj_add_event_cb(btnm, event_handler_menu, LV_EVENT_ALL, NULL);
+
+  /* Store a pointer to the screen in the menu_screen variable. */
+  menu_screen = lv_scr_act();
+
+  /* Create a separate screen for the stop sign image. */
+  LV_IMG_DECLARE(stop_sign);
+  stop_screen = lv_img_create(NULL);
+  lv_img_set_src(stop_screen, &stop_sign);
+  lv_obj_align(stop_screen, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_set_size(stop_screen, 240, 240);
+
   Braccio.lvgl_unlock();
 
   Braccio.connectJoystickTo(btnm);
@@ -166,7 +179,28 @@ State * RecordState::handle_OnTimerTick()
 
   /* We still have space, let's sample some data. */
   Braccio.positions(sample_buf + sample_cnt);
-  sample_cnt += 6;
+
+  /* Check if any of the servos reports a position of
+   * 0.0 degrees. In this case we've entered the dead
+   * zone and should display a warning on the screen.
+   **/
+  int const count = std::count_if(sample_buf + sample_cnt,
+                                  sample_buf + sample_cnt + 6,
+                                  [](float const v)
+                                  {
+                                    float const EPSILON = 0.01;
+                                    return (fabs(v) < EPSILON);
+                                  });
+  if (count > 0) {
+    if (lv_scr_act() != stop_screen)
+     lv_scr_load(stop_screen);
+  }
+  else {
+    sample_cnt += 6;
+    /* Reload the menu screen if it has not been currently loaded. */
+    if (lv_scr_act() != menu_screen)
+      lv_scr_load(menu_screen);
+  }
 
   /* Update sample counter. */
   lv_label_set_text_fmt(counter, "Counter: %d" , (sample_cnt / 6));
