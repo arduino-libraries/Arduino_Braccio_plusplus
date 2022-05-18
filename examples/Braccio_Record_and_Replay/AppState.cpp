@@ -148,6 +148,7 @@ void RecordState::onEnter()
   lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
 
+  delay(100);
   Braccio.disengage();
   delay(100);
   sample_cnt = 0;
@@ -161,7 +162,9 @@ void RecordState::onExit()
   lv_btnmatrix_clear_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
   lv_label_set_text_fmt(counter, "Counter: %d" , 0);
 
+  delay(100);
   Braccio.engage();
+  delay(100);
 }
 
 State * RecordState::handle_OnRecord()
@@ -268,6 +271,7 @@ void ZeroState::onEnter()
   lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
 
+  delay(100);
   Braccio.engage();
   delay(100);
   Braccio.moveTo(HOME_POS[0], HOME_POS[1], HOME_POS[2], HOME_POS[3], HOME_POS[4], HOME_POS[5]);
