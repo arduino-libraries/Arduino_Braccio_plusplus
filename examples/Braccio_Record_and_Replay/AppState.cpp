@@ -109,15 +109,6 @@ void custom_main_menu()
 }
 
 /**************************************************************************************
- * State
- **************************************************************************************/
-
-State * State::handle_OnZeroPosition()
-{
-  return new ZeroState();
-}
-
-/**************************************************************************************
  * IdleState
  **************************************************************************************/
 
@@ -141,6 +132,11 @@ State * IdleState::handle_OnReplay()
   return new ReplayState();
 }
 
+State * IdleState::handle_OnZeroPosition()
+{
+  return new ZeroState();
+}
+
 /**************************************************************************************
  * RecordState
  **************************************************************************************/
@@ -150,8 +146,11 @@ void RecordState::onEnter()
   btnm_map[0] = "STOP";
   lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKED);
   lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED);
+  lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
 
+  delay(100);
   Braccio.disengage();
+  delay(100);
   sample_cnt = 0;
 }
 
@@ -160,9 +159,12 @@ void RecordState::onExit()
   btnm_map[0] = "RECORD";
   lv_btnmatrix_clear_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKED);
   lv_btnmatrix_clear_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED);
+  lv_btnmatrix_clear_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
   lv_label_set_text_fmt(counter, "Counter: %d" , 0);
 
+  delay(100);
   Braccio.engage();
+  delay(100);
 }
 
 State * RecordState::handle_OnRecord()
@@ -217,6 +219,7 @@ void ReplayState::onEnter()
   btnm_map[2] = "STOP";
   lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_CHECKED);
+  lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
 }
  
 void ReplayState::onExit()
@@ -224,6 +227,7 @@ void ReplayState::onExit()
   btnm_map[2] = "REPLAY";
   lv_btnmatrix_clear_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_clear_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_CHECKED);
+  lv_btnmatrix_clear_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
   lv_label_set_text_fmt(counter, "Counter: %d" , 0);
 }
 
@@ -267,10 +271,40 @@ void ZeroState::onEnter()
   lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_CHECKED);
 
+  delay(100);
   Braccio.engage();
   delay(100);
   Braccio.moveTo(HOME_POS[0], HOME_POS[1], HOME_POS[2], HOME_POS[3], HOME_POS[4], HOME_POS[5]);
-  delay(500);
+
+  auto isInHomePos = []() -> bool
+  {
+    float current_angles[SmartServoClass::NUM_MOTORS] = {0};
+    Braccio.positions(current_angles);
+
+    float total_angle_err = 0.0;
+    for (size_t i = 0; i < SmartServoClass::NUM_MOTORS; i++)
+      total_angle_err += fabs(current_angles[i] - HOME_POS[i]);
+
+    static float const TOTAL_EPSILON = 10.0f;
+    bool const is_in_home_pos = (total_angle_err < TOTAL_EPSILON);
+    return is_in_home_pos;
+  };
+  auto isTimeout = [](unsigned long const start) -> bool
+  {
+    /* Timeout of one second. */
+    auto const now = millis();
+    if ((now - start) > 1000)
+      return true;
+    else
+      return false;
+  };
+
+  /* Wait until we've returned to the home position
+   * with a timeout (i.e. we leave this function)
+   * after one second even if we can't fully reach
+   * the home position.
+   */
+  for(auto start = millis(); !isInHomePos() && !isTimeout(start); delay(100)) { }
 }
  
 void ZeroState::onExit()
