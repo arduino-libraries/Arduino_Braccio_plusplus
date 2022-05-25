@@ -65,8 +65,8 @@ public:
   BraccioClass();
 
   inline bool begin() { return begin(nullptr); }
-  inline bool begin(voidFuncPtr custom_menu) { return begin(custom_menu, true); }
-         bool begin(voidFuncPtr custom_menu, bool const wait_for_all_motor_connected);
+  inline bool begin(mbed::Callback<void(void)> custom_menu) { return begin(custom_menu, true); }
+         bool begin(mbed::Callback<void(void)> custom_menu, bool const wait_for_all_motor_connected);
 
   void pingOn();
   void pingOff();
@@ -87,7 +87,7 @@ public:
   inline void engage   (int const id = SmartServoClass::BROADCAST) { _servos.engage(id); }
 
   int getKey();
-  void connectJoystickTo(lv_obj_t* obj);
+  void connectJoystickTo(lv_obj_t* obj, lv_event_cb_t _event_cb = nullptr);
 
   inline bool isJoystickPressed_LEFT()   { return (digitalRead(BTN_LEFT) == LOW); }
   inline bool isJoystickPressed_RIGHT()  { return (digitalRead(BTN_RIGHT) == LOW); }
@@ -134,6 +134,8 @@ private:
   void setMotorConnectionStatus(int const id, bool const is_connected);
   void motorConnectedThreadFunc();
 
+  mbed::Callback<void(void)> _draw_menu;
+  lv_event_cb_t event_cb;
 
   static int constexpr BTN_LEFT  = 3;
   static int constexpr BTN_RIGHT = 4;
@@ -163,7 +165,8 @@ private:
   void lvgl_splashScreen(unsigned long const duration_ms);
   void lvgl_pleaseConnectPower();
   void lvgl_defaultMenu();
-
+  void drawMenu();
+  static void onJoystickEvent(lv_event_t * e);
 
   static uint32_t constexpr PD_IRQ_EVENT_FLAG   = 1;
   static uint32_t constexpr PD_TIMER_EVENT_FLAG = 2;

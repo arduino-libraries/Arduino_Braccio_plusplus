@@ -58,7 +58,6 @@ static void event_handler_menu(lv_event_t * e)
 
 void custom_main_menu()
 {
-  Braccio.lvgl_lock();
   static lv_style_t style_focus;
   lv_style_init(&style_focus);
   lv_style_set_outline_color(&style_focus, lv_color_hex(COLOR_ORANGE));
@@ -89,10 +88,7 @@ void custom_main_menu()
   lv_label_set_text_fmt(counter, "Counter: %d" , 0);
   lv_obj_align(counter, LV_ALIGN_CENTER, 0, 80);
 
-  lv_obj_add_event_cb(btnm, event_handler_menu, LV_EVENT_ALL, NULL);
-  Braccio.lvgl_unlock();
-
-  Braccio.connectJoystickTo(btnm);
+  Braccio.connectJoystickTo(btnm, event_handler_menu);
 }
 
 /**************************************************************************************

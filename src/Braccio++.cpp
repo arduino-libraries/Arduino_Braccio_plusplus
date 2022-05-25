@@ -94,7 +94,7 @@ BraccioClass::BraccioClass()
  * PUBLIC MEMBER FUNCTIONS
  **************************************************************************************/
 
-bool BraccioClass::begin(voidFuncPtr custom_menu, bool const wait_for_all_motor_connected)
+bool BraccioClass::begin(mbed::Callback<void(void)> custom_menu, bool const wait_for_all_motor_connected)
 {
   static int constexpr RS485_RX_PIN = 1;
 
@@ -130,10 +130,12 @@ bool BraccioClass::begin(voidFuncPtr custom_menu, bool const wait_for_all_motor_
   while(!_PD_UFP.is_PPS_ready()) { delay(10); }
   lv_obj_clean(lv_scr_act());
 
-  if (custom_menu)
-    custom_menu();
-  else
-    lvgl_defaultMenu();
+  if (custom_menu) {
+    _draw_menu = custom_menu;
+  } else {
+    _draw_menu = mbed::Callback<void(void)>(this, &BraccioClass::lvgl_defaultMenu);
+  }
+  drawMenu();
 
   _servos.begin();
   _servos.setTime(SLOW);
@@ -237,11 +239,19 @@ int BraccioClass::getKey() {
   return 0;
 }
 
-void BraccioClass::connectJoystickTo(lv_obj_t* obj)
+static BraccioClass* _braccio_static_instance = nullptr;
+void BraccioClass::onJoystickEvent(lv_event_t * e) {
+    mbed::ScopedLock<rtos::Mutex> lock(_braccio_static_instance->_display_mtx);
+    _braccio_static_instance->event_cb(e);
+}
+
+void BraccioClass::connectJoystickTo(lv_obj_t* obj, lv_event_cb_t _event_cb)
 {
-  mbed::ScopedLock<rtos::Mutex> lock(_display_mtx);
   lv_group_add_obj(_lvgl_p_obj_group, obj);
   lv_indev_set_group(_lvgl_kb_indev, _lvgl_p_obj_group);
+  event_cb = _event_cb;
+  _braccio_static_instance = this;
+  lv_obj_add_event_cb(obj, &(BraccioClass::onJoystickEvent), LV_EVENT_ALL, NULL);
 }
 
 void BraccioClass::lvgl_disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
@@ -424,8 +434,9 @@ void BraccioClass::display_thread_func()
 {
   for(;; delay(LV_DISP_DEF_REFR_PERIOD))
   {
-    mbed::ScopedLock<rtos::Mutex> lock(_display_mtx);
+    _display_mtx.lock();
     lv_task_handler();
+    _display_mtx.unlock();
     lv_tick_inc(LV_DISP_DEF_REFR_PERIOD);
   }
 }
@@ -465,10 +476,13 @@ void BraccioClass::lvgl_pleaseConnectPower()
   lv_obj_set_pos(label1, 0, 0);
 }
 
+void BraccioClass::drawMenu() {
+    mbed::ScopedLock<rtos::Mutex> lock(_display_mtx);
+    _draw_menu();
+}
+
 void BraccioClass::lvgl_defaultMenu()
 {
-  mbed::ScopedLock<rtos::Mutex> lock(_display_mtx);
-
   lv_style_set_text_font(&_lv_style, &lv_font_montserrat_32);
   lv_obj_t * label1 = lv_label_create(lv_scr_act());
   lv_obj_add_style(label1, &_lv_style, 0);
