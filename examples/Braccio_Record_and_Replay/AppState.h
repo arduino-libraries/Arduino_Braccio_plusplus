@@ -1,5 +1,5 @@
-#ifndef LEARN_AND_REPEAT_APP_STATE_H_
-#define LEARN_AND_REPEAT_APP_STATE_H_
+#ifndef RECORD_AND_REPLAY_APP_STATE_H_
+#define RECORD_AND_REPLAY_APP_STATE_H_
 
 /**************************************************************************************
  * INCLUDE
@@ -114,10 +114,10 @@ protected:
   virtual State * handle_OnTimerTick() override;
 };
 
-class LearnAndRepeatApp
+class RecordAndReplayApp
 {
 public:
-  LearnAndRepeatApp()
+  RecordAndReplayApp()
   : _state{nullptr}
   , _mtx{}
   { }
@@ -151,4 +151,4 @@ private:
   rtos::Mutex _mtx;
 };
 
-#endif /* LEARN_AND_REPEAT_APP_STATE_H_ */
+#endif /* RECORD_AND_REPLAY_APP_STATE_H_ */
