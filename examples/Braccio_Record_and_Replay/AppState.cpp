@@ -34,7 +34,7 @@ const char * btnm_map[] = { "RECORD", "\n", "REPLAY", "\n", "ZERO_POSITION", "\n
 static float sample_buf[SAMPLE_BUF_SIZE];
 static int   sample_cnt;
 
-extern LearnAndRepeatApp app;
+extern RecordAndReplayApp app;
 
 /**************************************************************************************
  * FUNCTION DEFINITION
@@ -313,10 +313,10 @@ void ZeroState::onExit()
 }
 
 /**************************************************************************************
- * LearnAndRepeatApp
+ * RecordAndReplayApp
  **************************************************************************************/
 
-void LearnAndRepeatApp::enableButtons()
+void RecordAndReplayApp::enableButtons()
 {
   /* Enable buttons once init is complete. */
   lv_btnmatrix_clear_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_DISABLED);
