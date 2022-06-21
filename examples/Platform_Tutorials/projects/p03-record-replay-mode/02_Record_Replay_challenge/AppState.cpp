@@ -19,7 +19,8 @@
  **************************************************************************************/
 
 static int const SAMPLE_BUF_SIZE = 6*200*2; /* 20 seconds. */
-static float const HOME_POS[6] = {157.5, 157.5, 157.5, 157.5, 157.5, 90.0};
+static float const HOME_POS[6] = {157.5, 157.5, 157.5, 157.5, 157.5,  90.0};
+static float const WAVE_POS[6] = {180.0, 260.0, 157.5, 157.5, 157.5, 180.0};
 
 /**************************************************************************************
  * GLOBAL VARIABLES
@@ -29,7 +30,7 @@ lv_obj_t * counter;
 lv_obj_t * btnm;
 lv_obj_t * menu_screen = nullptr;
 lv_obj_t * stop_screen = nullptr;
-const char * btnm_map[] = { "RECORD", "\n", "REPLAY", "\n", "ZERO_POSITION", "\n", "\0" };
+const char * btnm_map[] = { "RECORD", "\n", "REPLAY", "\n", "ZERO_POSITION", "\n", "DEMO", "\n", "\0" };
 
 static float sample_buf[SAMPLE_BUF_SIZE];
 static int   sample_cnt;
@@ -54,6 +55,7 @@ static void event_handler_menu(lv_event_t * e)
     case 0: app.update(EventSource::Button_Record);       break;
     case 1: app.update(EventSource::Button_Replay);       break;
     case 2: app.update(EventSource::Button_ZeroPosition); break;  
+    case 3: app.update(EventSource::Button_Demo);         break;  
     }
   }
 }
@@ -82,6 +84,7 @@ void custom_main_menu()
   lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
+  lv_btnmatrix_set_btn_ctrl(btnm, 3, LV_BTNMATRIX_CTRL_DISABLED);
 
   lv_btnmatrix_set_one_checked(btnm, true);
   lv_btnmatrix_set_selected_btn(btnm, 0);
@@ -137,6 +140,11 @@ State * IdleState::handle_OnZeroPosition()
   return new ZeroState();
 }
 
+State * IdleState::handle_OnDemo()
+{
+  return new DemoState();
+}
+
 /**************************************************************************************
  * RecordState
  **************************************************************************************/
@@ -147,6 +155,7 @@ void RecordState::onEnter()
   lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKED);
   lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
+  lv_btnmatrix_set_btn_ctrl(btnm, 3, LV_BTNMATRIX_CTRL_DISABLED);
 
   delay(100);
   Braccio.disengage();
@@ -160,6 +169,7 @@ void RecordState::onExit()
   lv_btnmatrix_clear_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_CHECKED);
   lv_btnmatrix_clear_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_clear_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
+  lv_btnmatrix_clear_btn_ctrl(btnm, 3, LV_BTNMATRIX_CTRL_DISABLED);
   lv_label_set_text_fmt(counter, "Counter: %d" , 0);
 
   delay(100);
@@ -220,6 +230,7 @@ void ReplayState::onEnter()
   lv_btnmatrix_set_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_set_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_CHECKED);
   lv_btnmatrix_set_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
+  lv_btnmatrix_set_btn_ctrl(btnm, 3, LV_BTNMATRIX_CTRL_DISABLED);
 }
  
 void ReplayState::onExit()
@@ -228,6 +239,7 @@ void ReplayState::onExit()
   lv_btnmatrix_clear_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_clear_btn_ctrl(btnm, 1, LV_BTNMATRIX_CTRL_CHECKED);
   lv_btnmatrix_clear_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
+  lv_btnmatrix_clear_btn_ctrl(btnm, 3, LV_BTNMATRIX_CTRL_DISABLED);
   lv_label_set_text_fmt(counter, "Counter: %d" , 0);
 }
 
@@ -313,6 +325,71 @@ void ZeroState::onExit()
 }
 
 /**************************************************************************************
+ * DemoState
+ **************************************************************************************/
+
+State * DemoState::handle_OnTimerTick()
+{
+  return new IdleState();
+}
+
+void DemoState::onEnter()
+{
+  delay(100);
+  Braccio.engage();
+  delay(100);
+  Braccio.moveTo(WAVE_POS[0], WAVE_POS[1], WAVE_POS[2], WAVE_POS[3], WAVE_POS[4], WAVE_POS[5]);
+  delay(500);
+
+  for (int i = 1; i <= 3; i++) 
+  {
+    Braccio.moveTo(WAVE_POS[0], WAVE_POS[1], 130.0, WAVE_POS[3], WAVE_POS[4], WAVE_POS[5]);
+    delay(300);
+
+    Braccio.moveTo(WAVE_POS[0], WAVE_POS[1], 195.0, WAVE_POS[3], WAVE_POS[4], WAVE_POS[5]);
+    delay(600);
+
+    Braccio.moveTo(WAVE_POS[0], WAVE_POS[1], WAVE_POS[2], WAVE_POS[3], WAVE_POS[4], WAVE_POS[5]);
+    delay(300);
+  }
+    
+  auto isInDemoPos = []() -> bool
+  {
+    float current_angles[SmartServoClass::NUM_MOTORS] = {0};
+    Braccio.positions(current_angles);
+
+    float total_angle_err = 0.0;
+    for (size_t i = 0; i < SmartServoClass::NUM_MOTORS; i++)
+      total_angle_err += fabs(current_angles[i] - WAVE_POS[i]);
+
+    static float const TOTAL_EPSILON = 10.0f;
+    bool const is_in_demo_pos = (total_angle_err < TOTAL_EPSILON);
+    return is_in_demo_pos;
+  };
+  auto isTimeout = [](unsigned long const start) -> bool
+  {
+    /* Timeout of one second. */
+    auto const now = millis();
+    if ((now - start) > 1000)
+      return true;
+    else
+      return false;
+  };
+
+  /* Wait until we've returned to the Demo position
+   * with a timeout (i.e. we leave this function)
+   * after one second even if we can't fully reach
+   * the demo position.
+   */
+  for(auto start = millis(); !isInDemoPos() && !isTimeout(start); delay(100)) { }
+}
+ 
+void DemoState::onExit()
+{
+  lv_btnmatrix_clear_btn_ctrl(btnm, 3, LV_BTNMATRIX_CTRL_CHECKED);
+}
+
+/**************************************************************************************
  * RecordAndReplayApp
  **************************************************************************************/
 
@@ -321,4 +398,5 @@ void RecordAndReplayApp::enableButtons()
   /* Enable buttons once init is complete. */
   lv_btnmatrix_clear_btn_ctrl(btnm, 0, LV_BTNMATRIX_CTRL_DISABLED);
   lv_btnmatrix_clear_btn_ctrl(btnm, 2, LV_BTNMATRIX_CTRL_DISABLED);
+  lv_btnmatrix_clear_btn_ctrl(btnm, 3, LV_BTNMATRIX_CTRL_DISABLED);
 }
