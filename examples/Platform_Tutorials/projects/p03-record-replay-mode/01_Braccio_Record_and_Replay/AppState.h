@@ -1,5 +1,5 @@
-#ifndef LEARN_AND_REPEAT_APP_STATE_H_
-#define LEARN_AND_REPEAT_APP_STATE_H_
+#ifndef RECORD_AND_REPLAY_APP_STATE_H_
+#define RECORD_AND_REPLAY_APP_STATE_H_
 
 /**************************************************************************************
  * INCLUDE
@@ -54,7 +54,7 @@ public:
 protected:
   virtual State * handle_OnRecord()       { return this; }
   virtual State * handle_OnReplay()       { return this; }
-  virtual State * handle_OnZeroPosition();
+  virtual State * handle_OnZeroPosition() { return this; }
   virtual State * handle_OnTimerTick()    { return this; }
 };
 
@@ -67,8 +67,9 @@ public:
   virtual void onExit() override;
 
 protected:
-  virtual State * handle_OnRecord() override;
-  virtual State * handle_OnReplay() override;
+  virtual State * handle_OnRecord      () override;
+  virtual State * handle_OnReplay      () override;
+  virtual State * handle_OnZeroPosition() override;
 };
 
 class RecordState : public State
@@ -113,10 +114,10 @@ protected:
   virtual State * handle_OnTimerTick() override;
 };
 
-class LearnAndRepeatApp
+class RecordAndReplayApp
 {
 public:
-  LearnAndRepeatApp()
+  RecordAndReplayApp()
   : _state{nullptr}
   , _mtx{}
   { }
@@ -150,4 +151,4 @@ private:
   rtos::Mutex _mtx;
 };
 
-#endif /* LEARN_AND_REPEAT_APP_STATE_H_ */
+#endif /* RECORD_AND_REPLAY_APP_STATE_H_ */
