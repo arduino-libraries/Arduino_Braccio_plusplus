@@ -283,7 +283,7 @@ void SmartServoClass::setMaxTorque(uint16_t const torque)
 void SmartServoClass::setMaxTorque(uint8_t const id, uint16_t const torque)
 {
   mbed::ScopedLock<rtos::Mutex> lock(_mtx);
-  writeWordCmd(id+1, REG(SmartServoRegister::MAX_TORQUE_H), torque);
+  writeWordCmd(id, REG(SmartServoRegister::MAX_TORQUE_H), torque);
 }
 
 void SmartServoClass::setID(uint8_t const id)
