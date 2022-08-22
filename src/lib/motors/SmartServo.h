@@ -56,9 +56,8 @@ public:
 
   void setTorque(uint8_t const id, bool const torque);
 
-  void setMaxTorque(uint16_t const torque);
-
-  void setMaxTorque(uint8_t const id, uint16_t const torque);
+         void setMaxTorque(uint8_t const id, uint16_t const max_torque);
+  inline void setMaxTorque(uint16_t const max_torque) { setMaxTorque(BROADCAST, max_torque); }
 
   void setID(uint8_t const id);
 

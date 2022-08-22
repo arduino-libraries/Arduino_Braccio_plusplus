@@ -215,14 +215,6 @@ void BraccioClass::positions(float & a1, float & a2, float & a3, float & a4, flo
   a6 = _servos.getPosition(6);
 }
 
-void BraccioClass::setMaxTorque(int const id, uint16_t const max_torque)
-{
-  if (max_torque > SmartServoClass::TORQUE_MAX)
-    _servos.setMaxTorque(SmartServoClass::TORQUE_MAX);
-  else
-    _servos.setMaxTorque(max_torque);
-}
-
 int BraccioClass::getKey() {
   if (isJoystickPressed_LEFT()) {
     return 1;
