@@ -98,6 +98,9 @@ public:
   static int   constexpr NUM_MOTORS = 6;
   static float constexpr MAX_ANGLE = 315.0f;
 
+  static uint16_t constexpr TORQUE_MIN =    0;
+  static uint16_t constexpr TORQUE_MAX = 1000;
+
   static size_t idToArrayIndex(size_t const id) { return (id - 1); }
 
 private:
