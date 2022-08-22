@@ -187,6 +187,7 @@ public:
   inline void disengage() { _servos.disengage(_id); }
   inline void engage()    { _servos.engage(_id); }
   inline bool engaged()   { return _servos.isEngaged(_id); }
+  inline void setMaxTorque(uint16_t const max_torque) { _servos.setMaxTorque(_id, max_torque); }
 
   inline Servo & move()                                    { return *this; }
   inline Servo & to  (float const angle)                   { _servos.setPosition(_id, angle); return *this; }
