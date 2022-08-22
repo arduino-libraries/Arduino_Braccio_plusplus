@@ -274,16 +274,14 @@ void SmartServoClass::setTime(uint8_t const id, uint16_t const time)
   writeWordCmd(id, REG(SmartServoRegister::RUN_TIME_H), time);
 }
 
-void SmartServoClass::setMaxTorque(uint16_t const torque)
+void SmartServoClass::setMaxTorque(uint8_t const id, uint16_t const max_torque)
 {
   mbed::ScopedLock<rtos::Mutex> lock(_mtx);
-  writeWordCmd(BROADCAST, REG(SmartServoRegister::MAX_TORQUE_H), torque);
-}
 
-void SmartServoClass::setMaxTorque(uint8_t const id, uint16_t const torque)
-{
-  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
-  writeWordCmd(id+1, REG(SmartServoRegister::MAX_TORQUE_H), torque);
+  if (max_torque > TORQUE_MAX)
+    writeWordCmd(id, REG(SmartServoRegister::MAX_TORQUE_H), TORQUE_MAX);
+  else
+    writeWordCmd(id, REG(SmartServoRegister::MAX_TORQUE_H), max_torque);
 }
 
 void SmartServoClass::setID(uint8_t const id)

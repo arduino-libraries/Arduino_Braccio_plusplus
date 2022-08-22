@@ -80,6 +80,9 @@ public:
   void positions(float * buffer);
   void positions(float & a1, float & a2, float & a3, float & a4, float & a5, float & a6);
 
+  inline void setMaxTorque(uint16_t const max_torque) { _servos.setMaxTorque(max_torque); }
+  inline void setMaxTorque(int const id, uint16_t const max_torque) { _servos.setMaxTorque(id, max_torque); }
+
   inline void speed(speed_grade_t const speed_grade) { _servos.setTime(speed_grade); }
   inline void speed(int const id, speed_grade_t const speed_grade) { _servos.setTime(id, speed_grade); }
 
@@ -184,6 +187,7 @@ public:
   inline void disengage() { _servos.disengage(_id); }
   inline void engage()    { _servos.engage(_id); }
   inline bool engaged()   { return _servos.isEngaged(_id); }
+  inline void setMaxTorque(uint16_t const max_torque) { _servos.setMaxTorque(_id, max_torque); }
 
   inline Servo & move()                                    { return *this; }
   inline Servo & to  (float const angle)                   { _servos.setPosition(_id, angle); return *this; }

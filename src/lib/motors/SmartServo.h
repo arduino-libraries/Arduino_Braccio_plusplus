@@ -56,9 +56,8 @@ public:
 
   void setTorque(uint8_t const id, bool const torque);
 
-  void setMaxTorque(uint16_t const torque);
-
-  void setMaxTorque(uint8_t const id, uint16_t const torque);
+         void setMaxTorque(uint8_t const id, uint16_t const max_torque);
+  inline void setMaxTorque(uint16_t const max_torque) { setMaxTorque(BROADCAST, max_torque); }
 
   void setID(uint8_t const id);
 
@@ -97,6 +96,9 @@ public:
   static int   constexpr MAX_MOTOR_ID = 6;
   static int   constexpr NUM_MOTORS = 6;
   static float constexpr MAX_ANGLE = 315.0f;
+
+  static uint16_t constexpr TORQUE_MIN =    0;
+  static uint16_t constexpr TORQUE_MAX = 1000;
 
   static size_t idToArrayIndex(size_t const id) { return (id - 1); }
 
