@@ -62,7 +62,7 @@ void SmartServoClass::sendPacket()
   _RS485.endTransmission();
   // should now receive an echo of what we just sent
   while (_RS485.available() < len) {
-    delay(100);
+    delayMicroseconds(10);
   }
   // discard the echo
   int i = len;
