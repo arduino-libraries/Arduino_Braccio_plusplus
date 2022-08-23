@@ -274,6 +274,12 @@ void SmartServoClass::setTime(uint8_t const id, uint16_t const time)
   writeWordCmd(id, REG(SmartServoRegister::RUN_TIME_H), time);
 }
 
+uint16_t SmartServoClass::getTime(uint8_t const id)
+{
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
+  return readWordCmd(id, REG(SmartServoRegister::RUN_TIME_H));
+}
+
 void SmartServoClass::setMaxTorque(uint8_t const id, uint16_t const max_torque)
 {
   mbed::ScopedLock<rtos::Mutex> lock(_mtx);

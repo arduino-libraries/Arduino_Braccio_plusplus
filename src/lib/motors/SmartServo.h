@@ -74,8 +74,9 @@ public:
   void setMaxAngle(uint16_t const max_angle);
   void setMaxAngle(uint8_t const id, uint16_t const max_angle);
 
-  void setTime(uint16_t const time);
-  void setTime(uint8_t const id, uint16_t const time);
+  void     setTime(uint16_t const time);
+  void     setTime(uint8_t const id, uint16_t const time);
+  uint16_t getTime(uint8_t const id);
 
   void center(uint8_t const id, uint16_t const position);
 
