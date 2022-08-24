@@ -46,14 +46,15 @@ public:
 
   inline void setPositionMode(PositionMode const mode) { _positionMode = mode; }
 
-  void setPosition(uint8_t const id, float const angle_deg);
-
+  void  setPosition(uint8_t const id, float const angle_deg);
   float getPosition(uint8_t const id);
+
+  inline void  setAngularVelocity(float const angular_velocity_deg_per_sec) { _angular_velocity_deg_per_sec = angular_velocity_deg_per_sec; }
+  inline float getAngularVelocity() const { return _angular_velocity_deg_per_sec; }
 
   void synchronize();
 
   void setTorque(bool const torque);
-
   void setTorque(uint8_t const id, bool const torque);
 
          void setMaxTorque(uint8_t const id, uint16_t const max_torque);
