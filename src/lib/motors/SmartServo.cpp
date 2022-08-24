@@ -227,8 +227,19 @@ void SmartServoClass::setPosition(uint8_t const id, float const angle)
    */
   if (angular_velocity_deg_per_sec > MAX_ANGULAR_VELOCITY_deg_per_sec)
   {
-    float const limited_runtime_sec = abs_position_diff_deg / MAX_ANGULAR_VELOCITY_deg_per_sec;
-    setTime(id, static_cast<uint16_t>(limited_runtime_sec));
+    float    const limited_runtime_sec = abs_position_diff_deg / MAX_ANGULAR_VELOCITY_deg_per_sec;
+    float    const limited_runtime_ms = limited_runtime_sec * 1000.f;
+    uint16_t const limited_runtime_ms_param = max(5000, static_cast<uint16_t>(limited_runtime_ms));
+
+    if (_positionMode == PositionMode::IMMEDIATE)
+    {
+      mbed::ScopedLock<rtos::Mutex> lock(_mtx);
+      writeWordCmd(id, REG(SmartServoRegister::RUN_TIME_H), limited_runtime_ms_param);
+    }
+    else if (_positionMode == PositionMode::SYNC)
+    {
+      _targetSpeed[idToArrayIndex(id)] = limited_runtime_ms;
+    }
 
     char msg[64] = {0};
     snprintf(msg, sizeof(msg), "targed = %0.2f, actual = %0.2f, diff = %0.2f, omega_vel = %0.2f",
