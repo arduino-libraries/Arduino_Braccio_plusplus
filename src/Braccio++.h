@@ -189,9 +189,8 @@ public:
   inline bool engaged()   { return _servos.isEngaged(_id); }
   inline void setMaxTorque(uint16_t const max_torque) { _servos.setMaxTorque(_id, max_torque); }
 
-  inline Servo & move()                                    { return *this; }
-  inline Servo & to  (float const angle)                   { _servos.setPosition(_id, angle); return *this; }
-  inline Servo & in  (std::chrono::milliseconds const len) { _servos.setTime(_id, len.count()); return *this; }
+  inline Servo & move()                  { return *this; }
+  inline Servo & to  (float const angle) { _servos.setPosition(_id, angle); return *this; }
 
   inline float position()            { return _servos.getPosition(_id); }
   inline bool  connected()           { return Braccio.connected(_id); }

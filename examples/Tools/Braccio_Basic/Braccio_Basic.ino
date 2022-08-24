@@ -85,9 +85,9 @@ void loop()
 {
   if (move_joint)
   {
-    Braccio.move(4).to((SmartServoClass::MAX_ANGLE / 2.0f) - 45.0f).in(1s);
+    Braccio.move(4).to((SmartServoClass::MAX_ANGLE / 2.0f) - 45.0f);
     delay(1000);
-    Braccio.move(4).to((SmartServoClass::MAX_ANGLE / 2.0f) + 45.0f).in(1s);
+    Braccio.move(4).to((SmartServoClass::MAX_ANGLE / 2.0f) + 45.0f);
     delay(1000);
   }
 }
