@@ -31,6 +31,7 @@
 SmartServoClass::SmartServoClass(RS485Class & RS485)
 : _RS485{RS485}
 , _errors{0}
+, _angular_velocity_deg_per_sec{DEFAULT_ANGULAR_VELOCITY_deg_per_sec}
 , _onError{}
 , _mtx{}
 {
@@ -198,27 +199,43 @@ void SmartServoClass::begin()
     _targetSpeed[idToArrayIndex(i)] = 1000;
 }
 
-void SmartServoClass::setPosition(uint8_t const id, float const angle)
+void SmartServoClass::setPosition(uint8_t const id, float const angle_deg)
 {
-  if (!isValidAngle(angle))
+  if (!isValidAngle(angle_deg))
     return;
 
-  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
-  if (isValidId(id))
+  if (!isValidId(id))
+    return;
+
+  float const target_position_deg = angle_deg;
+  float const actual_position_deg = getPosition(id);
+  if (actual_position_deg < 0.0f)
+    return;
+
+  float    const abs_position_diff_deg = fabs(target_position_deg - actual_position_deg);
+  float    const limited_runtime_sec   = abs_position_diff_deg / _angular_velocity_deg_per_sec;
+  uint16_t const limited_runtime_ms    = static_cast<uint16_t>(limited_runtime_sec * 1000.f);
+
+  if (_positionMode == PositionMode::IMMEDIATE)
   {
-    _targetPosition[idToArrayIndex(id)] = angleToPosition(angle);
-    if (_positionMode==PositionMode::IMMEDIATE) {
-      writeWordCmd(id, REG(SmartServoRegister::TARGET_POSITION_H), angleToPosition(angle));
-    }
-  }  
+    mbed::ScopedLock<rtos::Mutex> lock(_mtx);
+    writeWordCmd(id, REG(SmartServoRegister::RUN_TIME_H), limited_runtime_ms);
+    writeWordCmd(id, REG(SmartServoRegister::TARGET_POSITION_H), angleToPosition(target_position_deg));
+  }
+  else if (_positionMode == PositionMode::SYNC)
+  {
+    _targetSpeed[idToArrayIndex(id)] = limited_runtime_ms;
+    _targetPosition[idToArrayIndex(id)] = angleToPosition(target_position_deg);
+  }
 }
 
 float SmartServoClass::getPosition(uint8_t const id)
 {
+  if (!isValidId(id))
+    return -1.0f;
+
   mbed::ScopedLock<rtos::Mutex> lock(_mtx);
-  float ret = -1;
-  if (isValidId(id))
-    return positionToAngle(readWordCmd(id, REG(SmartServoRegister::POSITION_H)));
+  return positionToAngle(readWordCmd(id, REG(SmartServoRegister::POSITION_H)));
 }
 
 void SmartServoClass::center(uint8_t const id, uint16_t const position)
@@ -261,16 +278,24 @@ void SmartServoClass::setTorque(uint8_t const id, bool const torque)
 
 void SmartServoClass::setTime(uint16_t const time)
 {
-  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   for (int i = MIN_MOTOR_ID; i <= MAX_MOTOR_ID; i++)
     _targetSpeed[idToArrayIndex(i)] = time;
+
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeWordCmd(BROADCAST, REG(SmartServoRegister::RUN_TIME_H), time);
 }
 
 void SmartServoClass::setTime(uint8_t const id, uint16_t const time)
 {
+  if (!isValidId(id))
+    return;
+
+  if (id == BROADCAST)
+    return;
+
+  _targetSpeed[idToArrayIndex(id)] = time;
+
   mbed::ScopedLock<rtos::Mutex> lock(_mtx);
-  if ((id >= MIN_MOTOR_ID) && (id <= MAX_MOTOR_ID)) _targetSpeed[idToArrayIndex(id)] = time;
   writeWordCmd(id, REG(SmartServoRegister::RUN_TIME_H), time);
 }
 

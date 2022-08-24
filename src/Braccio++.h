@@ -39,16 +39,6 @@
 using namespace std::chrono;
 
 /**************************************************************************************
- * TYPEDEF
- **************************************************************************************/
-
-enum speed_grade_t {
-  FAST = 10,
-  MEDIUM = 100,
-  SLOW = 1000,
-};
-
-/**************************************************************************************
  * FORWARD DECLARATION
  **************************************************************************************/
 
@@ -83,8 +73,8 @@ public:
   inline void setMaxTorque(uint16_t const max_torque) { _servos.setMaxTorque(max_torque); }
   inline void setMaxTorque(int const id, uint16_t const max_torque) { _servos.setMaxTorque(id, max_torque); }
 
-  inline void speed(speed_grade_t const speed_grade) { _servos.setTime(speed_grade); }
-  inline void speed(int const id, speed_grade_t const speed_grade) { _servos.setTime(id, speed_grade); }
+  inline void  setAngularVelocity(float const angular_velocity_deg_per_sec) { _servos.setAngularVelocity(angular_velocity_deg_per_sec); }
+  inline float getAngularVelocity() const { return _servos.getAngularVelocity(); }
 
   inline void disengage(int const id = SmartServoClass::BROADCAST) { _servos.disengage(id); }
   inline void engage   (int const id = SmartServoClass::BROADCAST) { _servos.engage(id); }
@@ -189,15 +179,12 @@ public:
   inline bool engaged()   { return _servos.isEngaged(_id); }
   inline void setMaxTorque(uint16_t const max_torque) { _servos.setMaxTorque(_id, max_torque); }
 
-  inline Servo & move()                                    { return *this; }
-  inline Servo & to  (float const angle)                   { _servos.setPosition(_id, angle); return *this; }
-  inline Servo & in  (std::chrono::milliseconds const len) { _servos.setTime(_id, len.count()); return *this; }
+  inline Servo & move()                  { return *this; }
+  inline Servo & to  (float const angle) { _servos.setPosition(_id, angle); return *this; }
 
   inline float position()            { return _servos.getPosition(_id); }
   inline bool  connected()           { return Braccio.connected(_id); }
   inline void  info(Stream & stream) { _servos.getInfo(stream, _id); }
-  inline uint16_t runtime() { return _servos.getTime(_id); }
-  inline void     setRuntime(uint16_t const time) { _servos.setTime(_id, time); }
 
   operator bool() { return connected(); }
 

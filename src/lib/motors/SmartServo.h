@@ -46,14 +46,15 @@ public:
 
   inline void setPositionMode(PositionMode const mode) { _positionMode = mode; }
 
-  void setPosition(uint8_t const id, float const angle);
-
+  void  setPosition(uint8_t const id, float const angle_deg);
   float getPosition(uint8_t const id);
+
+  inline void  setAngularVelocity(float const angular_velocity_deg_per_sec) { _angular_velocity_deg_per_sec = angular_velocity_deg_per_sec; }
+  inline float getAngularVelocity() const { return _angular_velocity_deg_per_sec; }
 
   void synchronize();
 
   void setTorque(bool const torque);
-
   void setTorque(uint8_t const id, bool const torque);
 
          void setMaxTorque(uint8_t const id, uint16_t const max_torque);
@@ -97,6 +98,7 @@ public:
   static int   constexpr MAX_MOTOR_ID = 6;
   static int   constexpr NUM_MOTORS = 6;
   static float constexpr MAX_ANGLE = 315.0f;
+  static float constexpr DEFAULT_ANGULAR_VELOCITY_deg_per_sec = 20.0f;
 
   static uint16_t constexpr TORQUE_MIN =    0;
   static uint16_t constexpr TORQUE_MAX = 1000;
@@ -129,6 +131,7 @@ private:
 
   RS485Class& _RS485;
   int _errors;
+  float _angular_velocity_deg_per_sec;
   mbed::Callback<void()> _onError;
   rtos::Mutex _mtx;
 

@@ -20,9 +20,6 @@ void setup() {
   Braccio.begin();
   delay(500); // Waits for the Braccio initialization
 
-  // You can choose the speed beforehand with
-  Braccio.speed(SLOW); // could be FAST or MEDIUM or SLOW
-
   // Set motors initial angle
   // Should move all the motors at once
   Braccio.moveTo(homePos[0], homePos[1], homePos[2], homePos[3], homePos[4], homePos[5]);

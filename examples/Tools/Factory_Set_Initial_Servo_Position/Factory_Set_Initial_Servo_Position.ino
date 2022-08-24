@@ -85,7 +85,7 @@ bool set_initial_servo_position(int const id, float const target_angle)
   for ( float current_angle = Braccio.get(id).position();
        !isTargetAngleReached(EPSILON) && !isTimeout(start);)
   {
-    Braccio.get(id).move().to(target_angle).in(200ms);
+    Braccio.get(id).move().to(target_angle);
     delay(250);
   
     char msg[64] = {0};

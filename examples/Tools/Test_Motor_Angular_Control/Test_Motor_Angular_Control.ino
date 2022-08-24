@@ -31,13 +31,13 @@ void test_motor(int const id)
   delay(500);
 
   Serial.print("Drive to start . ");
-  Braccio.get(id).move().to(0.0f).in(1s);
+  Braccio.get(id).move().to(0.0f);
   Serial.println("OK.");
   delay(1500);
 
   for (float target_angle = 0.0f; target_angle < SmartServoClass::MAX_ANGLE; target_angle += 1.0f)
   {
-    Braccio.get(id).move().to(target_angle).in(200ms);
+    Braccio.get(id).move().to(target_angle);
     delay(250);
 
     char msg[64] = {0};

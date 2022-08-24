@@ -18,9 +18,6 @@ void setup() {
   Braccio.begin();
   delay(500); // Waits for the Braccio initialization
   
-  // You can choose the speed beforehand with
-  Braccio.speed(SLOW); // could be FAST or MEDIUM or SLOW
-
   // Send motors initial angle
   gripper.move().to(initialGripper);
   delay(100);

@@ -79,15 +79,16 @@ void setup()
 
   Braccio.moveTo(home_position[0], home_position[1], home_position[2], home_position[3], home_position[4], home_position[5]);
   delay(1000);
+  Braccio.setAngularVelocity(45.0f); /* 45 deg/sec */
 }
 
 void loop()
 {
   if (move_joint)
   {
-    Braccio.move(4).to((SmartServoClass::MAX_ANGLE / 2.0f) - 45.0f).in(1s);
-    delay(1000);
-    Braccio.move(4).to((SmartServoClass::MAX_ANGLE / 2.0f) + 45.0f).in(1s);
-    delay(1000);
+    Braccio.move(4).to((SmartServoClass::MAX_ANGLE / 2.0f) - 45.0f);
+    delay(2000);
+    Braccio.move(4).to((SmartServoClass::MAX_ANGLE / 2.0f) + 45.0f);
+    delay(2000);
   }
 }
