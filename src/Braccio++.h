@@ -199,8 +199,6 @@ public:
   inline float position()            { return _servos.getPosition(_id); }
   inline bool  connected()           { return Braccio.connected(_id); }
   inline void  info(Stream & stream) { _servos.getInfo(stream, _id); }
-  inline uint16_t runtime() { return _servos.getTime(_id); }
-  inline void     setRuntime(uint16_t const time) { _servos.setTime(_id, time); }
 
   operator bool() { return connected(); }
 
