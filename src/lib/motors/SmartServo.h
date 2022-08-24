@@ -97,6 +97,7 @@ public:
   static int   constexpr MAX_MOTOR_ID = 6;
   static int   constexpr NUM_MOTORS = 6;
   static float constexpr MAX_ANGLE = 315.0f;
+  static float constexpr DEFAULT_ANGULAR_VELOCITY_deg_per_sec = 10.0f;
 
   static uint16_t constexpr TORQUE_MIN =    0;
   static uint16_t constexpr TORQUE_MAX = 1000;
@@ -129,6 +130,7 @@ private:
 
   RS485Class& _RS485;
   int _errors;
+  float _angular_velocity_deg_per_sec;
   mbed::Callback<void()> _onError;
   rtos::Mutex _mtx;
 

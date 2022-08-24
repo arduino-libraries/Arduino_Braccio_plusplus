@@ -31,6 +31,7 @@
 SmartServoClass::SmartServoClass(RS485Class & RS485)
 : _RS485{RS485}
 , _errors{0}
+, _angular_velocity_deg_per_sec{DEFAULT_ANGULAR_VELOCITY_deg_per_sec}
 , _onError{}
 , _mtx{}
 {
@@ -206,15 +207,13 @@ void SmartServoClass::setPosition(uint8_t const id, float const angle_deg)
   if (!isValidId(id))
     return;
 
-  float const ANGULAR_VELOCITY_deg_per_sec = 10.0f;
-
   float const target_position_deg = angle_deg;
   float const actual_position_deg = getPosition(id);
   if (actual_position_deg < 0.0f)
     return;
 
   float    const abs_position_diff_deg = fabs(target_position_deg - actual_position_deg);
-  float    const limited_runtime_sec   = abs_position_diff_deg / ANGULAR_VELOCITY_deg_per_sec;
+  float    const limited_runtime_sec   = abs_position_diff_deg / _angular_velocity_deg_per_sec;
   uint16_t const limited_runtime_ms    = static_cast<uint16_t>(limited_runtime_sec * 1000.f);
 
   if (_positionMode == PositionMode::IMMEDIATE)
