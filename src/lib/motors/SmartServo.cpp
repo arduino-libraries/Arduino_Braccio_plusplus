@@ -236,12 +236,14 @@ void SmartServoClass::setPosition(uint8_t const id, float const angle)
     Serial.println(msg);
   }
 
-  _targetPosition[idToArrayIndex(id)] = target_position_deg;
-
   if (_positionMode == PositionMode::IMMEDIATE)
   {
     mbed::ScopedLock<rtos::Mutex> lock(_mtx);
     writeWordCmd(id, REG(SmartServoRegister::TARGET_POSITION_H), target_position_deg);
+  }
+  else if (_positionMode == PositionMode::SYNC)
+  {
+    _targetPosition[idToArrayIndex(id)] = target_position_deg;
   }
 }
 
