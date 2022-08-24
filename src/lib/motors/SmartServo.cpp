@@ -198,63 +198,35 @@ void SmartServoClass::begin()
     _targetSpeed[idToArrayIndex(i)] = 1000;
 }
 
-void SmartServoClass::setPosition(uint8_t const id, float const angle)
+void SmartServoClass::setPosition(uint8_t const id, float const angle_deg)
 {
-  if (!isValidAngle(angle))
+  if (!isValidAngle(angle_deg))
     return;
 
   if (!isValidId(id))
     return;
 
-  float const MAX_ANGULAR_VELOCITY_deg_per_sec = 10.0f;
+  float const ANGULAR_VELOCITY_deg_per_sec = 10.0f;
 
-  float const target_position_deg = angleToPosition(angle);
+  float const target_position_deg = angle_deg;
   float const actual_position_deg = getPosition(id);
   if (actual_position_deg < 0.0f)
-  {
-    char msg[64] = {0};
-    snprintf(msg, sizeof(msg), "error obtaining position for servo %d", (int)id);
-    Serial.println(msg);
     return;
-  }
 
-  float const abs_position_diff_deg = fabs(target_position_deg - actual_position_deg);
-  float const runtime_sec = static_cast<float>(getTime(id)) / 1000.0f;
-  float const angular_velocity_deg_per_sec = abs_position_diff_deg / runtime_sec;
-
-  /* Check whether or not the maximum allowed angular velocity is exceeded,
-   * if it is indeed exceeded increase the runtime accordingly.
-   */
-  if (angular_velocity_deg_per_sec > MAX_ANGULAR_VELOCITY_deg_per_sec)
-  {
-    float    const limited_runtime_sec = abs_position_diff_deg / MAX_ANGULAR_VELOCITY_deg_per_sec;
-    float    const limited_runtime_ms = limited_runtime_sec * 1000.f;
-    uint16_t const limited_runtime_ms_param = max(5000, static_cast<uint16_t>(limited_runtime_ms));
-
-    if (_positionMode == PositionMode::IMMEDIATE)
-    {
-      mbed::ScopedLock<rtos::Mutex> lock(_mtx);
-      writeWordCmd(id, REG(SmartServoRegister::RUN_TIME_H), limited_runtime_ms_param);
-    }
-    else if (_positionMode == PositionMode::SYNC)
-    {
-      _targetSpeed[idToArrayIndex(id)] = limited_runtime_ms;
-    }
-
-    char msg[64] = {0};
-    snprintf(msg, sizeof(msg), "targed = %0.2f, actual = %0.2f, diff = %0.2f, omega_vel = %0.2f",
-      target_position_deg, actual_position_deg, abs_position_diff_deg, angular_velocity_deg_per_sec);
-    Serial.println(msg);
-  }
+  float    const abs_position_diff_deg = fabs(target_position_deg - actual_position_deg);
+  float    const limited_runtime_sec   = abs_position_diff_deg / ANGULAR_VELOCITY_deg_per_sec;
+  uint16_t const limited_runtime_ms    = static_cast<uint16_t>(limited_runtime_sec * 1000.f);
 
   if (_positionMode == PositionMode::IMMEDIATE)
   {
     mbed::ScopedLock<rtos::Mutex> lock(_mtx);
-    writeWordCmd(id, REG(SmartServoRegister::TARGET_POSITION_H), target_position_deg);
+    writeWordCmd(id, REG(SmartServoRegister::RUN_TIME_H), limited_runtime_ms);
+    writeWordCmd(id, REG(SmartServoRegister::TARGET_POSITION_H), angleToPosition(target_position_deg));
   }
   else if (_positionMode == PositionMode::SYNC)
   {
-    _targetPosition[idToArrayIndex(id)] = target_position_deg;
+    _targetSpeed[idToArrayIndex(id)] = limited_runtime_ms;
+    _targetPosition[idToArrayIndex(id)] = angleToPosition(target_position_deg);
   }
 }
 

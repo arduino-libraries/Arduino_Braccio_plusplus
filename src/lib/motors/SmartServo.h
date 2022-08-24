@@ -46,7 +46,7 @@ public:
 
   inline void setPositionMode(PositionMode const mode) { _positionMode = mode; }
 
-  void setPosition(uint8_t const id, float const angle);
+  void setPosition(uint8_t const id, float const angle_deg);
 
   float getPosition(uint8_t const id);
 
