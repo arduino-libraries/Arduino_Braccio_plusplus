@@ -136,6 +136,7 @@ bool BraccioClass::begin(voidFuncPtr custom_menu, bool const wait_for_all_motor_
     lvgl_defaultMenu();
 
   _servos.begin();
+  _servos.setMaxTorque(SmartServoClass::TORQUE_MAX);
   _servos.setAngularVelocity(SmartServoClass::DEFAULT_ANGULAR_VELOCITY_deg_per_sec);
   _servos.setPositionMode(PositionMode::IMMEDIATE);
 
