@@ -54,8 +54,6 @@ void setup()
 
   if (Braccio.begin(directionScreen))
   {
-    /* Configure Braccio. */
-    Braccio.speed(speed_grade_t(120)/*MEDIUM*/);
     /* Move to home position. */
     Braccio.moveTo(HOME_POS[0], HOME_POS[1], HOME_POS[2], HOME_POS[3], HOME_POS[4], HOME_POS[5]);
     delay(500);

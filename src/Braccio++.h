@@ -86,9 +86,6 @@ public:
   inline void  setAngularVelocity(float const angular_velocity_deg_per_sec) { _servos.setAngularVelocity(angular_velocity_deg_per_sec); }
   inline float getAngularVelocity() const { return _servos.getAngularVelocity(); }
 
-  inline void speed(speed_grade_t const speed_grade) { _servos.setTime(speed_grade); }
-  inline void speed(int const id, speed_grade_t const speed_grade) { _servos.setTime(id, speed_grade); }
-
   inline void disengage(int const id = SmartServoClass::BROADCAST) { _servos.disengage(id); }
   inline void engage   (int const id = SmartServoClass::BROADCAST) { _servos.engage(id); }
 

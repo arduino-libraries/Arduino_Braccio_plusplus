@@ -18,8 +18,11 @@ RecordAndReplayApp app;
 
 void setup()
 {
-  if (Braccio.begin(custom_main_menu)) {
+  if (Braccio.begin(custom_main_menu))
+  {
     app.enableButtons();
+    /* Allow greater angular velocity than the default one. */
+    Braccio.setAngularVelocity(45.0f);
   }
 }
 
