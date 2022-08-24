@@ -203,14 +203,16 @@ void SmartServoClass::setPosition(uint8_t const id, float const angle)
   if (!isValidAngle(angle))
     return;
 
-  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
-  if (isValidId(id))
+  if (!isValidId(id))
+    return;
+
+  _targetPosition[idToArrayIndex(id)] = angleToPosition(angle);
+
+  if (_positionMode == PositionMode::IMMEDIATE)
   {
-    _targetPosition[idToArrayIndex(id)] = angleToPosition(angle);
-    if (_positionMode==PositionMode::IMMEDIATE) {
-      writeWordCmd(id, REG(SmartServoRegister::TARGET_POSITION_H), angleToPosition(angle));
-    }
-  }  
+    mbed::ScopedLock<rtos::Mutex> lock(_mtx);
+    writeWordCmd(id, REG(SmartServoRegister::TARGET_POSITION_H), angleToPosition(angle));
+  }
 }
 
 float SmartServoClass::getPosition(uint8_t const id)
