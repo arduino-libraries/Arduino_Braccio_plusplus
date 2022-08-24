@@ -294,16 +294,24 @@ void SmartServoClass::setTorque(uint8_t const id, bool const torque)
 
 void SmartServoClass::setTime(uint16_t const time)
 {
-  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   for (int i = MIN_MOTOR_ID; i <= MAX_MOTOR_ID; i++)
     _targetSpeed[idToArrayIndex(i)] = time;
+
+  mbed::ScopedLock<rtos::Mutex> lock(_mtx);
   writeWordCmd(BROADCAST, REG(SmartServoRegister::RUN_TIME_H), time);
 }
 
 void SmartServoClass::setTime(uint8_t const id, uint16_t const time)
 {
+  if (!isValidId(id))
+    return;
+
+  if (id == BROADCAST)
+    return;
+
+  _targetSpeed[idToArrayIndex(id)] = time;
+
   mbed::ScopedLock<rtos::Mutex> lock(_mtx);
-  if ((id >= MIN_MOTOR_ID) && (id <= MAX_MOTOR_ID)) _targetSpeed[idToArrayIndex(id)] = time;
   writeWordCmd(id, REG(SmartServoRegister::RUN_TIME_H), time);
 }
 
