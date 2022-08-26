@@ -51,15 +51,11 @@ void RS485Class::begin(unsigned long baudrate, uint16_t config, int predelay, in
   _predelay = predelay;
   _postdelay = postdelay;
 
-  if (_dePin > -1) {
-    pinMode(_dePin, OUTPUT);
-    digitalWrite(_dePin, LOW);
-  }
+  pinMode(_dePin, OUTPUT);
+  digitalWrite(_dePin, LOW);
 
-  if (_rePin > -1) {
-    pinMode(_rePin, OUTPUT);
-    digitalWrite(_rePin, HIGH);
-  }
+  pinMode(_rePin, OUTPUT);
+  digitalWrite(_rePin, HIGH);
 
   _transmisionBegun = false;
 
@@ -70,15 +66,11 @@ void RS485Class::end()
 {
   _serial->end();
 
-  if (_rePin > -1) {
-    digitalWrite(_rePin, LOW);
-    pinMode(_dePin, INPUT);
-  }
+  digitalWrite(_rePin, LOW);
+  pinMode(_dePin, INPUT);
   
-  if (_dePin > -1) {
-    digitalWrite(_dePin, LOW);
-    pinMode(_rePin, INPUT);
-  }
+  digitalWrite(_dePin, LOW);
+  pinMode(_rePin, INPUT);
 }
 
 int RS485Class::available()
@@ -118,10 +110,8 @@ RS485Class::operator bool()
 
 void RS485Class::beginTransmission()
 {
-  if (_dePin > -1) {
-    digitalWrite(_dePin, HIGH);
-    if (_predelay) delayMicroseconds(_predelay);
-  }
+  digitalWrite(_dePin, HIGH);
+  if (_predelay) delayMicroseconds(_predelay);
 
   _transmisionBegun = true;
 }
@@ -130,26 +120,20 @@ void RS485Class::endTransmission()
 {
   _serial->flush();
 
-  if (_dePin > -1) {
-    if (_postdelay) delayMicroseconds(_postdelay);
-    digitalWrite(_dePin, LOW);
-  }
+  if (_postdelay) delayMicroseconds(_postdelay);
+  digitalWrite(_dePin, LOW);
 
   _transmisionBegun = false;
 }
 
 void RS485Class::receive()
 {
-  if (_rePin > -1) {
-    digitalWrite(_rePin, LOW);
-  }
+  digitalWrite(_rePin, LOW);
 }
 
 void RS485Class::noReceive()
 {
-  if (_rePin > -1) {
-    digitalWrite(_rePin, HIGH);
-  }
+  digitalWrite(_rePin, HIGH);
 }
 
 void RS485Class::sendBreak(unsigned int duration)
