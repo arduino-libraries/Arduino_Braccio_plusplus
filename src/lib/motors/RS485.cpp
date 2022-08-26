@@ -155,10 +155,3 @@ void RS485Class::sendBreakMicroseconds(unsigned int duration)
   delayMicroseconds(duration);
   _serial->begin(_baudrate, _config);
 }
-
-void RS485Class::setPins(int txPin, int dePin, int rePin)
-{
-  _txPin = txPin;
-  _dePin = dePin;
-  _rePin = rePin;
-}
