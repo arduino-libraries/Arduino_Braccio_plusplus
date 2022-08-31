@@ -12,10 +12,7 @@ float initialAngle = SmartServoClass::MAX_ANGLE / 2.0f; // 315 degrees / 2 = 157
 float currentAngle = initialAngle;
 
 void setup() {
-  if (!Braccio.begin()) {
-    if (Serial) Serial.println("Braccio.begin() failed.");
-    for(;;) { }
-  }
+  Braccio.begin(); // Initialize Braccio
   
   delay(500); // Waits for the Braccio initialization
   

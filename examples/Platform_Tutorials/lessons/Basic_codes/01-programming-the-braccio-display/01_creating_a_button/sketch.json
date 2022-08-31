@@ -1,0 +1,7 @@
+{
+  "cpu": {
+    "fqbn": "arduino:mbed_nano:nanorp2040connect",
+    "name": "Arduino Nano RP2040 Connect",
+    "port": "serial:///dev/ttyACM0"
+  }
+}

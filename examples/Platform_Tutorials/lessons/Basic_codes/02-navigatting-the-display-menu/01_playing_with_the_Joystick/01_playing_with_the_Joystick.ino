@@ -14,7 +14,7 @@ String checkJoystick(int input){
 
 void setup() {
   Serial.begin(115200);
-  while (!Serial) {}
+  while(!Serial){}
   Braccio.begin();
   Serial.println("Press any button or move the joystick.");
 }
@@ -22,7 +22,7 @@ void setup() {
 void loop() {
   int joystickPos = Braccio.getKey();
   message = checkJoystick(joystickPos);
-  if (message != "") {
+  if(message != ""){
     Serial.println(message);
     message = "";
   }

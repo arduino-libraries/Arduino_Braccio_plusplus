@@ -12,10 +12,7 @@ float initialAngle = SmartServoClass::MAX_ANGLE / 2.0f;
 float currentAngle = initialAngle;
 
 void setup() {
-  if (!Braccio.begin()) {
-    if (Serial) Serial.println("Braccio.begin() failed.");
-    for(;;) { }
-  }
+  Braccio.begin();
   delay(500); // Waits for the Braccio initialization
 
   // Sets the initial angle for the motors

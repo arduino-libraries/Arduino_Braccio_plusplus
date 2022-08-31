@@ -33,8 +33,6 @@ lv_meter_indicator_t * indic; // Indication of selected motor angle
 
 // Event Handlers
 static void eventHandlerMeter(lv_event_t * e) {
-  Braccio.lvgl_lock();
-
   uint32_t pressed_key = Braccio.getKey();
 
   if (pressed_key == BUTTON_ENTER) {
@@ -45,13 +43,9 @@ static void eventHandlerMeter(lv_event_t * e) {
   else {
     lv_meter_set_indicator_end_value(meter, indic, (int32_t)angles[motorID - 1]);
   }
-
-  Braccio.lvgl_unlock();
 }
 
 static void eventHandlerMenu(lv_event_t * e) {
-  Braccio.lvgl_lock();
-
   lv_obj_t * obj = lv_event_get_target(e);
   uint32_t id = lv_btnmatrix_get_selected_btn(obj);
 
@@ -59,14 +53,12 @@ static void eventHandlerMenu(lv_event_t * e) {
   currentAngle = angles[motorID - 1];
   meterScreen(); // Load meter screen
   lv_obj_del(btnm); // Delete the object
-
-  Braccio.lvgl_unlock();
 }
 
 // Screens functions
-void meterScreen(void) {
+void meterScreen(void)
+{
   Braccio.lvgl_lock();
-
   meter = lv_meter_create(lv_scr_act());
 
   lv_obj_center(meter);
@@ -92,7 +84,6 @@ void meterScreen(void) {
   lv_obj_add_event_cb(meter, eventHandlerMeter, LV_EVENT_KEY, NULL);
 
   lv_meter_set_indicator_end_value(meter, indic, (int32_t)angles[motorID - 1]);
-
   Braccio.lvgl_unlock();
 
   Braccio.connectJoystickTo(meter);
@@ -100,7 +91,6 @@ void meterScreen(void) {
 
 void motorMenu() {
   Braccio.lvgl_lock();
-
   static lv_style_t style_bg;
   lv_style_init(&style_bg);
   lv_style_set_bg_color(&style_bg, lv_color_hex(COLOR_WHITE));
@@ -129,17 +119,14 @@ void motorMenu() {
   lv_btnmatrix_set_one_checked(btnm, true);
 
   lv_obj_add_event_cb(btnm, eventHandlerMenu, LV_EVENT_PRESSED, NULL);
-
   Braccio.lvgl_unlock();
 
   Braccio.connectJoystickTo(btnm);
 }
 
 void setup() {
-  if (!Braccio.begin(motorMenu)) {
-    if (Serial) Serial.println("Braccio.begin() failed.");
-    for(;;) { }
-  }
+  Braccio.begin(motorMenu);
+
   delay(5000); // Waits for the Braccio initialization
 
   // Sets the initial angle for the motors

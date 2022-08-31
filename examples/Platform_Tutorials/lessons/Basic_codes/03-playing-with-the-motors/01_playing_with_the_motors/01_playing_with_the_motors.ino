@@ -1,28 +1,24 @@
 #include <Braccio++.h>
 
-int motorID = 0;
+int motorID= 0;
 
 void setup() {
-  if (!Braccio.begin()) {
-    if (Serial) Serial.println("Braccio.begin() failed.");
-    for(;;) { }
-  }
+  Braccio.begin();
   delay(500);
-
+  
   Serial.begin(115200);
-  while (!Serial) {}
+  while(!Serial){}
 }
 
 void loop() {
   Serial.println("To start, send any key to the serial port:");
-  while ((Serial.available() <= 0)) {};
+  while((Serial.available() <= 0)){};
   Serial.read(); // Clear the serial buffer
-  Serial.read(); // It is necessary to clean '\n'
-
-  for (motorID = 1; motorID <= 6; motorID++) {
+  
+  for(motorID = 1; motorID <=6; motorID++){
     Serial.println("\nMoving the motor " + String(motorID));
     Serial.println("Current angle 0.0 (zero)");
-
+    
     Braccio.move(motorID).to(0.0f);
     delay(2000);  // delay between movements
 
