@@ -59,11 +59,11 @@ void loop() {
 
   if (movement) {
     Braccio.moveTo(WAVE_POS[0], WAVE_POS[1], WAVE_POS[2], WAVE_POS[3], WAVE_POS[4], WAVE_POS[5]);
-    delay(TIME_DELAY/10);
+    delay(TIME_DELAY);
 
     for (int i = 1; i <= 5; i++) {
-      wristPitch.move().to(120.0f);         delay(TIME_DELAY/2);
-      wristPitch.move().to(200.0f);         delay(TIME_DELAY);
+      wristPitch.move().to(120.0f);         delay(TIME_DELAY);
+      wristPitch.move().to(200.0f);         delay(2*TIME_DELAY);
       wristPitch.move().to(WAVE_POS[3]);
     }
 
