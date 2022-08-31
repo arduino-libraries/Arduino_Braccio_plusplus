@@ -1,6 +1,19 @@
+/**************************************************************************************
+ * INCLUDE
+ **************************************************************************************/
+
 #include <Braccio++.h>
 
-// Variables
+/**************************************************************************************
+ * DEFINES
+ **************************************************************************************/
+
+#define TIME_DELAY     1000
+
+/**************************************************************************************
+ * GLOBAL VARIABLES
+ **************************************************************************************/
+
 // Braccio ++ joints
 auto gripper    = Braccio.get(1);
 auto wristRoll  = Braccio.get(2);
@@ -9,28 +22,28 @@ auto elbow      = Braccio.get(4);
 auto shoulder   = Braccio.get(5);
 auto base       = Braccio.get(6);
 
-float initialGripper = 160.0;
 float initialBase = 90.0;
-float initialAngle = 150.0;
+float initialAngle = 157.5;
+
 float angles[6];
 
+/**************************************************************************************
+ * SETUP/LOOP
+ **************************************************************************************/
+
 void setup() {
-  Braccio.begin();
-  delay(500); // Waits for the Braccio initialization
-  
-  // Send motors initial angle
-  gripper.move().to(initialGripper);
-  delay(100);
-  wristRoll.move().to(initialAngle);
-  delay(100);
-  wristPitch.move().to(initialAngle);
-  delay(100);
-  elbow.move().to(initialAngle);
-  delay(100);
-  shoulder.move().to(initialAngle);
-  delay(100);
-  base.move().to(initialBase); 
-  delay(100);
+  if (Braccio.begin()){
+    /* Warning: keep a safe distance from the robot and watch out for the robot's
+       movement. It could be speedy and hit someone. */
+
+    /* Move to home position. */
+    gripper.move().to(initialAngle);       delay(TIME_DELAY);
+    wristRoll.move().to(initialAngle);     delay(TIME_DELAY);
+    wristPitch.move().to(initialAngle);    delay(TIME_DELAY);
+    elbow.move().to(initialAngle);         delay(TIME_DELAY);
+    shoulder.move().to(initialAngle);      delay(TIME_DELAY);
+    base.move().to(initialBase);           delay(TIME_DELAY);
+  }
 
   Serial.begin(115200);
   while(!Serial){}
@@ -53,5 +66,5 @@ void loop() {
   Serial.println("*****************************************\n\n\n\n\n");
   Serial.println("\n\n\n\n");
   
-  delay(1000);
+  delay(TIME_DELAY);
 }

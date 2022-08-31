@@ -38,10 +38,8 @@ float angles[6];
 void setup() {
   if (Braccio.begin())
   {
-    /* Configure Braccio speed. */
     /* Warning: keep a safe distance from the robot and watch out for the robot's
        movement. It could be speedy and hit someone. */
-    Braccio.speed(speed_grade_t(1000)/*SLOW*/);
     /* Move to home position. */
     Braccio.moveTo(HOME_POS[0], HOME_POS[1], HOME_POS[2], HOME_POS[3], HOME_POS[4], HOME_POS[5]);
     delay(TIME_DELAY);
