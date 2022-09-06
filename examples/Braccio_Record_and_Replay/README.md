@@ -9,4 +9,3 @@ minicom -D /dev/ttyACM0  -C angle_log.csv
 * Retrieve the recorded angles by sending `r` (Press `r`). You'll see the output on your console which will automagically be stored in the CSV file.
 * Close `minicom` with `Ctrl + A, Q`.
 
-![Video recording of command sequence](retrieve-angles.mp4)
