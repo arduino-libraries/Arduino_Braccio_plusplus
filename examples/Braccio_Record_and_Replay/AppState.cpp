@@ -137,6 +137,41 @@ State * IdleState::handle_OnZeroPosition()
   return new ZeroState();
 }
 
+State * IdleState::handle_OnTimerTick()
+{
+  /* If data has been recorded and a serial command is
+   * sent to the device then all recorded positions are
+   * sent to the PC.
+   */
+  if (!sample_cnt)
+    return this;
+
+  if (!Serial)
+    return this;
+
+  if (!Serial.available())
+    return this;
+
+  if (Serial.read() == 'r')
+  {
+    for (int i = 0; i < sample_cnt; i += 6)
+    {
+      char msg[64] = {0};
+      snprintf(msg, sizeof(msg), "%d;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;%0.2f;",
+               i / 6,
+               sample_buf[i + 0],
+               sample_buf[i + 1],
+               sample_buf[i + 2],
+               sample_buf[i + 3],
+               sample_buf[i + 4],
+               sample_buf[i + 5]);
+      Serial.println(msg);
+    }
+  }
+
+  return this;
+}
+
 /**************************************************************************************
  * RecordState
  **************************************************************************************/

@@ -70,6 +70,7 @@ protected:
   virtual State * handle_OnRecord      () override;
   virtual State * handle_OnReplay      () override;
   virtual State * handle_OnZeroPosition() override;
+  virtual State * handle_OnTimerTick   () override;
 };
 
 class RecordState : public State
