@@ -235,7 +235,7 @@ float SmartServoClass::getPosition(uint8_t const id)
     return -1.0f;
 
   mbed::ScopedLock<rtos::Mutex> lock(_mtx);
-  int const position = readWordCmd(id, REG(SmartServoRegister::POSITION_H));
+  int position = readWordCmd(id, REG(SmartServoRegister::POSITION_H));
    
   // retry one more time
   if (position < 0) {
