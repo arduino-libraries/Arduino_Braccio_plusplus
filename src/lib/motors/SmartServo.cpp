@@ -235,7 +235,18 @@ float SmartServoClass::getPosition(uint8_t const id)
     return -1.0f;
 
   mbed::ScopedLock<rtos::Mutex> lock(_mtx);
-  return positionToAngle(readWordCmd(id, REG(SmartServoRegister::POSITION_H)));
+  int position = readWordCmd(id, REG(SmartServoRegister::POSITION_H));
+   
+  // retry one more time
+  if (position < 0) {
+    delay(1);
+    position = readWordCmd(id, REG(SmartServoRegister::POSITION_H));
+  }
+ 
+  if (position < 0) 
+    return -1.0f;
+ 
+  return positionToAngle(position);
 }
 
 void SmartServoClass::center(uint8_t const id, uint16_t const position)
